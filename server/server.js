@@ -36,16 +36,13 @@ app.use(express.static(ROOT));
 // Security Headers (disable CSP to avoid blocking inline scripts)
 app.use(helmet({ contentSecurityPolicy: false }));
 
-// Rate Limiting — Vercel / Proxy Network Compatible
+// Rate Limiting — Vercel / Serverless Proxy Compatible
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 300, // Limit each IP to 300 requests per 15 minutes
+    max: 500, // Limit each IP to 500 requests per 15 minutes
     standardHeaders: true,
     legacyHeaders: false,
-    validate: {
-        trustProxy: false,
-        xForwardedForHeader: false
-    },
+    validate: false, // Disables express-rate-limit validation checks on Vercel serverless
     keyGenerator: (req) => {
         const forwarded = req.headers['x-forwarded-for'];
         if (forwarded) {
