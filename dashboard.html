@@ -214,6 +214,145 @@
 
     .btn-action:active { transform: translateY(0); }
 
+    /* ── QUICK LINKS GRID ── */
+    .quick-links-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .quick-tile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1.5px solid #E5E7EB;
+      background: #F9FAFB;
+      text-decoration: none;
+      color: #111827;
+      transition: all 0.22s ease;
+      position: relative;
+    }
+
+    .quick-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      background: #FFFFFF;
+    }
+
+    .tile-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .tile-green .tile-icon-box { background: #D1FAE5; color: #00B14F; }
+    .tile-green:hover          { border-color: #00B14F; }
+
+    .tile-blue .tile-icon-box  { background: #DBEAFE; color: #2563EB; }
+    .tile-blue:hover           { border-color: #2563EB; }
+
+    .tile-amber .tile-icon-box { background: #FEF3C7; color: #D97706; }
+    .tile-amber:hover          { border-color: #D97706; }
+
+    .tile-red .tile-icon-box   { background: #FEE2E2; color: #DC2626; }
+    .tile-red:hover            { border-color: #DC2626; }
+
+    .tile-title { font-weight: 800; font-size: 0.9rem; color: #111827; margin-bottom: 2px; }
+    .tile-sub   { font-size: 0.74rem; color: #6B7280; }
+    .tile-arrow { margin-left: auto; font-size: 0.75rem; color: #9CA3AF; }
+
+    /* ── PROFILE POPUP MODAL ── */
+    .profile-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .profile-modal-card {
+      background: #FFFFFF;
+      border-radius: 22px;
+      max-width: 440px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      border: 1px solid #E5E7EB;
+      animation: slideUp 0.25s ease;
+    }
+
+    .pop-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00B14F, #047857);
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 6px 18px rgba(0,177,79,0.3);
+    }
+
+    .modal-close-btn {
+      background: #F3F4F6;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #4B5563;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profile-avatar-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.22);
+      border: 1.5px solid rgba(255,255,255,0.35);
+      padding: 6px 14px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .profile-avatar-trigger:hover {
+      background: rgba(255,255,255,0.35);
+      transform: scale(1.03);
+    }
+
+    .profile-avatar-sm {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      color: #00B14F;
+      font-weight: 900;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* ── QUICK ORDER CARD ── */
     .order-form-card {
       background: #fff;
@@ -410,7 +549,13 @@
 
       .table-desktop-view { display: none !important; }
 
-      .sidebar-col { order: -1; }
+      .quick-links-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .sidebar-profile-card {
+        display: none !important;
+      }
     }
 
     @media (min-width: 901px) {
@@ -490,6 +635,12 @@
           <p><i class="fa-solid fa-location-dot" style="opacity:0.75;"></i> <span id="userLocation">Lagos, Nigeria</span></p>
         </div>
         <div class="hero-stats">
+          <!-- Profile Avatar Trigger -->
+          <div class="profile-avatar-trigger" onclick="openProfileModal()">
+            <div class="profile-avatar-sm" id="heroUserInitials">--</div>
+            <span style="font-size: 0.8rem; font-weight: 800; color: #fff;">My Account</span>
+          </div>
+
           <div class="hero-stat-pill" onclick="window.location.href='track.html'" style="cursor:pointer;">
             <span class="stat-val" id="orderCountBadge">0</span>
             <span class="stat-lbl">Orders</span>
@@ -497,10 +648,6 @@
           <div class="hero-stat-pill">
             <span class="stat-val">₦<span id="walletBal">0</span></span>
             <span class="stat-lbl">Wallet</span>
-          </div>
-          <div class="hero-stat-pill" style="cursor:pointer;" onclick="if(window.WalletManager) WalletManager.openTopUpModal();">
-            <span class="stat-val" style="font-size: 1rem; padding-top: 3px;"><i class="fa-solid fa-plus-circle"></i></span>
-            <span class="stat-lbl">Top Up</span>
           </div>
         </div>
       </div>
@@ -646,8 +793,8 @@
 
     <!-- ── RIGHT SIDEBAR ─────────────────────────────────────── -->
     <div class="sidebar-col">
-      <!-- Profile Card (dark premium) -->
-      <div class="profile-card">
+      <!-- Profile Card (Desktop Sidebar view) -->
+      <div class="profile-card sidebar-profile-card">
         <div class="profile-avatar" id="userInitials">—</div>
         <h3 id="sideName" style="font-size: 1.15rem; margin: 2px 0;">—</h3>
         <p id="sideEmail" style="font-size: 0.82rem; opacity: 0.6; margin: 0;">—</p>
@@ -662,11 +809,6 @@
           </div>
         </div>
         <div style="margin-top: 16px; display: flex; gap: 10px;">
-          <button onclick="if(window.auth) auth.deleteAccountPermanently()" style="flex: 1; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #FCA5A5; padding: 9px; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
-            <i class="fa-solid fa-trash-can"></i> Delete Account
-          </button>
-        </div>
-      </div>
 
       <!-- Quick Links Card -->
       <div class="glass-card" style="margin-bottom: 18px; padding: 18px;">
@@ -705,6 +847,34 @@
 
   <script src="app.js"></script>
   <script>
+    // ── Profile Modal Functions ──────────────────────────────────────────────
+    function openProfileModal() {
+      const curUser = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Customer', email: 'guest@embergas.ng', role: 'customer' };
+      const initials = curUser.name ? curUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'EG';
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const myOrders = allOrders.filter(o => !o.userEmail || o.userEmail === curUser.email || o.customerName === curUser.name);
+
+      const popInit = document.getElementById('popInitials');
+      if (popInit) popInit.innerText = initials;
+      document.getElementById('popName').innerText = curUser.name || 'Valued Customer';
+      document.getElementById('popEmail').innerText = curUser.email || 'customer@embergas.ng';
+      document.getElementById('popRoleBadge').innerText = (curUser.role || 'customer').toUpperCase();
+      document.getElementById('popOrderCount').innerText = myOrders.length;
+      document.getElementById('popLocation').innerText = curUser.address || 'Lagos, Nigeria';
+
+      document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').style.display = 'none';
+    }
+
+    function closeOrderModal() {
+      document.getElementById('orderSuccessModal').style.display = 'none';
+      loadLiveOrder();
+      renderRecentOrders();
+    }
+
     // ── Redirect if not logged in ─────────────────────────────────────────────
     const curUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!curUser) {
@@ -712,53 +882,77 @@
     } else {
       // Populate user info from real account
       const initials = curUser.name ? curUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?';
-      document.getElementById('userInitials').innerText = initials;
-      document.getElementById('userGreeting').innerText = curUser.name || 'User';
-      document.getElementById('sideName').innerText = curUser.name || 'User';
-      document.getElementById('sideEmail').innerText = curUser.email || '';
-      document.getElementById('sideRole').innerText = (curUser.role || 'customer').charAt(0).toUpperCase() + (curUser.role || 'customer').slice(1);
+      if (document.getElementById('userInitials')) document.getElementById('userInitials').innerText = initials;
+      if (document.getElementById('heroUserInitials')) document.getElementById('heroUserInitials').innerText = initials;
+      document.getElementById('userGreeting').innerText = (curUser.name || 'User') + ' 👋';
+      if (document.getElementById('sideName')) document.getElementById('sideName').innerText = curUser.name || 'User';
+      if (document.getElementById('sideEmail')) document.getElementById('sideEmail').innerText = curUser.email || '';
+      if (document.getElementById('sideRole')) document.getElementById('sideRole').innerText = (curUser.role || 'customer').charAt(0).toUpperCase() + (curUser.role || 'customer').slice(1);
 
       // Real address from profile
       const savedAddr = curUser.address || '';
-      if (savedAddr) document.getElementById('deliveryAddr').value = savedAddr;
-      document.getElementById('userLocation').innerText = savedAddr || 'No address saved';
+      if (savedAddr && document.getElementById('deliveryAddr')) document.getElementById('deliveryAddr').value = savedAddr;
+      document.getElementById('userLocation').innerText = savedAddr || 'Lagos, Nigeria';
 
-      // Real orders from localStorage
+      renderRecentOrders();
+    }
+
+    function renderRecentOrders() {
+      const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const myOrders = allOrders.filter(o => o.userEmail === curUser.email);
-      document.getElementById('orderCountBadge').innerText = myOrders.length + ' Order' + (myOrders.length !== 1 ? 's' : '');
-      document.getElementById('sideOrderCount').innerText = myOrders.length;
-
-      // Render real orders table
-      const tbody = document.getElementById('ordersTableBody');
-      const mobileList = document.getElementById('mobileOrdersList');
-      if (myOrders.length > 0) {
-        tbody.innerHTML = myOrders.map(o => `
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <td style="padding: 12px 10px;">#${o.id}</td>
-            <td style="padding: 12px 10px;">${o.size} kg</td>
-            <td style="padding: 12px 10px;">${o.address || '—'}</td>
-            <td style="padding: 12px 10px;">₦${Number(o.total).toLocaleString()}</td>
-            <td style="padding: 12px 10px;"><span class="status-badge status-active" style="${o.status==='Delivered'?'background:rgba(16,185,129,0.1);color:#10B981;':''}"> ${o.status || 'Pending'}</span></td>
-            <td style="padding: 12px 10px;"><a href="track.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none;">Track</a></td>
-          </tr>`).join('');
-        mobileList.innerHTML = myOrders.map(o => `
-          <div class="mobile-order-card">
-            <div>
-              <div style="font-weight: 800; font-size: 0.95rem;">#${o.id} • ${o.size} kg</div>
-              <div style="font-size: 0.78rem; color: var(--text-secondary);">${o.address || '—'} • ₦${Number(o.total).toLocaleString()}</div>
-              <span class="status-badge status-active" style="margin-top:6px;${o.status==='Delivered'?'background:rgba(16,185,129,0.1);color:#10B981;':''}"> ${o.status || 'Pending'}</span>
-            </div>
-            <a href="track.html" style="background: var(--primary-color); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">Track</a>
-          </div>`).join('');
+      const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
+      
+      if (activeSingle && !allOrders.some(o => o.id === activeSingle.id)) {
+        allOrders.unshift(activeSingle);
       }
 
-      // Show live order banner if most recent order is active
-      const activeOrder = myOrders.find(o => o.status === 'In Transit' || o.status === 'Pending');
-      if (activeOrder) {
-        document.getElementById('liveOrderBanner').style.display = 'block';
-        document.getElementById('liveOrderTitle').innerText = `Order #${activeOrder.id} • ${activeOrder.size}kg ${activeOrder.serviceType || 'Refill'}`;
-        document.getElementById('liveOrderMeta').innerHTML = `<span><i class="fa-solid fa-map-marker-alt" style="color: var(--primary-color);"></i> ${activeOrder.address || '—'}</span>`;
+      const myOrders = allOrders.filter(o => 
+        !o.userEmail || 
+        (curUser.email && o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || 
+        (curUser.name && o.customerName && o.customerName.toLowerCase() === curUser.name.toLowerCase())
+      );
+
+      document.getElementById('orderCountBadge').innerText = myOrders.length + ' Order' + (myOrders.length !== 1 ? 's' : '');
+      const sideCount = document.getElementById('sideOrderCount');
+      if (sideCount) sideCount.innerText = myOrders.length;
+
+      const tbody = document.getElementById('ordersTableBody');
+      const mobileList = document.getElementById('mobileOrdersList');
+
+      if (myOrders.length > 0) {
+        tbody.innerHTML = myOrders.map(o => {
+          const sizeStr = o.size || o.cylinderSize || '12.5 kg';
+          const amtStr = Number(o.total || o.amount || 13750).toLocaleString();
+          const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
+          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+
+          return `
+            <tr style="border-bottom: 1px solid #F3F4F6;">
+              <td style="padding: 12px 10px; font-weight: 800; color: #111827;">#${o.id}</td>
+              <td style="padding: 12px 10px; color: #374151;">${sizeStr}</td>
+              <td style="padding: 12px 10px; color: #4B5563;">${o.address || '—'}</td>
+              <td style="padding: 12px 10px; color: #00B14F; font-weight: 900;">₦${amtStr}</td>
+              <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}">${o.status || 'PLACED'}</span></td>
+              <td style="padding: 12px 10px;"><a href="track.html" style="color: #00B14F; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-eye"></i> Details</a></td>
+            </tr>`;
+        }).join('');
+
+        mobileList.innerHTML = myOrders.map(o => {
+          const sizeStr = o.size || o.cylinderSize || '12.5 kg';
+          const amtStr = Number(o.total || o.amount || 13750).toLocaleString();
+          const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
+          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+
+          return `
+            <div class="mobile-order-card">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">#${o.id} • ${sizeStr}</div>
+                <div style="font-size: 0.78rem; color: #6B7280; margin: 2px 0 6px;">${o.address || '—'} • ₦${amtStr}</div>
+                <span class="status-badge" style="${statusStyle}">${o.status || 'PLACED'}</span>
+              </div>
+              <a href="track.html" style="background: #00B14F; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; text-decoration: none;">Track</a>
+            </div>`;
+        }).join('');
       }
     }
 
@@ -868,22 +1062,54 @@
         }
       }
 
-      // Create Order via OrderStateManager
+      // Create Order via OrderStateManager & emberGasOrders array
       let newOrder;
       if (window.OrderStateManager) {
         newOrder = OrderStateManager.createOrder(selectedSize, sType, addr, selectedTotal);
         newOrder.vendorName = selectedVendor;
         newOrder.customerName = curUser.name || 'Valued Customer';
         newOrder.userEmail = curUser.email || 'customer@embergas.ng';
+        newOrder.size = selectedSize;
+        newOrder.total = selectedTotal;
         OrderStateManager.saveActiveOrder(newOrder);
       } else {
-        newOrder = { id: 'EG-' + Math.floor(1000 + Math.random() * 9000), cylinderSize: selectedSize + 'kg', vendorName: selectedVendor, total: selectedTotal, address: addr, status: 'PLACED' };
+        newOrder = { 
+          id: 'EG-' + Math.floor(1000 + Math.random() * 9000), 
+          cylinderSize: selectedSize + 'kg', 
+          size: selectedSize,
+          vendorName: selectedVendor, 
+          total: selectedTotal, 
+          amount: selectedTotal,
+          address: addr, 
+          status: 'PLACED',
+          customerName: curUser.name || 'Valued Customer',
+          userEmail: curUser.email || 'customer@embergas.ng'
+        };
         localStorage.setItem('activeEmberGasOrder', JSON.stringify(newOrder));
+      }
+
+      // Also persist to unified emberGasOrders array for order history table
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      if (!allOrders.some(o => o.id === newOrder.id)) {
+        allOrders.unshift(newOrder);
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
       }
 
       if (window.NotificationManager) {
         NotificationManager.show(`Order #${newOrder.id} placed! Dispatched to ${selectedVendor}.`, 'success');
       }
+
+      // Populate & Open Order Details Modal right on Dashboard
+      document.getElementById('modalOrderId').innerText = '#' + newOrder.id;
+      document.getElementById('modalVendor').innerText = selectedVendor;
+      document.getElementById('modalPayload').innerText = `${selectedSize} kg ${sType.toUpperCase()}`;
+      document.getElementById('modalAddress').innerText = addr;
+      document.getElementById('modalAmount').innerText = '₦' + selectedTotal.toLocaleString();
+      document.getElementById('orderSuccessModal').style.display = 'flex';
+
+      // Update recent orders table & live order banner immediately
+      renderRecentOrders();
+      loadLiveOrder();
 
       // Send Brevo Email notification asynchronously in background
       safeFetchApi('/api/auth/notify-email', {
@@ -904,7 +1130,6 @@
         })
       }).catch(err => console.warn('Brevo notify note:', err));
 
-      setTimeout(() => { window.location.href = 'track.html'; }, 500);
       return false;
     }
 
