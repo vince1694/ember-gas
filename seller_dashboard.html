@@ -14,83 +14,159 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    body { background-color: var(--background-dark); color: var(--text-primary); }
-    
-    .vendor-header {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
-      padding: 14px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    body { background: #F0F4F8; color: #111827; }
+
+    /* ── MAIN CONTENT AREA ── */
+    main {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 20px;
+      animation: fadeInUp 0.42s ease both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* ── VENDOR WELCOME BANNER ── */
+    .vendor-welcome {
+      background: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+      border-radius: 22px;
+      padding: 24px 28px;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
     }
-    
+
+    .vendor-welcome::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -30px;
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      background: rgba(0, 177, 79, 0.12);
+    }
+
+    .vendor-welcome h2 {
+      font-size: 1.45rem;
+      font-weight: 900;
+      margin: 0 0 2px;
+      color: #fff;
+    }
+
+    .vendor-welcome p {
+      margin: 0;
+      font-size: 0.84rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .vendor-status-pill {
+      background: rgba(0, 177, 79, 0.15);
+      border: 1px solid rgba(0, 177, 79, 0.35);
+      color: #34D399;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── METRICS GRID ── */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 25px;
+      gap: 14px;
+      margin-bottom: 22px;
     }
-    
+
     .metric-card {
-      background: var(--surface-dark);
-      border: 1px solid var(--glass-border);
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
       border-radius: 16px;
-      padding: 18px;
+      padding: 18px 16px;
       display: flex;
       align-items: center;
       gap: 14px;
+      transition: box-shadow 0.22s ease, transform 0.22s ease;
     }
-    
+
+    .metric-card:hover {
+      box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+      transform: translateY(-2px);
+    }
+
     .metric-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: rgba(5, 150, 105, 0.15);
-      color: var(--primary-color);
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #E8FAF0, #D1FAE5);
+      color: #00B14F;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       flex-shrink: 0;
     }
-    
+
+    .metric-label {
+      font-size: 0.74rem;
+      color: #6B7280;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .metric-val {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #111827;
+    }
+
+    /* ── STOCK CONTROL CARD ── */
     .stock-toggle-card {
-      background: var(--surface-dark);
-      border: 1px solid var(--glass-border);
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
       border-radius: 18px;
       padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
-    
+
     .status-switch {
       display: inline-flex;
-      background: rgba(255,255,255,0.05);
+      background: #F3F4F6;
       padding: 4px;
       border-radius: 20px;
-      gap: 4px;
+      gap: 3px;
       width: 100%;
       justify-content: space-between;
     }
-    
+
     .switch-btn {
       flex: 1;
-      padding: 8px 10px;
+      padding: 7px 8px;
       border: none;
       background: transparent;
-      color: var(--text-secondary);
-      font-size: 0.78rem;
+      color: #6B7280;
+      font-size: 0.74rem;
       font-weight: 800;
       border-radius: 16px;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .switch-btn.active { background: #10B981; color: white; }
-    
+
+    .switch-btn.active { background: #00B14F; color: white; box-shadow: 0 2px 8px rgba(0,177,79,0.3); }
+
     .btn-sm {
       padding: 8px 14px;
       border-radius: 10px;
@@ -98,40 +174,73 @@
       font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
-    .btn-approve { background: #10B981; color: white; }
-    .btn-reject { background: #EF4444; color: white; }
 
-    /* MOBILE SWEEP STYLES FOR VENDOR DASHBOARD */
+    .btn-approve { background: #00B14F; color: white; }
+    .btn-approve:hover { background: #009643; box-shadow: 0 4px 12px rgba(0,177,79,0.35); }
+    .btn-reject  { background: #EF4444; color: white; }
+    .btn-reject:hover { background: #DC2626; }
+
+    /* ── ORDER QUEUE CARD ── */
+    .order-queue-card {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .vendor-table th {
+      padding: 10px 12px;
+      color: #6B7280;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 2px solid #F3F4F6;
+    }
+
+    .vendor-table td {
+      padding: 13px 12px;
+      font-size: 0.87rem;
+      border-bottom: 1px solid #F9FAFB;
+      color: #111827;
+      font-weight: 600;
+    }
+
+    .vendor-table tr:last-child td { border-bottom: none; }
+
+    .vendor-table tr:hover td { background: #F9FAFB; }
+
+    /* ── MOBILE VENDOR ORDER CARD ── */
+    .vendor-order-card-mobile {
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
-      .vendor-header { padding: 12px 16px; }
-      
+      main { padding: 0 12px; margin: 14px auto; }
+
       .metrics-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
       }
-      
-      .metric-card {
-        padding: 14px !important;
-        gap: 10px !important;
-      }
-      
-      .stock-grid-mobile {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-      }
-      
-      .vendor-order-card-mobile {
-        background: var(--surface-light);
-        border: 1px solid var(--glass-border);
-        border-radius: 14px;
-        padding: 14px;
-        margin-bottom: 12px;
-      }
-      
+
+      .metric-card { padding: 13px 12px !important; gap: 10px !important; }
+
+      .stock-grid-mobile { grid-template-columns: 1fr !important; gap: 12px !important; }
+
       .vendor-desktop-table { display: none !important; }
+
+      .vendor-welcome { padding: 18px 16px; }
+      .vendor-welcome h2 { font-size: 1.2rem; }
     }
-    
+
     @media (min-width: 901px) {
       .vendor-mobile-orders-list { display: none !important; }
     }
@@ -169,42 +278,56 @@
       <!-- Dynamic Header User Profile Badge & Logout -->
       <div id="authLink"></div>
 
-      <button onclick="openMobileDrawer()" style="background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: #111827; width: 40px; height: 40px; border-radius: 12px; font-size: 1.1rem; cursor: pointer;">
+      <button onclick="openMobileDrawer()" class="mobile-drawer-btn" title="Open Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
   </header>
   <div class="header-spacer"></div>
 
-  <main style="max-width: 1280px; margin: 20px auto; padding: 0 16px;">
+  <main>
+    <!-- ── VENDOR WELCOME BANNER ── -->
+    <div class="vendor-welcome">
+      <div>
+        <div style="font-size: 0.74rem; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">
+          <i class="fa-solid fa-store"></i> Vendor Station Hub
+        </div>
+        <h2 id="vendorWelcomeName">Loading...</h2>
+        <p><i class="fa-solid fa-envelope" style="opacity: 0.6;"></i> <span id="vendorWelcomeEmail">—</span></p>
+      </div>
+      <div class="vendor-status-pill">
+        <i class="fa-solid fa-circle" style="font-size: 0.45rem;"></i> STATION OPEN
+      </div>
+    </div>
+
     <!-- Metrics Row -->
     <div class="metrics-grid">
       <div class="metric-card">
         <div class="metric-icon"><i class="fa-solid fa-sack-dollar"></i></div>
         <div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">Total Revenue</div>
-          <div style="font-size: 1.3rem; font-weight: 800; color: #00B14F;">₦<span id="metricRevenue">0</span></div>
+          <div class="metric-label">Total Revenue</div>
+          <div class="metric-val" style="color: #00B14F;">₦<span id="metricRevenue">0</span></div>
         </div>
       </div>
       <div class="metric-card">
         <div class="metric-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
         <div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">Orders Received</div>
-          <div style="font-size: 1.3rem; font-weight: 800;" id="metricOrders">0</div>
+          <div class="metric-label">Orders Received</div>
+          <div class="metric-val" id="metricOrders">0</div>
         </div>
       </div>
       <div class="metric-card">
         <div class="metric-icon"><i class="fa-solid fa-gas-pump"></i></div>
         <div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">LPG Price / KG</div>
-          <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color);">₦<span id="metricRate">1,100</span></div>
+          <div class="metric-label">LPG Price / KG</div>
+          <div class="metric-val" style="color: #00B14F;">₦<span id="metricRate">1,100</span></div>
         </div>
       </div>
       <div class="metric-card">
-        <div class="metric-icon"><i class="fa-solid fa-user-check"></i></div>
+        <div class="metric-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #B45309;"><i class="fa-solid fa-user-check"></i></div>
         <div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">Vendor Email</div>
-          <div style="font-size: 0.9rem; font-weight: 700; color: #F59E0B;" id="metricEmail">—</div>
+          <div class="metric-label">Vendor Email</div>
+          <div style="font-size: 0.82rem; font-weight: 700; color: #B45309;" id="metricEmail">—</div>
         </div>
       </div>
     </div>
@@ -212,8 +335,10 @@
     <!-- Inventory & Stock Status Control -->
     <div class="stock-toggle-card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-        <h3 style="font-size: 1.15rem;"><i class="fa-solid fa-sliders" style="color: var(--primary-color);"></i> Stock & Pricing Control</h3>
-        <button onclick="saveStockPrice()" style="background: var(--primary-color); color: #fff; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-sliders" style="color: #00B14F;"></i> Stock & Pricing Control
+        </h3>
+        <button onclick="saveStockPrice()" style="background: #00B14F; color: #fff; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s;" onmouseover="this.style.background='#009643'" onmouseout="this.style.background='#00B14F'">
           <i class="fa-solid fa-floppy-disk"></i> Update Pricing
         </button>
       </div>
@@ -329,6 +454,11 @@
       document.getElementById('vendorBrandName').innerText = vendorUser.name + ' Hub';
       document.getElementById('vendorSubName').innerText = vendorUser.name;
       document.getElementById('metricEmail').innerText = vendorUser.email || '—';
+      // Populate welcome banner
+      const welcomeName = document.getElementById('vendorWelcomeName');
+      const welcomeEmail = document.getElementById('vendorWelcomeEmail');
+      if (welcomeName) welcomeName.innerText = vendorUser.name || 'Vendor Station';
+      if (welcomeEmail) welcomeEmail.innerText = vendorUser.email || '—';
     }
 
     function renderVendorOrders() {

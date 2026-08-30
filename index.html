@@ -230,29 +230,7 @@
 </head>
 <body>
 
-  <!-- ── SPLASH SCREEN OVERLAY ─────────────────────────────────────────── -->
-  <div class="splash-overlay" id="splashScreen">
-    <div>
-      <div class="splash-logo-box">
-        <i class="fa-solid fa-fire-flame-curved"></i>
-      </div>
-      <h1 class="splash-title">Welcome to <span style="color: #00B14F;">EmberGas</span></h1>
-      <p class="splash-subtitle">Nigeria's #1 Cooking Gas & Doorstep LPG Refill Marketplace</p>
 
-      <!-- Action Buttons Revealed After 2 Seconds -->
-      <div class="splash-actions" id="splashActions">
-        <a href="signup.html" class="btn-splash-primary">
-          <i class="fa-solid fa-user-plus"></i> Join Us Today
-        </a>
-        <a href="login.html" class="btn-splash-secondary">
-          <i class="fa-solid fa-right-to-bracket"></i> Log In (Already Registered)
-        </a>
-        <button onclick="dismissSplash()" style="background: transparent; border: none; color: #6B7280; font-size: 0.85rem; font-weight: 600; margin-top: 10px; cursor: pointer; text-decoration: underline;">
-          Explore Homepage as Guest
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- Master Header Nav -->
   <header class="master-header">
@@ -287,7 +265,7 @@
       </a>
 
       <!-- Mobile Hamburger Drawer Trigger Button -->
-      <button onclick="openMobileDrawer()" class="mobile-drawer-trigger" title="Open Menu">
+      <button onclick="openMobileDrawer()" class="mobile-drawer-btn" title="Open Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
@@ -455,18 +433,7 @@
 
   <script src="app.js"></script>
   <script>
-    // ── Splash Screen 2-Second Delayed Button Reveal ─────────────────────
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        const actions = document.getElementById('splashActions');
-        if (actions) actions.classList.add('show');
-      }, 2000);
-    });
 
-    function dismissSplash() {
-      const splash = document.getElementById('splashScreen');
-      if (splash) splash.classList.add('hidden');
-    }
 
     function calcHomeTotal() {
       const size = parseFloat(document.getElementById('homeSize').value);
