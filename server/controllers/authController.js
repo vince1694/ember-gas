@@ -13,23 +13,37 @@ const generateToken = (id) => {
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
+// @desc    Register a new user in MongoDB Atlas
+// @route   POST /api/auth/register
+// @access  Public
 const registerUser = expressAsyncHandler(async (req, res) => {
     const { name, email, phone, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
+    if (!email) {
         res.status(400);
-        throw new Error('User already exists');
+        throw new Error('Email address is required');
     }
 
-    const user = await User.create({
-        name,
-        email,
-        phone,
-        password,
-        role: role || 'user',
-    });
+    const cleanEmail = email.toLowerCase().trim();
+    let user = await User.findOne({ email: cleanEmail });
+
+    if (user) {
+        user.name = name || user.name;
+        user.phone = phone || user.phone;
+        if (password) user.password = password;
+        if (role) user.role = role;
+        user.isEmailVerified = true;
+        await user.save();
+    } else {
+        user = await User.create({
+            name,
+            email: cleanEmail,
+            phone,
+            password,
+            role: role || 'customer',
+            isEmailVerified: true
+        });
+    }
 
     if (user) {
         res.status(201).json({
@@ -38,22 +52,28 @@ const registerUser = expressAsyncHandler(async (req, res) => {
             email: user.email,
             phone: user.phone,
             role: user.role,
-            address: user.address,
+            address: user.address || '',
             token: generateToken(user._id),
         });
     } else {
         res.status(400);
-        throw new Error('Invalid user data');
+        throw new Error('Invalid user registration data');
     }
 });
 
-// @desc    Auth user & get token
+// @desc    Auth user & get token from MongoDB Atlas
 // @route   POST /api/auth/login
 // @access  Public
 const authUser = expressAsyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    if (!email || !password) {
+        res.status(400);
+        throw new Error('Please provide email and password');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: cleanEmail });
 
     if (user && (await user.matchPassword(password))) {
         res.json({
@@ -62,7 +82,7 @@ const authUser = expressAsyncHandler(async (req, res) => {
             email: user.email,
             phone: user.phone,
             role: user.role,
-            address: user.address,
+            address: user.address || '',
             token: generateToken(user._id),
         });
     } else {
