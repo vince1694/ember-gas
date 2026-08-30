@@ -668,8 +668,11 @@
       const password = document.getElementById('password').value;
       const selectedPortal = document.getElementById('selectedRole').value;
 
-      const registeredAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const userAccount = registeredAccounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+      const emberAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const users = JSON.parse(localStorage.getItem('gasUsers') || '[]');
+      const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+      const registeredAccounts = [...emberAccounts, ...users, ...vendors];
+      const userAccount = registeredAccounts.find(a => a.email && a.email.toLowerCase() === email.toLowerCase());
 
       if (!userAccount) {
         if (window.NotificationManager) {

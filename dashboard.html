@@ -562,8 +562,11 @@
     function loadLiveOrder() {
       if (!window.OrderStateManager) return;
       const order = OrderStateManager.getActiveOrder();
-      if (order && order.status !== 'COMPLETED' && order.status !== 'CANCELLED') {
-        const banner = document.getElementById('liveOrderBanner');
+      const banner = document.getElementById('liveOrderBanner');
+      const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+
+      if (order && order.status !== 'COMPLETED' && order.status !== 'CANCELLED' &&
+          (!order.userEmail || order.userEmail === curUser.email || order.customerName === curUser.name)) {
         const title = document.getElementById('liveOrderTitle');
         const meta = document.getElementById('liveOrderMeta');
         const badge = document.getElementById('liveOrderBadge');
@@ -591,6 +594,8 @@
         if (completeBtn) {
           completeBtn.style.display = (order.status === 'EN_ROUTE' || order.status === 'DELIVERED') ? 'inline-flex' : 'none';
         }
+      } else {
+        if (banner) banner.style.display = 'none';
       }
     }
 

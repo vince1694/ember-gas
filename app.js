@@ -83,21 +83,18 @@ const auth = {
     },
 
     login: (email, password) => {
+        const emberAccounts = JSON.parse(localStorage.getItem('emberGasAccounts')) || [];
         const users = JSON.parse(localStorage.getItem('gasUsers')) || [];
         const vendors = JSON.parse(localStorage.getItem('gasVendors')) || [];
 
-        let user = users.find(u => u.email === email && u.password === password);
-        let role = 'user';
+        const allAccounts = [...emberAccounts, ...users, ...vendors];
+        const matched = allAccounts.find(a => a.email && a.email.toLowerCase() === email.toLowerCase() && a.password === password);
 
-        if (!user) {
-            user = vendors.find(v => v.email === email && v.password === password);
-            if (user) role = user.role;
-        }
-
-        if (user) {
-            user.role = role; // Ensure role is present
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            return { success: true, role };
+        if (matched) {
+            const role = (matched.role || 'customer').toLowerCase();
+            const activeUser = { ...matched, role: role === 'user' ? 'customer' : role };
+            localStorage.setItem('currentUser', JSON.stringify(activeUser));
+            return { success: true, role: activeUser.role };
         } else {
             return { success: false, message: 'Invalid Email or Password' };
         }
@@ -229,11 +226,11 @@ class AuthGuard {
     // Maps each page to the ONLY roles allowed to access it
     static getPageRoles() {
         return {
-            'dashboard.html':           ['customer'],
+            'dashboard.html':           ['customer', 'user'],
             'seller_dashboard.html':    ['vendor', 'seller'],
             'refiller_dashboard.html':  ['refiller', 'rider'],
             'admin.html':               ['admin'],
-            'track.html':               ['customer', 'vendor', 'seller', 'refiller', 'rider', 'admin']
+            'track.html':               ['customer', 'user', 'vendor', 'seller', 'refiller', 'rider', 'admin']
         };
     }
 
@@ -461,26 +458,16 @@ window.WalletManager = WalletManager;
 // --- END-TO-END UNIFIED ORDER STATE MANAGER ---
 class OrderStateManager {
     static getActiveOrder() {
-        const defaultOrder = {
-            id: 'EG-9482',
-            customerName: 'Tunde Afolabi',
-            customerPhone: '08031122334',
-            address: '14 Bode Thomas St, Surulere, Lagos',
-            cylinderSize: '12.5 kg',
-            serviceType: 'Cylinder Refill Only',
-            amount: 13750,
-            total: 13750,
-            status: 'EN_ROUTE',
-            vendorName: 'Grace LPG Depot Hub',
-            riderName: 'Musa K. (Rider #02)',
-            etaMins: 14,
-            createdAt: new Date().toISOString()
-        };
         const stored = localStorage.getItem('activeEmberGasOrder');
         if (stored) {
-            try { return JSON.parse(stored); } catch(e) {}
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed && parsed.status !== 'COMPLETED' && parsed.status !== 'CANCELLED') {
+                    return parsed;
+                }
+            } catch(e) {}
         }
-        return defaultOrder;
+        return null;
     }
 
     static saveActiveOrder(orderObj) {

@@ -239,7 +239,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       if (window.OrderStateManager) {
         const order = OrderStateManager.getActiveOrder();
-        if (order) {
+        const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        
+        if (order && (order.userEmail === curUser.email || order.customerName === curUser.name || !order.userEmail)) {
           const title = document.querySelector('.status-card h2');
           if (title) title.innerText = `Order #${order.id}`;
 
@@ -250,6 +252,11 @@
           if (box && (order.status === 'EN_ROUTE' || order.status === 'DELIVERED')) {
             box.style.display = 'block';
           }
+        } else {
+          const title = document.querySelector('.status-card h2');
+          if (title) title.innerText = 'No Active Order';
+          const payload = document.querySelector('.status-card div[style*="var(--primary-color)"]');
+          if (payload) payload.innerText = 'Place a gas refill order from your dashboard';
         }
       }
     });
