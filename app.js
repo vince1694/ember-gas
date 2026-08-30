@@ -1137,8 +1137,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const userDashLabel = {
             customer: 'Refill',
             vendor:   'Vendor',
-            refiller: 'Driver',
-            rider:    'Driver',
             admin:    'Admin'
         }[userRole] || 'Refill';
 
@@ -1156,7 +1154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </a>
             <a href="${userDashPage}" class="mobile-nav-item elevated-action ${page === userDashPage ? 'active' : ''}" title="${userDashLabel} Portal">
                 <div class="action-circle">
-                    <i class="fa-solid ${userRole === 'refiller' || userRole === 'rider' ? 'fa-motorcycle' : userRole === 'vendor' ? 'fa-store' : 'fa-fire-flame-curved'}"></i>
+                    <i class="fa-solid ${userRole === 'vendor' ? 'fa-store' : 'fa-fire-flame-curved'}"></i>
                 </div>
                 <span style="margin-top: 4px; color: var(--primary-color);">${userDashLabel}</span>
             </a>
@@ -1192,16 +1190,12 @@ document.addEventListener('DOMContentLoaded', () => {
             customer: 'dashboard.html',
             vendor:   'seller_dashboard.html',
             seller:   'seller_dashboard.html',
-            refiller: 'refiller_dashboard.html',
-            rider:    'refiller_dashboard.html',
             admin:    'admin.html'
         }[userRole] || 'dashboard.html';
 
         const userDashLabel = {
             customer: 'Refill Gas & Customer Dashboard',
             vendor:   'Vendor Station Operations Hub',
-            refiller: 'Rider Delivery Portal',
-            rider:    'Rider Delivery Portal',
             admin:    'Admin Management Center'
         }[userRole] || 'Refill Gas & Customer Dashboard';
 

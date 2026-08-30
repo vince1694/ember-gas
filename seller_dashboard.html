@@ -161,7 +161,6 @@
         <div class="portal-dropdown-menu">
           <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user" style="color: var(--primary-color);"></i> Customer Portal</a>
           <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store" style="color: #00B14F;"></i> Vendor Station Hub</a>
-          <a href="refiller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-motorcycle" style="color: #F59E0B;"></i> Refiller Rider Portal</a>
         </div>
       </div>
 
@@ -348,24 +347,28 @@
       if (allOrders.length > 0) {
         tbody.innerHTML = allOrders.map((o) => {
           const statusBadge = o.status === 'PLACED'
-            ? '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">PENDING</span>'
+            ? '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">PLACED</span>'
             : o.status === 'ACCEPTED'
               ? '<span style="background:rgba(16,185,129,0.15);color:#10B981;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">ACCEPTED</span>'
-              : `<span style="background:rgba(107,114,128,0.15);color:#9CA3AF;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">${o.status}</span>`;
+              : o.status === 'EN_ROUTE'
+                ? '<span style="background:rgba(59,130,246,0.15);color:#3B82F6;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">EN ROUTE</span>'
+                : `<span style="background:rgba(107,114,128,0.15);color:#9CA3AF;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">${o.status}</span>`;
 
           const actionBtns = (o.status === 'PLACED')
-            ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept</button>
+            ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept Order</button>
                <button class="btn-sm btn-reject" style="margin-left:4px;" onclick="rejectOrder('${o.id}')">✕ Reject</button>`
             : (o.status === 'ACCEPTED')
-              ? `<button class="btn-sm btn-approve" onclick="showDispatch('${o.id}')">📦 Dispatch</button>`
-              : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
+              ? `<button class="btn-sm btn-approve" style="background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🚚 Start Delivery</button>`
+              : (o.status === 'EN_ROUTE')
+                ? `<button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Delivered</button>`
+                : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
 
           return `<tr id="row-${o.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
             <td style="padding: 12px 10px; font-weight:700;">#${o.id}</td>
             <td style="padding: 12px 10px;">${o.customerName || o.userEmail || '—'}</td>
             <td style="padding: 12px 10px;">${o.size || o.cylinderSize} kg ${o.serviceType || 'Refill'}</td>
             <td style="padding: 12px 10px;">${o.address || '—'}</td>
-            <td style="padding: 12px 10px; color:#00B14F; font-weight:800;">₦${Number(o.total).toLocaleString()}</td>
+            <td style="padding: 12px 10px; color:#00B14F; font-weight:800;">₦${Number(o.total || o.amount).toLocaleString()}</td>
             <td style="padding: 12px 10px;">${statusBadge}</td>
             <td style="padding: 12px 10px;">${actionBtns}</td>
           </tr>`;
@@ -379,14 +382,16 @@
               <span style="color: ${statusColor}; font-weight: 800; font-size:0.8rem;">${o.status}</span>
             </div>
             <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || '—'} • ${o.size || o.cylinderSize}kg</div>
-            <div style="font-size: 0.78rem; color: var(--text-secondary); margin: 4px 0; font-weight:600;">₦${Number(o.total).toLocaleString()} • ${o.address || '—'}</div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount).toLocaleString()} • ${o.address || '—'}</div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:10px;">
               ${o.status === 'PLACED'
                 ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Order</button>
                    <button class="btn-sm btn-reject" style="flex: 1;" onclick="rejectOrder('${o.id}')">✕ Reject</button>`
                 : o.status === 'ACCEPTED'
-                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="showDispatch('${o.id}')">📦 Choose Delivery</button>`
-                  : `<span style="color:#9CA3AF;font-size:0.8rem;padding:6px 0;">${o.status}</span>`
+                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🚚 Start Delivery</button>`
+                  : o.status === 'EN_ROUTE'
+                    ? `<button class="btn-sm btn-approve" style="flex:1;background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Delivered</button>`
+                    : `<span style="color:#9CA3AF;font-size:0.8rem;padding:6px 0;">${o.status}</span>`
               }
             </div>
           </div>`;
@@ -409,65 +414,14 @@
       if (window.NotificationManager) NotificationManager.show(`Gas Price updated to ₦${rate} / kg`, 'success');
     }
 
-    let currentDispatchOrderId = null;
-
-    function showDispatch(orderId) {
-      currentDispatchOrderId = orderId;
-      // Set this order as the active one
-      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const order = allOrders.find(o => o.id === orderId);
-      if (order) OrderStateManager.saveActiveOrder(order);
-
-      const modal = document.getElementById('dispatchModal');
-      if (modal) modal.style.display = 'flex';
-      loadRegisteredRiders();
-    }
-
-    function closeDispatchModal() {
-      const modal = document.getElementById('dispatchModal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    async function loadRegisteredRiders() {
-      const select = document.getElementById('dispatchRiderSelect');
-      if (!select) return;
-
-      const localAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const localRiders = localAccounts.filter(a => a.role === 'refiller' || a.role === 'rider');
-
-      try {
-        const res = await safeFetchApi('/api/auth/users-by-role/refiller', { method: 'GET' });
-        if (res.ok) {
-          const apiRiders = await res.json();
-          apiRiders.forEach(r => {
-            if (!localRiders.some(x => x.email === r.email)) {
-              localRiders.push({ name: r.name, phone: r.phone, email: r.email });
-            }
-          });
-        }
-      } catch (e) {}
-
-      if (localRiders.length > 0) {
-        select.innerHTML = localRiders.map(r => `
-          <option value="${r.name} (${r.phone || 'Rider'})" data-email="${r.email}" style="color:#111827;background:#fff;">
-            ${r.name} (${r.phone || 'Available'}) • [Verified Rider ✅]
-          </option>
-        `).join('');
-      }
-    }
-
     function acceptOrder(orderId) {
-      // Find the order and set it as the active order
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
       const orderIdx = allOrders.findIndex(o => o.id === orderId);
       if (orderIdx === -1) return;
 
       allOrders[orderIdx].status = 'ACCEPTED';
       localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
-
-      // Mark as active order too
       OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
-      currentDispatchOrderId = orderId;
 
       if (window.NotificationManager) NotificationManager.show(`Order #${orderId} Accepted! Cylinder being filled...`, 'success');
 
@@ -483,7 +437,7 @@
           title: `Vendor Accepted Your Order #${order.id}`,
           bodyHtml: `
             <p>Hello <strong>${order.customerName}</strong>,</p>
-            <p>Station Vendor <strong>${vendorUser.name}</strong> has accepted your order for <strong>${order.cylinderSize}</strong>!</p>
+            <p>Station Vendor <strong>${vendorUser ? vendorUser.name : 'Station Depot'}</strong> has accepted your order for <strong>${order.cylinderSize}</strong>!</p>
             <p>Your gas cylinder is currently being refilled and prepared for delivery.</p>
           `
         })
@@ -492,13 +446,68 @@
       renderVendorOrders();
     }
 
-    function dispatchSelfDelivery() {
+    function startVendorDelivery(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const orderIdx = allOrders.findIndex(o => o.id === currentDispatchOrderId);
+      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      if (orderIdx === -1) return;
 
-      let order;
-      if (orderIdx !== -1) {
-        allOrders[orderIdx].status = 'EN_ROUTE';
+      allOrders[orderIdx].status = 'EN_ROUTE';
+      localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+      OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
+
+      if (window.NotificationManager) NotificationManager.show(`Order #${orderId} is En Route for delivery!`, 'success');
+
+      // Send Brevo email to Customer
+      const order = allOrders[orderIdx];
+      safeFetchApi('/api/auth/notify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toEmail: order.userEmail,
+          toName: order.customerName,
+          subject: `Order #${order.id} En Route for Delivery! — EmberGas`,
+          title: `Vendor is Delivering Your Refilled Cylinder`,
+          bodyHtml: `
+            <p>Hello <strong>${order.customerName}</strong>,</p>
+            <p>Station Vendor <strong>${vendorUser ? vendorUser.name : 'Station Depot'}</strong> is delivering your refilled cylinder to your address!</p>
+            <p>Delivery Address: <strong>${order.address}</strong></p>
+          `
+        })
+      }).catch(() => {});
+
+      renderVendorOrders();
+    }
+
+    function markVendorDelivered(orderId) {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      if (orderIdx === -1) return;
+
+      allOrders[orderIdx].status = 'DELIVERED';
+      localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+      OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
+
+      if (window.NotificationManager) NotificationManager.show(`Order #${orderId} marked as DELIVERED!`, 'success');
+
+      const order = allOrders[orderIdx];
+      safeFetchApi('/api/auth/notify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toEmail: order.userEmail,
+          toName: order.customerName,
+          subject: `Order #${order.id} Delivered! — EmberGas`,
+          title: `Order Delivered`,
+          bodyHtml: `
+            <p>Hello <strong>${order.customerName}</strong>,</p>
+            <p>Your gas refill (Order #${order.id}) has been delivered to your doorstep!</p>
+            <p>Please open your customer dashboard and click <strong>"Mark as Received & Completed"</strong> to complete the order.</p>
+          `
+        })
+      }).catch(() => {});
+
+      renderVendorOrders();
+    }
         allOrders[orderIdx].riderName = vendorUser.name + ' (Vendor Self-Delivery)';
         localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
         order = allOrders[orderIdx];
@@ -518,70 +527,6 @@
             toName: order.customerName,
             subject: `Order #${order.id} En Route (Vendor Self-Delivery) — EmberGas`,
             title: `Vendor is Delivering Your Order #${order.id}`,
-            bodyHtml: `
-              <p>Hello <strong>${order.customerName}</strong>,</p>
-              <p>Station Vendor <strong>${vendorUser.name}</strong> is personally delivering your refilled cylinder to you!</p>
-              <p>Delivery Address: <strong>${order.address}</strong></p>
-              <p>Please be available to receive your gas cylinder.</p>
-            `
-          })
-        }).catch(() => {});
-      }
-
-      closeDispatchModal();
-      if (window.NotificationManager) NotificationManager.show('Self-delivery dispatched! Customer notified.', 'success');
-      renderVendorOrders();
-    }
-
-    function dispatchToSelectedRider() {
-      const riderSelect = document.getElementById('dispatchRiderSelect');
-      const chosenRider = riderSelect ? riderSelect.value : 'Assigned Rider';
-      const riderEmail = riderSelect && riderSelect.selectedOptions[0] ? riderSelect.selectedOptions[0].getAttribute('data-email') : null;
-
-      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const orderIdx = allOrders.findIndex(o => o.id === currentDispatchOrderId);
-
-      let order;
-      if (orderIdx !== -1) {
-        allOrders[orderIdx].status = 'ASSIGNED_TO_RIDER';
-        allOrders[orderIdx].riderName = chosenRider;
-        allOrders[orderIdx].riderEmail = riderEmail;
-        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
-        order = allOrders[orderIdx];
-        OrderStateManager.saveActiveOrder(order);
-      } else {
-        order = OrderStateManager.getActiveOrder();
-        order.riderName = chosenRider;
-        order.riderEmail = riderEmail;
-        OrderStateManager.updateOrderStatus('ASSIGNED_TO_RIDER');
-        OrderStateManager.saveActiveOrder(order);
-      }
-
-      // Notify customer a rider has been assigned
-      if (order && order.userEmail) {
-        safeFetchApi('/api/auth/notify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            toEmail: order.userEmail,
-            toName: order.customerName,
-            subject: `Rider Assigned to Order #${order.id}! — EmberGas`,
-            title: `A Rider Has Been Assigned to Your Order`,
-            bodyHtml: `
-              <p>Hello <strong>${order.customerName}</strong>,</p>
-              <p>Vendor <strong>${vendorUser.name}</strong> has assigned Rider <strong>${chosenRider}</strong> to deliver your gas refill!</p>
-              <p>Your delivery is coming soon to: <strong>${order.address}</strong></p>
-              <p>Track your delivery live on the EmberGas portal.</p>
-            `
-          })
-        }).catch(() => {});
-      }
-
-      closeDispatchModal();
-      if (window.NotificationManager) NotificationManager.show(`Order assigned to ${chosenRider}! Awaiting rider acceptance.`, 'success');
-      renderVendorOrders();
-    }
-
     function rejectOrder(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
       const orderIdx = allOrders.findIndex(o => o.id === orderId);

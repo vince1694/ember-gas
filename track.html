@@ -2,78 +2,101 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real-Time Gas Delivery Tracking — EmberGas</title>
-  <meta name="description" content="Track your cooking gas refill delivery live on the map in real time across Nigeria." />
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Order Details & Tracking — EmberGas Cooking Gas Marketplace</title>
+  <meta name="description" content="View detailed cooking gas refill order summary, delivery status, and depot vendor details." />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <link rel="stylesheet" href="style.css">
 
   <style>
-    body { background-color: var(--background-dark); color: var(--text-primary); }
-    .track-header {
-      background: var(--surface-dark);
-      border-bottom: 1px solid var(--glass-border);
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    body {
+      background-color: var(--background-dark);
+      color: var(--text-primary);
     }
-    .track-grid {
-      max-width: 1200px;
-      margin: 25px auto;
-      padding: 0 15px;
+    .details-container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+    .order-details-card {
+      background: #FFFFFF;
+      border: 1.5px solid #10B981;
+      border-radius: 24px;
+      padding: 28px;
+      color: #111827;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+    }
+    .info-grid {
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 25px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin: 20px 0;
+      background: #F9FAFB;
+      border: 1px solid #E5E7EB;
+      padding: 18px;
+      border-radius: 16px;
     }
-    .map-container {
-      background: #F3F4F6;
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      height: 480px;
-      position: relative;
-      overflow: hidden;
+    .info-item {
+      display: flex;
+      flex-direction: column;
     }
-    .map-svg { width: 100%; height: 100%; }
-    .status-card {
-      background: var(--surface-dark);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 24px;
+    .info-label {
+      font-size: 0.76rem;
+      color: #6B7280;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #111827;
+    }
+    .timeline-card {
+      background: #FFFFFF;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 24px;
+      padding: 28px;
+      color: #111827;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
     .track-step {
       display: flex;
       align-items: flex-start;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 16px;
+      margin-bottom: 24px;
       position: relative;
     }
-    .track-step::before {
+    .track-step:not(:last-child)::after {
       content: '';
       position: absolute;
-      left: 17px;
-      top: 36px;
-      bottom: -20px;
-      width: 2px;
-      background: rgba(255,255,255,0.1);
+      left: 18px;
+      top: 38px;
+      bottom: -16px;
+      width: 3px;
+      background: #E5E7EB;
     }
-    .track-step:last-child::before { display: none; }
+    .track-step.done:not(:last-child)::after {
+      background: #10B981;
+    }
     .track-icon {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: var(--surface-light);
-      border: 2px solid var(--glass-border);
+      background: #F3F4F6;
+      border: 2px solid #E5E7EB;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
+      font-size: 1rem;
       flex-shrink: 0;
+      z-index: 2;
     }
     .track-step.done .track-icon {
       background: #10B981;
@@ -81,19 +104,14 @@
       color: white;
     }
     .track-step.active .track-icon {
-      background: var(--primary-color);
-      border-color: var(--primary-color);
+      background: #00B14F;
+      border-color: #00B14F;
       color: white;
-      box-shadow: 0 0 12px var(--primary-color);
-      animation: pulse 1.5s infinite;
+      box-shadow: 0 0 14px rgba(0, 177, 79, 0.4);
     }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7); }
-      70% { box-shadow: 0 0 0 12px rgba(255, 107, 0, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 107, 0, 0); }
-    }
-    @media (max-width: 850px) {
-      .track-grid { grid-template-columns: 1fr; }
+    @media (max-width: 640px) {
+      .info-grid { grid-template-columns: 1fr; }
+      .order-details-card, .timeline-card { padding: 20px; }
     }
   </style>
 </head>
@@ -101,12 +119,12 @@
   <header class="master-header">
     <div style="display: flex; align-items: center; gap: 15px;">
       <a href="index.html" class="brand-logo">
-        <i class="fa-solid fa-location-dot"></i> EmberGas Live Tracking
+        <i class="fa-solid fa-receipt" style="color:#10B981;"></i> EmberGas Order Details
       </a>
       <nav class="nav-desktop-links" style="display: flex; gap: 16px; margin-left: 15px;">
         <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
         <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Customer Dashboard</a>
-        <a href="track.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Track Order</a>
+        <a href="track.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Order Details</a>
         <a href="services.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Services</a>
       </nav>
     </div>
@@ -120,116 +138,93 @@
         <div class="portal-dropdown-menu">
           <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user" style="color: var(--primary-color);"></i> Customer Portal</a>
           <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store" style="color: #10B981;"></i> Vendor Station Hub</a>
-          <a href="refiller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-motorcycle" style="color: #F59E0B;"></i> Refiller Rider Portal</a>
         </div>
       </div>
 
-      <button onclick="openMobileDrawer()" style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: white; width: 40px; height: 40px; border-radius: 12px; font-size: 1.1rem; cursor: pointer;">
+      <button onclick="openMobileDrawer()" style="background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: #111827; width: 40px; height: 40px; border-radius: 12px; font-size: 1.1rem; cursor: pointer;">
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
   </header>
   <div class="header-spacer"></div>
 
-  <main class="track-grid">
-    <!-- Map Column -->
-    <div>
-      <div class="map-container">
-        <svg class="map-svg" viewBox="0 0 800 500">
-          <defs>
-            <linearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#059669" stop-opacity="0.8" />
-              <stop offset="100%" stop-color="#10B981" stop-opacity="0.8" />
-            </linearGradient>
-          </defs>
-
-          <!-- Background Map Grid simulation -->
-          <rect width="100%" height="100%" fill="#F3F4F6" />
-          <path d="M 0,100 L 800,100 M 0,200 L 800,200 M 0,300 L 800,300 M 0,400 L 800,400" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
-          <path d="M 150,0 L 150,500 M 300,0 L 300,500 M 450,0 L 450,500 M 600,0 L 600,500" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
-
-          <!-- Route Path -->
-          <path d="M 160,350 Q 320,180 620,160" stroke="url(#roadGrad)" stroke-width="6" fill="none" stroke-dasharray="8 6" />
-
-          <!-- Station Marker (Start) -->
-          <g transform="translate(160, 350)">
-            <circle r="20" fill="rgba(5, 150, 105, 0.25)" />
-            <circle r="12" fill="#059669" />
-            <text x="0" y="32" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Grace LPG Station</text>
-          </g>
-
-          <!-- Animated Rider Marker (Middle) -->
-          <g transform="translate(380, 220)">
-            <circle r="25" fill="rgba(16, 185, 129, 0.25)">
-              <animate attributeName="r" values="20;30;20" dur="2s" repeatCount="indefinite" />
-            </circle>
-            <circle r="14" fill="#10B981" />
-            <text x="0" y="-22" text-anchor="middle" fill="#10B981" font-size="12" font-weight="800">Musa K. (Rider)</text>
-          </g>
-
-          <!-- Destination Marker (End) -->
-          <g transform="translate(620, 160)">
-            <circle r="20" fill="rgba(255, 255, 255, 0.15)" />
-            <circle r="10" fill="#FFFFFF" />
-            <text x="0" y="30" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="700">Delivery Address</text>
-          </g>
-        </svg>
+  <main class="details-container">
+    <!-- Order Summary Card -->
+    <div class="order-details-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #E5E7EB; padding-bottom: 16px; margin-bottom: 18px;">
+        <div>
+          <span style="font-size: 0.76rem; color: #6B7280; font-weight: 800; text-transform: uppercase;">LPG Gas Order Summary</span>
+          <h2 style="font-size: 1.5rem; margin: 4px 0 0; color: #111827; font-weight: 900;" id="detailsOrderId">Order #EG-9482</h2>
+        </div>
+        <span id="detailsStatusBadge" style="background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 0.85rem;">
+          <i class="fa-solid fa-circle-dot fa-spin"></i> PLACED
+        </span>
       </div>
 
-      <div style="margin-top: 15px; background: var(--surface-dark); padding: 15px; border-radius: 14px; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
-        <div>
-          <span style="color: var(--text-secondary); font-size: 0.8rem;">ESTIMATED ARRIVAL TIME</span>
-          <div style="font-size: 1.4rem; font-weight: 800; color: #10B981;">14 Minutes (~2.4 km away)</div>
+      <!-- Specs Grid -->
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label"><i class="fa-solid fa-store" style="color:#10B981;"></i> Refiller Vendor Station</span>
+          <span class="info-value" id="detailsVendor">Grace LPG Depot Hub</span>
         </div>
-        <a href="tel:08031122334" style="background: var(--primary-color); color: #fff; padding: 10px 18px; border-radius: 10px; text-decoration: none; font-weight: 700;">
-          <i class="fa-solid fa-phone"></i> Call Driver
-        </a>
+        <div class="info-item">
+          <span class="info-label"><i class="fa-solid fa-gas-pump" style="color:#10B981;"></i> Cylinder Payload & Service</span>
+          <span class="info-value" id="detailsPayload">12.5 kg • Cylinder Refill Only</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label"><i class="fa-solid fa-location-dot" style="color:#10B981;"></i> Delivery Address</span>
+          <span class="info-value" id="detailsAddress">14 Bode Thomas St, Surulere, Lagos</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label"><i class="fa-solid fa-credit-card" style="color:#10B981;"></i> Total Paid</span>
+          <span class="info-value" style="color:#00B14F; font-size: 1.2rem;" id="detailsTotal">₦13,750</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div id="receiptConfirmContainer" style="display: none; margin-top: 10px;">
+        <button onclick="confirmTrackCustomerReceipt()" style="width: 100%; background: #10B981; color: #fff; border: none; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+          <i class="fa-solid fa-circle-check"></i> Mark Order as Received & Completed
+        </button>
       </div>
     </div>
 
-    <!-- Status Column -->
-    <div class="status-card">
-      <div style="margin-bottom: 20px;">
-        <span style="font-size: 0.8rem; color: var(--text-secondary);">TRACKING ORDER</span>
-        <h2 style="font-size: 1.4rem;">Order #EG-9482</h2>
-        <div style="font-size: 0.9rem; color: var(--primary-color); font-weight: 700;">12.5kg Refill Service</div>
-      </div>
+    <!-- Live Processing & Delivery Timeline -->
+    <div class="timeline-card">
+      <h3 style="font-size: 1.15rem; margin-bottom: 20px; font-weight: 800; color: #111827;">
+        <i class="fa-solid fa-clock-rotate-left" style="color:#10B981;"></i> Order Status & Progress Details
+      </h3>
 
-      <div class="track-step done">
+      <div class="track-step done" id="step1">
         <div class="track-icon"><i class="fa-solid fa-check"></i></div>
         <div>
-          <div style="font-weight: 700;">Order Confirmed & Paid</div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">9:41 AM • Payment Received via Paystack</div>
+          <div style="font-weight: 800; font-size: 0.95rem;">Order Placed & Verified</div>
+          <div style="font-size: 0.8rem; color: #6B7280; margin-top: 2px;">Gas refill request dispatched to station vendor</div>
         </div>
       </div>
 
-      <div class="track-step done">
+      <div class="track-step" id="step2">
         <div class="track-icon"><i class="fa-solid fa-gas-pump"></i></div>
         <div>
-          <div style="font-weight: 700;">Gas Filled & Safety Sealed</div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">9:48 AM • Grace LPG Depot Hub</div>
+          <div style="font-weight: 800; font-size: 0.95rem;">Vendor Accepted & Refilling Cylinder</div>
+          <div style="font-size: 0.8rem; color: #6B7280; margin-top: 2px;">Depot team is refilling cylinder on digital precision scales</div>
         </div>
       </div>
 
-      <div class="track-step active">
-        <div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div>
+      <div class="track-step" id="step3">
+        <div class="track-icon"><i class="fa-solid fa-truck-fast"></i></div>
         <div>
-          <div style="font-weight: 700; color: var(--primary-color);">Rider En Route</div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">Musa K. is riding to 14 Bode Thomas St</div>
+          <div style="font-weight: 800; font-size: 0.95rem;">Refilled & En Route for Delivery</div>
+          <div style="font-size: 0.8rem; color: #6B7280; margin-top: 2px;">Vendor is delivering refilled cylinder directly to your address</div>
         </div>
       </div>
 
-      <div class="track-step">
-        <div class="track-icon"><i class="fa-solid fa-house"></i></div>
+      <div class="track-step" id="step4">
+        <div class="track-icon"><i class="fa-solid fa-house-circle-check"></i></div>
         <div>
-          <div style="font-weight: 700; color: var(--text-secondary);">Delivered to Doorstep</div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">Pending Arrival</div>
+          <div style="font-weight: 800; font-size: 0.95rem;">Delivered & Order Completed</div>
+          <div style="font-size: 0.8rem; color: #6B7280; margin-top: 2px;">Cylinder received at customer doorstep</div>
         </div>
-      </div>
-      <div id="trackConfirmReceiptBox" style="margin-top: 20px; display: none;">
-        <button onclick="confirmTrackCustomerReceipt()" style="width: 100%; background: #10B981; color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 0.95rem;">
-          <i class="fa-solid fa-circle-check"></i> Mark Order as Received & Completed
-        </button>
       </div>
     </div>
   </main>
@@ -240,23 +235,46 @@
       if (window.OrderStateManager) {
         const order = OrderStateManager.getActiveOrder();
         const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
-        
+
         if (order && (order.userEmail === curUser.email || order.customerName === curUser.name || !order.userEmail)) {
-          const title = document.querySelector('.status-card h2');
-          if (title) title.innerText = `Order #${order.id}`;
+          if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = `Order #${order.id}`;
+          if (document.getElementById('detailsVendor')) document.getElementById('detailsVendor').innerText = order.vendorName || 'Grace LPG Depot';
+          if (document.getElementById('detailsPayload')) document.getElementById('detailsPayload').innerText = `${order.cylinderSize} • ${order.serviceType || 'Refill'}`;
+          if (document.getElementById('detailsAddress')) document.getElementById('detailsAddress').innerText = order.address || '—';
+          if (document.getElementById('detailsTotal')) document.getElementById('detailsTotal').innerText = `₦${(order.amount || order.total || 13750).toLocaleString()}`;
 
-          const payload = document.querySelector('.status-card div[style*="var(--primary-color)"]');
-          if (payload) payload.innerText = `${order.cylinderSize} ${order.serviceType || 'Refill'}`;
+          const statusBadge = document.getElementById('detailsStatusBadge');
+          if (statusBadge) statusBadge.innerText = order.status;
 
-          const box = document.getElementById('trackConfirmReceiptBox');
+          // Update Stepper steps based on status
+          const step1 = document.getElementById('step1');
+          const step2 = document.getElementById('step2');
+          const step3 = document.getElementById('step3');
+          const step4 = document.getElementById('step4');
+
+          if (order.status === 'PLACED') {
+            if (step1) step1.className = 'track-step active';
+          } else if (order.status === 'ACCEPTED') {
+            if (step1) step1.className = 'track-step done';
+            if (step2) step2.className = 'track-step active';
+          } else if (order.status === 'EN_ROUTE') {
+            if (step1) step1.className = 'track-step done';
+            if (step2) step2.className = 'track-step done';
+            if (step3) step3.className = 'track-step active';
+          } else if (order.status === 'DELIVERED' || order.status === 'COMPLETED') {
+            if (step1) step1.className = 'track-step done';
+            if (step2) step2.className = 'track-step done';
+            if (step3) step3.className = 'track-step done';
+            if (step4) step4.className = 'track-step active';
+          }
+
+          const box = document.getElementById('receiptConfirmContainer');
           if (box && (order.status === 'EN_ROUTE' || order.status === 'DELIVERED')) {
             box.style.display = 'block';
           }
         } else {
-          const title = document.querySelector('.status-card h2');
-          if (title) title.innerText = 'No Active Order';
-          const payload = document.querySelector('.status-card div[style*="var(--primary-color)"]');
-          if (payload) payload.innerText = 'Place a gas refill order from your dashboard';
+          if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = 'No Active Order';
+          if (document.getElementById('detailsPayload')) document.getElementById('detailsPayload').innerText = 'Place a gas refill request from your customer dashboard';
         }
       }
     });
@@ -265,7 +283,7 @@
       if (!window.OrderStateManager) return;
       const activeOrder = OrderStateManager.updateOrderStatus('COMPLETED');
       if (window.NotificationManager) {
-        NotificationManager.show('🎉 Order marked as Received & Completed! Vendor and Rider notified.', 'success');
+        NotificationManager.show('🎉 Order marked as Received & Completed! Vendor notified.', 'success');
       }
 
       // Dispatch Brevo email to Customer
@@ -288,7 +306,7 @@
         });
       } catch (e) {}
 
-      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1200);
+      setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
     }
   </script>
 </body>

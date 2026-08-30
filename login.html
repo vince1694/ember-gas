@@ -241,15 +241,12 @@
       <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.9rem;">Select your portal and sign in to your account</p>
 
       <!-- Role Selection Tabs -->
-      <div class="role-tabs">
+      <div class="role-tabs" style="grid-template-columns: 1fr 1fr;">
         <button class="role-tab active" data-role="customer" onclick="setLoginRole('customer', 'Customer Dashboard')">
           <i class="fa-solid fa-user"></i> Customer
         </button>
-        <button class="role-tab" data-role="vendor" onclick="setLoginRole('vendor', 'Vendor Portal')">
-          <i class="fa-solid fa-store"></i> Vendor
-        </button>
-        <button class="role-tab" data-role="refiller" onclick="setLoginRole('refiller', 'Refiller Rider')">
-          <i class="fa-solid fa-motorcycle"></i> Driver
+        <button class="role-tab" data-role="vendor" onclick="setLoginRole('vendor', 'Vendor Station Hub')">
+          <i class="fa-solid fa-store"></i> Gas Station Vendor
         </button>
       </div>
 
@@ -285,19 +282,15 @@
       <h2 style="font-size: 1.6rem; margin-bottom: 6px;">Create Account</h2>
       <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.9rem;">Join Nigeria's #1 Cooking Gas & LPG Refill Marketplace</p>
 
-      <!-- Account Type Grid (Customer, Vendor, Dispatch Rider) -->
-      <div class="account-type-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
-        <div class="type-card active" id="typeCustomer" onclick="selectSignupType('customer')" style="text-align: center; padding: 12px 6px;">
-          <i class="fa-solid fa-house-fire" style="font-size: 1.3rem; color: var(--primary-color);"></i>
-          <div style="font-weight: 700; font-size: 0.78rem; color: #fff; margin-top: 4px;">Customer</div>
+      <!-- Account Type Grid (Customer, Vendor) -->
+      <div class="account-type-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+        <div class="type-card active" id="typeCustomer" onclick="selectSignupType('customer')" style="text-align: center; padding: 14px 6px;">
+          <i class="fa-solid fa-house-fire" style="font-size: 1.4rem; color: var(--primary-color);"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #fff; margin-top: 4px;">Customer</div>
         </div>
-        <div class="type-card" id="typeVendor" onclick="selectSignupType('vendor')" style="text-align: center; padding: 12px 6px;">
-          <i class="fa-solid fa-gas-pump" style="font-size: 1.3rem; color: var(--primary-color);"></i>
-          <div style="font-weight: 700; font-size: 0.78rem; color: #fff; margin-top: 4px;">Gas Station</div>
-        </div>
-        <div class="type-card" id="typeRefiller" onclick="selectSignupType('refiller')" style="text-align: center; padding: 12px 6px;">
-          <i class="fa-solid fa-motorcycle" style="font-size: 1.3rem; color: var(--primary-color);"></i>
-          <div style="font-weight: 700; font-size: 0.78rem; color: #fff; margin-top: 4px;">Dispatch Rider</div>
+        <div class="type-card" id="typeVendor" onclick="selectSignupType('vendor')" style="text-align: center; padding: 14px 6px;">
+          <i class="fa-solid fa-gas-pump" style="font-size: 1.4rem; color: var(--primary-color);"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #fff; margin-top: 4px;">Gas Station Vendor</div>
         </div>
       </div>
 
