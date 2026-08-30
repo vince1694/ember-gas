@@ -809,22 +809,52 @@
           </div>
         </div>
         <div style="margin-top: 16px; display: flex; gap: 10px;">
+          <button onclick="openProfileModal()" style="flex: 1; background: #00B14F; color: #fff; border: none; padding: 9px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor: pointer;">
+            <i class="fa-solid fa-user-gear"></i> Account Settings
+          </button>
+        </div>
+      </div>
 
-      <!-- Quick Links Card -->
-      <div class="glass-card" style="margin-bottom: 18px; padding: 18px;">
-        <h4 style="font-size: 0.9rem; font-weight: 800; color: #111827; margin: 0 0 12px;"><i class="fa-solid fa-bolt" style="color: #00B14F;"></i> Quick Links</h4>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <a href="track.html" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #F9FAFB; border-radius: 10px; text-decoration: none; color: #111827; font-weight: 700; font-size: 0.86rem; transition: background 0.2s;" onmouseover="this.style.background='#F0FDF4'" onmouseout="this.style.background='#F9FAFB'">
-            <i class="fa-solid fa-map-location-dot" style="color: #00B14F;"></i> Track My Order
+      <!-- ── UPGRADED QUICK LINKS SECTION ── -->
+      <div class="glass-card" style="margin-bottom: 18px; padding: 20px;">
+        <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 14px; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-bolt" style="color: #00B14F;"></i> Quick Services & Actions
+        </h3>
+        <div class="quick-links-grid">
+          <a href="track.html" class="quick-tile tile-green">
+            <div class="tile-icon-box"><i class="fa-solid fa-location-crosshairs"></i></div>
+            <div>
+              <div class="tile-title">Track Live Order</div>
+              <div class="tile-sub">Real-time status timeline</div>
+            </div>
+            <i class="fa-solid fa-chevron-right tile-arrow"></i>
           </a>
-          <a href="services.html" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #F9FAFB; border-radius: 10px; text-decoration: none; color: #111827; font-weight: 700; font-size: 0.86rem; transition: background 0.2s;" onmouseover="this.style.background='#F0FDF4'" onmouseout="this.style.background='#F9FAFB'">
-            <i class="fa-solid fa-wrench" style="color: #3B82F6;"></i> Browse Services
+
+          <a href="services.html" class="quick-tile tile-blue">
+            <div class="tile-icon-box"><i class="fa-solid fa-wrench"></i></div>
+            <div>
+              <div class="tile-title">LPG Gas Services</div>
+              <div class="tile-sub">Swap, refill & new tank</div>
+            </div>
+            <i class="fa-solid fa-chevron-right tile-arrow"></i>
           </a>
-          <a href="accessories.html" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #F9FAFB; border-radius: 10px; text-decoration: none; color: #111827; font-weight: 700; font-size: 0.86rem; transition: background 0.2s;" onmouseover="this.style.background='#F0FDF4'" onmouseout="this.style.background='#F9FAFB'">
-            <i class="fa-solid fa-toolbox" style="color: #F59E0B;"></i> Gas Accessories
+
+          <a href="accessories.html" class="quick-tile tile-amber">
+            <div class="tile-icon-box"><i class="fa-solid fa-toolbox"></i></div>
+            <div>
+              <div class="tile-title">Gas Accessories</div>
+              <div class="tile-sub">Regulators, hoses & burners</div>
+            </div>
+            <i class="fa-solid fa-chevron-right tile-arrow"></i>
           </a>
-          <a href="safety.html" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #F9FAFB; border-radius: 10px; text-decoration: none; color: #111827; font-weight: 700; font-size: 0.86rem; transition: background 0.2s;" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='#F9FAFB'">
-            <i class="fa-solid fa-triangle-exclamation" style="color: #EF4444;"></i> Safety Checklist
+
+          <a href="safety.html" class="quick-tile tile-red">
+            <div class="tile-icon-box"><i class="fa-solid fa-shield-heart"></i></div>
+            <div>
+              <div class="tile-title">Safety Guide</div>
+              <div class="tile-sub">Leak test & emergency tips</div>
+            </div>
+            <i class="fa-solid fa-chevron-right tile-arrow"></i>
           </a>
         </div>
       </div>
@@ -874,6 +904,10 @@
       loadLiveOrder();
       renderRecentOrders();
     }
+
+    window.openProfileModal = openProfileModal;
+    window.closeProfileModal = closeProfileModal;
+    window.closeOrderModal = closeOrderModal;
 
     // ── Redirect if not logged in ─────────────────────────────────────────────
     const curUser = JSON.parse(localStorage.getItem('currentUser'));

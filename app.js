@@ -183,8 +183,15 @@ const auth = {
 
         if (authLink) {
             if (user) {
-                // Keep header clean — user profile and logout are in the Hamburger Drawer & Dashboard
-                authLink.innerHTML = '';
+                const initials = user.name ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'EG';
+                authLink.innerHTML = `
+                    <div onclick="if(typeof openProfileModal==='function'){ openProfileModal(); } else { window.location.href='dashboard.html'; }" 
+                         title="My Account Profile"
+                         style="display: flex; align-items: center; gap: 6px; background: rgba(0, 177, 79, 0.12); border: 1.5px solid rgba(0, 177, 79, 0.35); padding: 5px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;">
+                        <div style="width: 26px; height: 26px; border-radius: 50%; background: #00B14F; color: #fff; font-weight: 900; font-size: 0.78rem; display: flex; align-items: center; justify-content: center;">${initials}</div>
+                        <span style="font-size: 0.82rem; font-weight: 800; color: #00B14F;">${user.name ? user.name.split(' ')[0] : 'Account'}</span>
+                    </div>
+                `;
             } else {
                 authLink.innerHTML = `
                     <div style="display: flex; gap: 8px; align-items: center;">
