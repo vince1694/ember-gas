@@ -21,6 +21,27 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let reqUrl = req.url.split('?')[0];
+
+  // Proxy /api/* requests to Express backend running on Port 5000
+  if (reqUrl.startsWith('/api/')) {
+    const proxyReq = http.request({
+      hostname: '127.0.0.1',
+      port: 5000,
+      path: req.url,
+      method: req.method,
+      headers: req.headers
+    }, (proxyRes) => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+      proxyRes.pipe(res, { end: true });
+    });
+    proxyReq.on('error', () => {
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'Backend Express API on port 5000 unreachable' }));
+    });
+    req.pipe(proxyReq, { end: true });
+    return;
+  }
+
   if (reqUrl === '/') reqUrl = '/index.html';
   
   let filePath = path.join(ROOT, reqUrl);

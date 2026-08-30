@@ -702,7 +702,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let lastError;
         for (const host of hosts) {
             try {
-                const res = await fetch((host ? host : '') + path, options);
+                const targetUrl = host ? (host + path) : path;
+                const res = await fetch(targetUrl, options);
+                const contentType = res.headers.get('content-type') || '';
+                if (res.status === 404 && contentType.includes('text/html') && host === '') {
+                    continue;
+                }
                 if (res.status < 500) return res;
             } catch (err) {
                 lastError = err;

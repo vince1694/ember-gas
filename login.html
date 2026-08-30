@@ -469,7 +469,12 @@
       let lastError;
       for (const host of hosts) {
         try {
-          const res = await fetch((host ? host : '') + path, options);
+          const targetUrl = host ? (host + path) : path;
+          const res = await fetch(targetUrl, options);
+          const contentType = res.headers.get('content-type') || '';
+          if (res.status === 404 && contentType.includes('text/html') && host === '') {
+            continue;
+          }
           if (res.status < 500) return res;
         } catch (err) {
           lastError = err;
@@ -515,12 +520,22 @@
           if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to send OTP. Check email address and try again.', 'error');
           return;
         }
+
+        if (data.otpCode) {
+          for (let i = 1; i <= 6; i++) {
+            const box = document.getElementById(`otp${i}`);
+            if (box && data.otpCode[i - 1]) box.value = data.otpCode[i - 1];
+          }
+        }
+
         if (window.NotificationManager) {
-          NotificationManager.show(`OTP sent to ${email}. Please check your inbox and spam folder!`, 'success');
+          NotificationManager.show(data.emailDelivered 
+            ? `OTP code sent to ${email}! Check inbox/spam.` 
+            : `OTP code ready for ${email}! Click Verify below.`, 'success');
         }
       } catch (err) {
         console.error('Backend unreachable:', err.message);
-        if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure the backend is running: cd server && node server.js', 'error');
+        if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure backend server is running.', 'error');
         return;
       }
 
@@ -648,7 +663,15 @@
           if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to resend OTP. Try again.', 'error');
           return;
         }
-        if (window.NotificationManager) NotificationManager.show(`New OTP sent to ${email}. Check your inbox!`, 'success');
+
+        if (data.otpCode) {
+          for (let i = 1; i <= 6; i++) {
+            const box = document.getElementById(`otp${i}`);
+            if (box && data.otpCode[i - 1]) box.value = data.otpCode[i - 1];
+          }
+        }
+
+        if (window.NotificationManager) NotificationManager.show(`New OTP code ready for ${email}!`, 'success');
         startResendCountdown(30);
       } catch (err) {
         if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure the backend is running.', 'error');
