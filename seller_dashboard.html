@@ -638,25 +638,7 @@
 
       renderVendorOrders();
     }
-        allOrders[orderIdx].riderName = vendorUser.name + ' (Vendor Self-Delivery)';
-        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
-        order = allOrders[orderIdx];
-        OrderStateManager.saveActiveOrder(order);
-      } else {
-        order = OrderStateManager.getActiveOrder();
-        order.riderName = vendorUser.name + ' (Vendor Self-Delivery)';
-        OrderStateManager.updateOrderStatus('EN_ROUTE');
-      }
 
-      if (order && order.userEmail) {
-        safeFetchApi('/api/auth/notify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            toEmail: order.userEmail,
-            toName: order.customerName,
-            subject: `Order #${order.id} En Route (Vendor Self-Delivery) — EmberGas`,
-            title: `Vendor is Delivering Your Order #${order.id}`,
     function rejectOrder(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
       const orderIdx = allOrders.findIndex(o => o.id === orderId);

@@ -116,7 +116,13 @@
       justify-content: center;
       padding: 24px;
       text-align: center;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      transition: opacity 0.45s ease, visibility 0.45s ease;
+      animation: splashFadeIn 0.35s ease both;
+    }
+
+    @keyframes splashFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     .splash-overlay.hidden {
@@ -163,21 +169,24 @@
     }
 
     .splash-actions {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 1;
+      transform: translateY(0);
+      animation: splashBtnIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
       display: flex;
       flex-direction: column;
       gap: 14px;
       width: 100%;
       max-width: 340px;
-      pointer-events: none;
+    }
+
+    @keyframes splashBtnIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
     .splash-actions.show {
       opacity: 1;
       transform: translateY(0);
-      pointer-events: all;
     }
 
     .btn-splash-primary {
@@ -229,10 +238,31 @@
   </style>
 </head>
 <body>
+  <!-- ── SPLASH SCREEN OVERLAY ─────────────────────────────────────────── -->
+  <div class="splash-overlay" id="splashScreen">
+    <div>
+      <div class="splash-logo-box">
+        <i class="fa-solid fa-fire-flame-curved"></i>
+      </div>
+      <h1 class="splash-title">Welcome to <span style="color: #00B14F;">EmberGas</span></h1>
+      <p class="splash-subtitle">Nigeria's #1 Cooking Gas &amp; Doorstep LPG Refill Marketplace</p>
+
+      <!-- Action Buttons — shown instantly -->
+      <div class="splash-actions show" id="splashActions">
+        <a href="signup.html" class="btn-splash-primary">
+          <i class="fa-solid fa-user-plus"></i> Join Us Today
+        </a>
+        <a href="login.html" class="btn-splash-secondary">
+          <i class="fa-solid fa-right-to-bracket"></i> Log In (Already Registered)
+        </a>
+        <button onclick="dismissSplash()" style="background: transparent; border: none; color: #6B7280; font-size: 0.85rem; font-weight: 600; margin-top: 10px; cursor: pointer; text-decoration: underline;">
+          Explore Homepage as Guest
+        </button>
+      </div>
+    </div>
+  </div>
 
 
-
-  <!-- Master Header Nav -->
   <header class="master-header">
     <div style="display: flex; align-items: center; gap: 20px;">
       <a href="index.html" class="brand-logo">
@@ -430,10 +460,13 @@
       </div>
     </section>
   </main>
-
   <script src="app.js"></script>
   <script>
-
+    // Splash Screen — instant reveal, smooth dismiss
+    function dismissSplash() {
+      const splash = document.getElementById('splashScreen');
+      if (splash) splash.classList.add('hidden');
+    }
 
     function calcHomeTotal() {
       const size = parseFloat(document.getElementById('homeSize').value);
