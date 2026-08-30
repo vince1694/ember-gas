@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Safety tips for using cooking gas safely at home.">
+    <title>Safety Tips | EmberGas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .safety-page {
+            padding-bottom: 100px;
+        }
+    </style>
+</head>
+
+<body class="safety-body">
+    <header class="master-header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index.html" class="brand-logo">
+                <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+            </a>
+            <nav class="nav-desktop-links" style="display: flex; gap: 16px;">
+                <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
+                <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Dashboard</a>
+                <a href="track.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Track Order</a>
+                <a href="services.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Services</a>
+                <a href="safety.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Safety</a>
+            </nav>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <a href="login.html" class="btn-action nav-desktop-links" style="width: auto; padding: 9px 18px; font-size: 0.88rem; min-height: auto; text-decoration: none;">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </a>
+            <button onclick="openMobileDrawer()" class="mobile-drawer-trigger">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <main class="safety-page">
+        <section id="safety" class="safety-section" style="background: transparent;">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Safety First</h2>
+                    <p>Your safety is our top priority. Follow these simple tips to keep your
+                        household safe.</p>
+                </div>
+                <div class="safety-grid">
+                    <div class="safety-card">
+                        <div class="safety-icon"><i class="fa-solid fa-wind"></i></div>
+                        <h3>Ventilation</h3>
+                        <p>Keep your kitchen well-ventilated while cooking to prevent gas accumulation.</p>
+                    </div>
+                    <div class="safety-card">
+                        <div class="safety-icon"><i class="fa-solid fa-soap"></i></div>
+                        <h3>Leak Check</h3>
+                        <p>Regularly apply soapy water to the hose and regulator to check for bubbles. If you see
+                            bubbles, there's a leak.</p>
+                    </div>
+                    <div class="safety-card">
+                        <div class="safety-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <h3>Certified Parts</h3>
+                        <p>Only use high-quality, certified regulators and high-pressure hoses. Replace them every 2
+                            years or as recommended.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-about">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+                </div>
+                <p>Fast, safe, and reliable cooking gas delivery service. We bring the heat to your kitchen, so you can
+                    focus on what matters most.</p>
+                <div class="social-links">
+                    <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://wa.me/2349162789976" target="_blank" class="whatsapp-link"><i
+                            class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="safety.html">Safety Tips</a></li>
+                    <li><a href="dashboard.html">Order Now</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 EmberGas Company. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/2349162789976" class="floating-whatsapp" target="_blank">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>Chat with us</span>
+    </a>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

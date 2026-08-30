@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Our LPG & Energy Services — EmberGas Marketplace</title>
+  <meta name="description" content="Explore EmberGas premium LPG services: doorstep refills, brand new SON-certified cylinders, 30-min express delivery, smart leak sensors, and commercial bulk supply." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body.services-body {
+      background-color: #F9FAFB;
+      color: #111827;
+      font-family: var(--font-main);
+    }
+    
+    .services-hero {
+      padding: 60px 20px 40px;
+      text-align: center;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E5E7EB;
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 30px;
+      background: #E6F7ED;
+      border: 1px solid rgba(0, 177, 79, 0.25);
+      color: #00B14F;
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      max-width: 1280px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .service-card {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 24px;
+      padding: 32px 26px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    }
+
+    .service-card:hover {
+      transform: translateY(-6px);
+      border-color: #00B14F;
+      box-shadow: 0 15px 35px rgba(0, 177, 79, 0.12);
+    }
+
+    .service-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: #E6F7ED;
+      border: 1px solid rgba(0, 177, 79, 0.3);
+      color: #00B14F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 22px;
+    }
+
+    .service-tag {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #E6F7ED;
+      color: #00B14F;
+      border: 1px solid rgba(0, 177, 79, 0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .booking-calculator-card {
+      max-width: 1280px;
+      margin: 40px auto 60px;
+      padding: 36px 30px;
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 28px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .feature-strip {
+      max-width: 1280px;
+      margin: 24px auto 30px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-pill-card {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      padding: 18px 20px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+
+    .feature-pill-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: #E6F7ED;
+      color: #00B14F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .services-hero { padding: 35px 16px 25px; }
+      .services-grid { grid-template-columns: 1fr; gap: 16px; padding: 0 16px; }
+      .service-card { padding: 24px 20px; border-radius: 20px; }
+      .booking-calculator-card { padding: 24px 18px; margin: 30px 16px; border-radius: 20px; }
+      .feature-strip { padding: 0 16px; grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .feature-strip { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="services-body">
+
+  <!-- Master Header Nav -->
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <a href="index.html" class="brand-logo">
+        <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+      </a>
+      <nav class="nav-desktop-links" style="display: flex; gap: 16px;">
+        <a href="index.html" style="color: #6B7280; text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
+        <a href="dashboard.html" style="color: #6B7280; text-decoration: none; font-size: 0.9rem; font-weight: 600;">Dashboard</a>
+        <a href="track.html" style="color: #6B7280; text-decoration: none; font-size: 0.9rem; font-weight: 600;">Track Order</a>
+        <a href="services.html" style="color: #00B14F; font-weight: 800; text-decoration: none; font-size: 0.9rem;">Services</a>
+        <a href="accessories.html" style="color: #6B7280; text-decoration: none; font-size: 0.9rem; font-weight: 600;">Accessories</a>
+        <a href="safety.html" style="color: #6B7280; text-decoration: none; font-size: 0.9rem; font-weight: 600;">Safety</a>
+      </nav>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <!-- Portal Dropdown Switcher -->
+      <div class="portal-dropdown-container nav-desktop-links">
+        <button class="portal-dropdown-btn">
+          <i class="fa-solid fa-shield-cat"></i> Portals <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+        </button>
+        <div class="portal-dropdown-menu">
+          <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user" style="color: #00B14F;"></i> Customer Portal</a>
+          <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store" style="color: #10B981;"></i> Vendor Station Hub</a>
+          <a href="refiller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-motorcycle" style="color: #F59E0B;"></i> Refiller Rider Portal</a>
+        </div>
+      </div>
+
+      <a href="dashboard.html" class="btn-action nav-desktop-links" style="width: auto; padding: 9px 18px; font-size: 0.88rem; min-height: auto; text-decoration: none;">
+        <i class="fa-solid fa-bolt"></i> Order Gas
+      </a>
+
+      <!-- Mobile Hamburger Drawer Trigger Button -->
+      <button onclick="openMobileDrawer()" class="mobile-drawer-trigger" title="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+  <div class="header-spacer"></div>
+
+
+
+  <!-- Feature Advantage Strip -->
+  <div class="feature-strip">
+    <div class="feature-pill-card">
+      <div class="feature-pill-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">100% Scale Verified</div>
+        <div style="font-size: 0.78rem; color: #6B7280;">Digital weight check before & after</div>
+      </div>
+    </div>
+
+    <div class="feature-pill-card">
+      <div class="feature-pill-icon" style="background: #EFF6FF; color: #3B82F6;"><i class="fa-solid fa-truck-fast"></i></div>
+      <div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">30-Mins Express Delivery</div>
+        <div style="font-size: 0.78rem; color: #6B7280;">Priority dispatch for emergencies</div>
+      </div>
+    </div>
+
+    <div class="feature-pill-card">
+      <div class="feature-pill-icon" style="background: #FFFBEB; color: #F59E0B;"><i class="fa-solid fa-shield-virus"></i></div>
+      <div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">Free 5-Point Safety Check</div>
+        <div style="font-size: 0.78rem; color: #6B7280;">Valve leak & pressure test included</div>
+      </div>
+    </div>
+
+    <div class="feature-pill-card">
+      <div class="feature-pill-icon" style="background: #F3E8FF; color: #9333EA;"><i class="fa-solid fa-wallet"></i></div>
+      <div>
+        <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">Pay-on-Delivery & Wallet</div>
+        <div style="font-size: 0.78rem; color: #6B7280;">100% money-back guarantee</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Services Grid -->
+  <main>
+    <div class="services-grid">
+      
+      <!-- Service 1 -->
+      <div class="service-card">
+        <span class="service-tag">Most Popular</span>
+        <div>
+          <div class="service-icon-box"><i class="fa-solid fa-rotate"></i></div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; color: #111827;">Doorstep Gas Refill & Swap</h3>
+          <p style="color: #6B7280; font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px;">
+            Instant home delivery for 3kg, 6kg, 12.5kg, 25kg, and 50kg cylinders. Every refill is weighed on digital scales before delivery.
+          </p>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.25rem; color: #00B14F; margin-bottom: 14px;">₦1,100 / KG</div>
+          <button onclick="bookService('refill', '12.5')" class="btn-action" style="background: #00B14F; width: 100%;">
+            <i class="fa-solid fa-arrow-right"></i> Book Refill Now
+          </button>
+        </div>
+      </div>
+
+      <!-- Service 2 -->
+      <div class="service-card">
+        <span class="service-tag" style="background: #EFF6FF; color: #3B82F6; border-color: rgba(59,130,246,0.3);">Factory New</span>
+        <div>
+          <div class="service-icon-box" style="color: #3B82F6; background: #EFF6FF; border-color: rgba(59, 130, 246, 0.3);">
+            <i class="fa-solid fa-bottle-droplet"></i>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; color: #111827;">SON Certified New Cylinders</h3>
+          <p style="color: #6B7280; font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px;">
+            High-grade explosion-proof steel and lightweight fiber composite cylinders certified by SON & DPR. Includes a 2-year leakage warranty.
+          </p>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.25rem; color: #3B82F6; margin-bottom: 14px;">From ₦28,000</div>
+          <button onclick="bookService('new', '12.5')" class="btn-action" style="background: #3B82F6; width: 100%;">
+            <i class="fa-solid fa-basket-shopping"></i> Buy New Cylinder
+          </button>
+        </div>
+      </div>
+
+      <!-- Service 3 -->
+      <div class="service-card">
+        <span class="service-tag" style="background: #FFFBEB; color: #D97706; border-color: rgba(217,119,6,0.3);">Express 30 Mins</span>
+        <div>
+          <div class="service-icon-box" style="color: #D97706; background: #FFFBEB; border-color: rgba(217, 119, 6, 0.3);">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; color: #111827;">Express Priority Delivery</h3>
+          <p style="color: #6B7280; font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px;">
+            Ran out of gas mid-cooking? Our priority dispatch riders deliver a refilled cylinder to your door in 30 to 45 minutes guaranteed.
+          </p>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.25rem; color: #D97706; margin-bottom: 14px;">Priority Rider Match</div>
+          <button onclick="bookService('express', '12.5')" class="btn-action" style="background: #F59E0B; width: 100%;">
+            <i class="fa-solid fa-truck-fast"></i> Order Express Dispatch
+          </button>
+        </div>
+      </div>
+
+      <!-- Service 4 -->
+      <div class="service-card">
+        <span class="service-tag" style="background: #F3E8FF; color: #9333EA; border-color: rgba(147,51,234,0.3);">Smart IoT Setup</span>
+        <div>
+          <div class="service-icon-box" style="color: #9333EA; background: #F3E8FF; border-color: rgba(147, 51, 234, 0.3);"><i class="fa-solid fa-gauge-high"></i></div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; color: #111827;">Smart Meter & Leak Sensor</h3>
+          <p style="color: #6B7280; font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px;">
+            Upgrade your kitchen with real-time gas volume tracking and automatic gas leak shut-off sensors connected to your smartphone.
+          </p>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.25rem; color: #9333EA; margin-bottom: 14px;">₦14,500 Device Fee</div>
+          <button onclick="window.location.href='accessories.html'" class="btn-action" style="background: #9333EA; width: 100%;">
+            <i class="fa-solid fa-microchip"></i> Explore Smart Devices
+          </button>
+        </div>
+      </div>
+
+      <!-- Service 5 -->
+      <div class="service-card">
+        <span class="service-tag" style="background: #ECFDF5; color: #059669; border-color: rgba(5,150,105,0.3);">Commercial B2B</span>
+        <div>
+          <div class="service-icon-box" style="color: #059669; background: #ECFDF5; border-color: rgba(5, 150, 105, 0.3);"><i class="fa-solid fa-industry"></i></div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; color: #111827;">Commercial & Industrial Bulk Supply</h3>
+          <p style="color: #6B7280; font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px;">
+            Bulk LPG delivery for restaurants, hotels, bakeries, and industrial facilities with custom monthly billing and dedicated bobtail tankers.
+          </p>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.25rem; color: #059669; margin-bottom: 14px;">Contract Pricing</div>
+          <button onclick="bookService('bulk', '50')" class="btn-action" style="background: #059669; width: 100%;">
+            <i class="fa-solid fa-building"></i> Request B2B Quote
+          </button>
+        </div>
+      </div>
+
+      <!-- Service 6 -->
+      <div class="service-card">
+        <span class="service-tag">Complimentary</span>
+        <div>
+          <div class="service-icon-box"><i class="fa-solid fa-shield-virus"></i></div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 10px; color: #111827;">Safety Inspection & Valve Check</h3>
+          <p style="color: #6B7280; font-size: 0.92rem; line-height: 1.6; margin-bottom: 20px;">
+            Free 5-point cylinder safety inspection during every delivery: valve thread testing, rubber ring check, soap leak test, and tare weight verification.
+          </p>
+        </div>
+        <div>
+          <div style="font-weight: 800; font-size: 1.25rem; color: #00B14F; margin-bottom: 14px;">FREE with Every Refill</div>
+          <button onclick="window.location.href='safety.html'" class="btn-action" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #111827; width: 100%;">
+            <i class="fa-solid fa-shield"></i> Read Safety Standards
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Booking Estimate Calculator Widget -->
+    <div class="booking-calculator-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+        <div>
+          <span style="color: #00B14F; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">INSTANT COST ESTIMATOR</span>
+          <h2 style="font-size: 1.6rem; font-weight: 800; margin-top: 4px; color: #111827;">Calculate Your Gas Refill Cost</h2>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.8rem; color: #6B7280; font-weight: 600;">Current Market Rate</div>
+          <div style="font-weight: 800; font-size: 1.35rem; color: #00B14F;">₦1,100 per KG</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 25px;">
+        <div>
+          <label style="font-size: 0.82rem; color: #374151; display: block; margin-bottom: 6px; font-weight: 700;">Cylinder Size</label>
+          <select id="calcSize" onchange="updateEstimate()" style="width: 100%; padding: 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #D1D5DB; color: #111827; font-size: 0.95rem; font-weight: 700;">
+            <option value="3">3.0 kg (₦3,300)</option>
+            <option value="6">6.0 kg (₦6,600)</option>
+            <option value="12.5" selected>12.5 kg (₦13,750)</option>
+            <option value="25">25.0 kg (₦27,500)</option>
+            <option value="50">50.0 kg (₦55,000)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size: 0.82rem; color: #374151; display: block; margin-bottom: 6px; font-weight: 700;">Delivery Option</label>
+          <select id="calcSpeed" onchange="updateEstimate()" style="width: 100%; padding: 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #D1D5DB; color: #111827; font-size: 0.95rem; font-weight: 700;">
+            <option value="standard">Standard Dispatch (60 Mins)</option>
+            <option value="express">Express Delivery (+₦500)</option>
+          </select>
+        </div>
+
+        <div style="background: #F8FAFC; padding: 14px 20px; border-radius: 14px; border: 1px solid #E5E7EB; display: flex; flex-direction: column; justify-content: center;">
+          <div style="font-size: 0.78rem; color: #6B7280; font-weight: 600;">Estimated Total</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #00B14F;" id="calcTotal">₦13,750</div>
+        </div>
+      </div>
+
+      <button onclick="bookFromCalculator()" class="btn-action" style="width: 100%; background: #00B14F; padding: 15px; font-size: 1rem;">
+        <i class="fa-solid fa-bolt"></i> Proceed to Place Order Now
+      </button>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    function updateEstimate() {
+      const size = parseFloat(document.getElementById('calcSize').value);
+      const speed = document.getElementById('calcSpeed').value;
+      let cost = size * 1100;
+      if (speed === 'express') cost += 500;
+      document.getElementById('calcTotal').innerText = '₦' + cost.toLocaleString();
+    }
+
+    // ── Core booking function: checks auth then redirects with pre-selection ──
+    function bookService(serviceType, cylinderSize) {
+      const user = JSON.parse(localStorage.getItem('currentUser'));
+      const targetUrl = `dashboard.html?service=${serviceType}&size=${cylinderSize}`;
+      
+      if (!user) {
+        window.location.href = `login.html?auth_required=true&redirect=${encodeURIComponent(targetUrl)}&service=${serviceType}&size=${cylinderSize}`;
+        return;
+      }
+      
+      window.location.href = targetUrl;
+    }
+
+    function bookFromCalculator() {
+      const size = document.getElementById('calcSize').value;
+      const speed = document.getElementById('calcSpeed').value;
+      const serviceType = speed === 'express' ? 'express' : 'refill';
+      bookService(serviceType, size);
+    }
+  </script>
+</body>
+</html>

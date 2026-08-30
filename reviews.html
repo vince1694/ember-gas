@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="What our customers are saying about EmberGas.">
+    <title>Customer Reviews | EmberGas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .reviews-page {
+            padding-top: 150px;
+            padding-bottom: 100px;
+        }
+    </style>
+</head>
+
+<body class="reviews-body">
+    <header class="master-header">
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <a href="index.html" class="brand-logo">
+                <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+            </a>
+            <nav class="nav-desktop-links" style="display: flex; gap: 16px;">
+                <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
+                <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Dashboard</a>
+                <a href="services.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Services</a>
+                <a href="reviews.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Reviews</a>
+            </nav>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <a href="login.html" class="btn-action nav-desktop-links" style="width: auto; padding: 9px 18px; font-size: 0.88rem; min-height: auto; text-decoration: none;">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </a>
+            <button onclick="openMobileDrawer()" class="mobile-drawer-trigger">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+    <div class="header-spacer"></div>
+
+    <main class="reviews-page">
+        <section id="testimonials" class="testimonials" style="background: transparent;">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Customer Reviews</h2>
+                    <p>Join thousands of satisfied households</p>
+                </div>
+                <div class="services-grid"> <!-- Reusing grid layout -->
+                    <div class="testimonial-card">
+                        <i class="fa-solid fa-quote-left"
+                            style="font-size: 2rem; color: var(--primary-color); margin-bottom: 20px; display: block;"></i>
+                        <p>"EmberGas changed my cooking experience. I never have to worry about running out of gas in
+                            the middle of a meal again!"</p>
+                        <div class="user-info">
+                            <div class="user-avatar">SA</div>
+                            <div>
+                                <strong>Sarah Adams</strong>
+                                <span>Home Chef</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <i class="fa-solid fa-quote-left"
+                            style="font-size: 2rem; color: var(--primary-color); margin-bottom: 20px; display: block;"></i>
+                        <p>"The delivery is incredibly fast. I ordered a refill and it was here in 35 minutes.
+                            Professional service!"</p>
+                        <div class="user-info">
+                            <div class="user-avatar">JO</div>
+                            <div>
+                                <strong>John Obinna</strong>
+                                <span>Restaurant Owner</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <i class="fa-solid fa-quote-left"
+                            style="font-size: 2rem; color: var(--primary-color); margin-bottom: 20px; display: block;"></i>
+                        <p>"Safe, reliable, and fair pricing. The tracking feature is a game changer for me. Highly
+                            recommended."</p>
+                        <div class="user-info">
+                            <div class="user-avatar">MK</div>
+                            <div>
+                                <strong>Mary K.</strong>
+                                <span>Resident</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-about">
+                <div class="footer-logo">
+                    <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+                </div>
+                <p>Fast, safe, and reliable cooking gas delivery service. We bring the heat to your kitchen, so you can
+                    focus on what matters most.</p>
+                <div class="social-links">
+                    <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://wa.me/2349162789976" target="_blank" class="whatsapp-link"><i
+                            class="fa-brands fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="safety.html">Safety Tips</a></li>
+                    <li><a href="dashboard.html">Order Now</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 EmberGas Company. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

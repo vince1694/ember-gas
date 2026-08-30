@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Customer Dashboard — EmberGas Cooking Gas Marketplace</title>
+  <meta name="description" content="Manage cooking gas refills, track active LPG deliveries, and view order history." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      background-color: var(--background-dark);
+      color: var(--text-primary);
+    }
+
+    .dashboard-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      padding: 6px 12px;
+      border-radius: 30px;
+    }
+
+    .wallet-badge {
+      background: rgba(5, 150, 105, 0.18);
+      color: var(--primary-color);
+      font-weight: 800;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .grid-container {
+      max-width: 1280px;
+      margin: 25px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 25px;
+    }
+
+    .glass-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .cylinder-selector {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .cylinder-option {
+      background: var(--surface-light);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 16px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .cylinder-option:hover,
+    .cylinder-option.selected {
+      border-color: var(--primary-color);
+      background: rgba(5, 150, 105, 0.15);
+      box-shadow: 0 0 20px rgba(5, 150, 105, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .cylinder-option i {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .status-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-active {
+      background: rgba(16, 185, 129, 0.18);
+      color: #10B981;
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.18);
+      color: #F59E0B;
+    }
+
+    .btn-action {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 1rem;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+    }
+
+    .btn-action:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 10px 25px rgba(5, 150, 105, 0.4);
+    }
+
+    /* MOBILE SWEEP STYLES FOR DASHBOARD */
+    @media (max-width: 900px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+        padding: 0 12px;
+        margin: 15px auto;
+        gap: 18px;
+      }
+
+      .dashboard-header {
+        padding: 12px 16px;
+      }
+
+      .nav-desktop-links {
+        display: none !important;
+      }
+
+      .cylinder-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .form-grid-mobile {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+
+      .glass-card {
+        padding: 18px 14px;
+        border-radius: 16px;
+      }
+
+      /* Mobile Order Card format for Recent Orders */
+      .mobile-orders-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .mobile-order-card {
+        background: var(--surface-light);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .table-desktop-view {
+        display: none !important;
+      }
+    }
+
+    @media (min-width: 901px) {
+      .mobile-orders-list {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Master Header Nav -->
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <a href="index.html" class="brand-logo">
+        <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+      </a>
+      <nav class="nav-desktop-links" style="display: flex; gap: 16px;">
+        <a href="index.html"
+          style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
+        <a href="dashboard.html"
+          style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Dashboard</a>
+        <a href="track.html"
+          style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Track
+          Order</a>
+        <a href="services.html"
+          style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Services</a>
+        <a href="accessories.html"
+          style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Accessories</a>
+        <a href="safety.html"
+          style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Safety</a>
+      </nav>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <!-- Portal Dropdown Switcher -->
+      <div class="portal-dropdown-container nav-desktop-links">
+        <button class="portal-dropdown-btn">
+          <i class="fa-solid fa-shield-cat"></i> Portals <i class="fa-solid fa-chevron-down"
+            style="font-size: 0.7rem;"></i>
+        </button>
+        <div class="portal-dropdown-menu">
+          <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user"
+              style="color: var(--primary-color);"></i> Customer Portal</a>
+          <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store"
+              style="color: #10B981;"></i> Vendor Station Hub</a>
+          <a href="refiller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-motorcycle"
+              style="color: #F59E0B;"></i> Refiller Rider Portal</a>
+          <a href="admin.html" class="portal-dropdown-item"><i class="fa-solid fa-shield-halved"
+              style="color: #3B82F6;"></i> Admin Control Center</a>
+        </div>
+      </div>
+
+      <!-- Dynamic Header User Profile Badge & Logout -->
+      <div id="authLink"></div>
+
+      <!-- Mobile Hamburger Drawer Trigger Button -->
+      <button onclick="openMobileDrawer()"
+        style="background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: white; width: 40px; height: 40px; border-radius: 12px; font-size: 1.1rem; cursor: pointer;"
+        class="mobile-drawer-trigger">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+  <div class="header-spacer"></div>
+
+  <main class="grid-container">
+    <!-- Left Main Column -->
+    <div>
+      <!-- Mobile Touch Swipe Hint Pill -->
+      <div class="swipe-hint-pill" style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.75rem; color: #10B981; background: rgba(16, 185, 129, 0.12); border: 1px dashed rgba(16, 185, 129, 0.3); padding: 6px 12px; border-radius: 20px; margin-bottom: 16px;">
+        <i class="fa-solid fa-hand-pointer"></i> <span>Swipe left to Track Order • Swipe right for Services</span> ↔
+      </div>
+
+      <!-- Account & Wallet Summary Banner -->
+      <div class="glass-card" style="margin-bottom: 20px; background: #FFFFFF; border: 1.5px solid #10B981; padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <!-- User Info Block -->
+          <div>
+            <div style="font-size: 0.78rem; color: #10B981; text-transform: uppercase; font-weight: 800; letter-spacing: 0.8px;">
+              <i class="fa-solid fa-hand" style="color: #F59E0B;"></i> Welcome Back
+            </div>
+            <h2 style="font-size: 1.5rem; margin: 4px 0 6px; font-weight: 900; color: #111827;" id="userGreeting">Loading...</h2>
+            <div style="font-size: 0.86rem; color: #4B5563; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-location-dot" style="color: #10B981;"></i> <span id="userLocation">Lagos, Nigeria</span>
+            </div>
+          </div>
+
+          <!-- Quick Stats & Account Actions Grid -->
+          <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <!-- Total Orders Pill (Clickable for Detailed Delivery Tracking) -->
+            <div onclick="window.location.href='track.html'" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); padding: 10px 16px; border-radius: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" title="Click to view detailed order & delivery tracking information">
+              <div style="width: 34px; height: 34px; border-radius: 10px; background: #10B981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                <i class="fa-solid fa-bag-shopping"></i>
+              </div>
+              <div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Total Orders</div>
+                <div style="font-size: 1.05rem; font-weight: 800; color: #10B981;" id="orderCountBadge">0 Orders</div>
+              </div>
+            </div>
+
+            <!-- Wallet Balance Card -->
+            <div style="background: #FFFFFF; border: 1px solid var(--glass-border); padding: 10px 18px; border-radius: 14px; display: flex; align-items: center; gap: 14px;">
+              <div>
+                <div style="font-size: 0.72rem; color: #6B7280; font-weight: 700;">WALLET BALANCE</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: #00B14F;">₦<span id="walletBal">0.00</span></div>
+              </div>
+              <button onclick="if(window.WalletManager) WalletManager.openTopUpModal(); else if(window.NotificationManager) NotificationManager.show('Wallet loading...', 'success');" style="background: var(--primary-color); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-plus"></i> Top Up
+              </button>
+            </div>
+
+            <!-- Permanently Delete Account Button -->
+            <button onclick="if(window.auth) auth.deleteAccountPermanently()" title="Permanently Delete Account" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #EF4444; padding: 10px 14px; border-radius: 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+              <i class="fa-solid fa-trash-can"></i> <span>Delete Account</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Active Live Order Banner — shown only if a real active order exists -->
+      <div id="liveOrderBanner" class="glass-card" style="display:none; margin-bottom: 20px; border-left: 4px solid #00B14F; background: rgba(0, 177, 79, 0.05);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span class="status-badge status-active" id="liveOrderBadge"><i class="fa-solid fa-circle-dot fa-spin"></i> LIVE ORDER ACTIVE</span>
+            <h3 style="margin-top: 6px; font-size: 1.15rem;" id="liveOrderTitle">—</h3>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="track.html" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">
+              <i class="fa-solid fa-map-location-dot"></i> Track Live Map
+            </a>
+            <button id="markCompletedBtn" onclick="confirmCustomerReceipt()" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; background: #10B981; border: none; color: #fff; cursor: pointer;">
+              <i class="fa-solid fa-circle-check"></i> Mark as Received & Completed
+            </button>
+          </div>
+        </div>
+        <div style="color: var(--text-secondary); font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px;" id="liveOrderMeta"></div>
+      </div>
+
+      <!-- Quick Gas Refill Order Form -->
+      <div class="glass-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+          <h2 style="font-size: 1.25rem;"><i class="fa-solid fa-bolt" style="color: var(--primary-color);"></i> Quick
+            Gas Refill</h2>
+          <span
+            style="font-size: 0.78rem; background: rgba(5,150,105,0.15); color: var(--primary-color); padding: 4px 10px; border-radius: 20px; font-weight: 700;">₦1,100
+            / KG</span>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem;">Select your cylinder size, choose a verified station vendor, and order doorstep delivery</p>
+
+        <!-- Cylinder Size Selection Grid -->
+        <div class="cylinder-selector">
+          <div class="cylinder-option" onclick="selectCylinder(3, 3300, this)">
+            <i class="fa-solid fa-bottle-water"></i>
+            <div style="font-weight: 800; font-size: 0.95rem;">3.0 kg</div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary);">₦3,300</div>
+          </div>
+          <div class="cylinder-option" onclick="selectCylinder(6, 6600, this)">
+            <i class="fa-solid fa-wine-bottle"></i>
+            <div style="font-weight: 800; font-size: 0.95rem;">6.0 kg</div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary);">₦6,600</div>
+          </div>
+          <div class="cylinder-option selected" onclick="selectCylinder(12.5, 13750, this)" id="cyl12">
+            <i class="fa-solid fa-box-tissue"></i>
+            <div style="font-weight: 800; font-size: 0.95rem;">12.5 kg</div>
+            <div style="font-size: 0.76rem; color: var(--primary-color); font-weight: 700;">Popular • ₦13,750</div>
+          </div>
+          <div class="cylinder-option" onclick="selectCylinder(25, 27500, this)">
+            <i class="fa-solid fa-drum"></i>
+            <div style="font-weight: 800; font-size: 0.95rem;">25.0 kg</div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary);">₦27,500</div>
+          </div>
+          <div class="cylinder-option" onclick="selectCylinder(50, 55000, this)">
+            <i class="fa-solid fa-database"></i>
+            <div style="font-weight: 800; font-size: 0.95rem;">50.0 kg</div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary);">Commercial</div>
+          </div>
+        </div>
+
+        <!-- Verified Vendor Selection Dropdown -->
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 0.82rem; color: #111827; display: block; margin-bottom: 6px; font-weight: 800;">
+            <i class="fa-solid fa-store" style="color: #10B981;"></i> Choose Verified Refiller Vendor Station
+          </label>
+          <select id="vendorSelect" style="width: 100%; padding: 13px 16px; border-radius: 12px; background: #FFFFFF; border: 2px solid #10B981; color: #111827; font-size: 0.95rem; font-weight: 700; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+            <option value="Grace LPG Depot Hub" data-email="vendor@embergas.ng" style="color: #111827; background: #FFFFFF;">Grace LPG Depot Hub (Surulere) • ₦1,100/kg [Verified ✅]</option>
+            <option value="MegaGas Refill Plant" data-email="megagas@embergas.ng" style="color: #111827; background: #FFFFFF;">MegaGas Refill Plant (Ikeja) • ₦1,100/kg [Verified ✅]</option>
+            <option value="Lekki Express Gas Station" data-email="lekkigas@embergas.ng" style="color: #111827; background: #FFFFFF;">Lekki Express Gas Station • ₦1,150/kg [Verified ✅]</option>
+          </select>
+        </div>
+
+        <!-- Form Details -->
+        <form onsubmit="submitQuickOrder(event)">
+          <div class="form-grid-mobile"
+            style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div>
+              <label
+                style="font-size: 0.82rem; color: #111827; display: block; margin-bottom: 6px; font-weight: 800;">Service
+                Type</label>
+              <select id="serviceType"
+                style="width: 100%; padding: 13px 16px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #D1D5DB; color: #111827; font-size: 0.95rem; font-weight: 700; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                <option value="refill" style="color: #111827; background: #FFFFFF;">Cylinder Refill Only</option>
+                <option value="new" style="color: #111827; background: #FFFFFF;">Purchase New Cylinder + Gas</option>
+                <option value="swap" style="color: #111827; background: #FFFFFF;">Cylinder Swap Service</option>
+              </select>
+            </div>
+            <div>
+              <label
+                style="font-size: 0.82rem; color: #111827; display: block; margin-bottom: 6px; font-weight: 800;">Delivery
+                Address</label>
+              <input type="text" id="deliveryAddr" placeholder="Enter your delivery address"
+                style="width: 100%; padding: 13px 16px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #D1D5DB; color: #111827; font-size: 0.95rem; font-weight: 600; outline: none; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+            </div>
+          </div>
+
+          <!-- Total Calculation Banner -->
+          <div
+            style="background: rgba(16, 185, 129, 0.08); padding: 16px; border-radius: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; border: 1.5px solid #10B981;">
+            <div>
+              <div style="font-size: 0.82rem; color: #374151; font-weight: 700;">Total Price</div>
+              <div style="font-size: 1.65rem; font-weight: 900; color: #00B14F;" id="totalPriceDisplay">
+                ₦13,750</div>
+            </div>
+            <span class="status-badge status-active"><i class="fa-solid fa-truck-fast"></i> Dispatch (20-30 mins)</span>
+          </div>
+
+          <button type="button" onclick="submitQuickOrder(event)" class="btn-action">
+            <i class="fa-solid fa-cart-shopping"></i> Place Gas Order Now
+          </button>
+        </form>
+      </div>
+
+      <!-- Recent Orders Section -->
+      <div class="glass-card" style="margin-top: 20px;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 14px;"><i class="fa-solid fa-clock-rotate-left"
+            style="color: var(--primary-color);"></i> Recent Orders</h3>
+
+        <!-- Orders rendered by JS -->
+        <div class="table-desktop-view" style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+            <thead>
+              <tr style="color: var(--text-secondary); border-bottom: 1px solid var(--glass-border);">
+                <th style="padding: 10px;">Order ID</th>
+                <th style="padding: 10px;">Size</th>
+                <th style="padding: 10px;">Address</th>
+                <th style="padding: 10px;">Amount</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="6" style="padding: 24px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-clock-rotate-left"></i> No orders yet. Place your first order above!</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mobile-orders-list" id="mobileOrdersList">
+          <div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.88rem;">
+            <i class="fa-solid fa-clock-rotate-left"></i> No orders yet.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar Column -->
+    <div>
+      <!-- Profile Card -->
+      <div class="glass-card" style="margin-bottom: 20px; text-align: center;">
+        <div style="width: 65px; height: 65px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #047857); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 800;" id="userInitials">
+          —
+        </div>
+        <h3 id="sideName" style="font-size: 1.15rem;">—</h3>
+        <p id="sideEmail" style="color: var(--text-secondary); font-size: 0.82rem;">—</p>
+
+        <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around;">
+          <div>
+            <div style="font-weight: 800; font-size: 1.1rem;" id="sideOrderCount">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Orders</div>
+          </div>
+          <div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: #10B981;" id="sideRole">—</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Role</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emergency Safety Widget -->
+      <div class="glass-card" style="border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05);">
+        <h4 style="color: #EF4444; font-size: 0.98rem; margin-bottom: 6px;"><i
+            class="fa-solid fa-triangle-exclamation"></i> Gas Leak Safety Emergency</h4>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">If you smell
+          gas, turn off the cylinder valve immediately and open doors/windows.</p>
+        <a href="safety.html" class="btn-action"
+          style="background: #EF4444; padding: 10px; font-size: 0.85rem; min-height: 40px;">
+          Safety Checklist
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    // ── Redirect if not logged in ─────────────────────────────────────────────
+    const curUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!curUser) {
+      window.location.href = 'login.html';
+    } else {
+      // Populate user info from real account
+      const initials = curUser.name ? curUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?';
+      document.getElementById('userInitials').innerText = initials;
+      document.getElementById('userGreeting').innerText = curUser.name || 'User';
+      document.getElementById('sideName').innerText = curUser.name || 'User';
+      document.getElementById('sideEmail').innerText = curUser.email || '';
+      document.getElementById('sideRole').innerText = (curUser.role || 'customer').charAt(0).toUpperCase() + (curUser.role || 'customer').slice(1);
+
+      // Real address from profile
+      const savedAddr = curUser.address || '';
+      if (savedAddr) document.getElementById('deliveryAddr').value = savedAddr;
+      document.getElementById('userLocation').innerText = savedAddr || 'No address saved';
+
+      // Real orders from localStorage
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const myOrders = allOrders.filter(o => o.userEmail === curUser.email);
+      document.getElementById('orderCountBadge').innerText = myOrders.length + ' Order' + (myOrders.length !== 1 ? 's' : '');
+      document.getElementById('sideOrderCount').innerText = myOrders.length;
+
+      // Render real orders table
+      const tbody = document.getElementById('ordersTableBody');
+      const mobileList = document.getElementById('mobileOrdersList');
+      if (myOrders.length > 0) {
+        tbody.innerHTML = myOrders.map(o => `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 12px 10px;">#${o.id}</td>
+            <td style="padding: 12px 10px;">${o.size} kg</td>
+            <td style="padding: 12px 10px;">${o.address || '—'}</td>
+            <td style="padding: 12px 10px;">₦${Number(o.total).toLocaleString()}</td>
+            <td style="padding: 12px 10px;"><span class="status-badge status-active" style="${o.status==='Delivered'?'background:rgba(16,185,129,0.1);color:#10B981;':''}"> ${o.status || 'Pending'}</span></td>
+            <td style="padding: 12px 10px;"><a href="track.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none;">Track</a></td>
+          </tr>`).join('');
+        mobileList.innerHTML = myOrders.map(o => `
+          <div class="mobile-order-card">
+            <div>
+              <div style="font-weight: 800; font-size: 0.95rem;">#${o.id} • ${o.size} kg</div>
+              <div style="font-size: 0.78rem; color: var(--text-secondary);">${o.address || '—'} • ₦${Number(o.total).toLocaleString()}</div>
+              <span class="status-badge status-active" style="margin-top:6px;${o.status==='Delivered'?'background:rgba(16,185,129,0.1);color:#10B981;':''}"> ${o.status || 'Pending'}</span>
+            </div>
+            <a href="track.html" style="background: var(--primary-color); color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-decoration: none;">Track</a>
+          </div>`).join('');
+      }
+
+      // Show live order banner if most recent order is active
+      const activeOrder = myOrders.find(o => o.status === 'In Transit' || o.status === 'Pending');
+      if (activeOrder) {
+        document.getElementById('liveOrderBanner').style.display = 'block';
+        document.getElementById('liveOrderTitle').innerText = `Order #${activeOrder.id} • ${activeOrder.size}kg ${activeOrder.serviceType || 'Refill'}`;
+        document.getElementById('liveOrderMeta').innerHTML = `<span><i class="fa-solid fa-map-marker-alt" style="color: var(--primary-color);"></i> ${activeOrder.address || '—'}</span>`;
+      }
+    }
+
+    function loadLiveOrder() {
+      if (!window.OrderStateManager) return;
+      const order = OrderStateManager.getActiveOrder();
+      if (order && order.status !== 'COMPLETED' && order.status !== 'CANCELLED') {
+        const banner = document.getElementById('liveOrderBanner');
+        const title = document.getElementById('liveOrderTitle');
+        const meta = document.getElementById('liveOrderMeta');
+        const badge = document.getElementById('liveOrderBadge');
+        const completeBtn = document.getElementById('markCompletedBtn');
+
+        if (banner) banner.style.display = 'block';
+        if (title) title.innerText = `Order #${order.id} • ${order.cylinderSize} ${order.serviceType || 'Refill'}`;
+        if (meta) {
+          meta.innerHTML = `
+            <span><i class="fa-solid fa-store" style="color:#10B981;"></i> Depot: <strong>${order.vendorName || 'Grace LPG Depot'}</strong></span>
+            <span><i class="fa-solid fa-location-dot" style="color:#10B981;"></i> ${order.address || '—'}</span>
+            <span><i class="fa-solid fa-wallet" style="color:#10B981;"></i> Total: ₦${(order.amount || 13750).toLocaleString()}</span>
+          `;
+        }
+
+        const statusLabels = {
+          PLACED: '● PLACED — Awaiting Vendor Confirmation',
+          ACCEPTED: '● VENDOR ACCEPTED — Cylinder Being Filled',
+          EN_ROUTE: '● EN ROUTE — Delivering to Your Address',
+          DELIVERED: '● DELIVERED — Please Mark as Received Below'
+        };
+
+        if (badge) badge.innerHTML = `<i class="fa-solid fa-circle-dot fa-spin"></i> ${statusLabels[order.status] || order.status}`;
+        
+        if (completeBtn) {
+          completeBtn.style.display = (order.status === 'EN_ROUTE' || order.status === 'DELIVERED') ? 'inline-flex' : 'none';
+        }
+      }
+    }
+
+    async function confirmCustomerReceipt() {
+      if (!window.OrderStateManager) return;
+      const activeOrder = OrderStateManager.updateOrderStatus('COMPLETED');
+      if (window.NotificationManager) {
+        NotificationManager.show('🎉 Order marked as Received & Completed! Vendor and Rider notified.', 'success');
+      }
+
+      // Dispatch Brevo email notification to Customer
+      try {
+        const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        await safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: curUser.email || 'customer@embergas.ng',
+            toName: curUser.name || 'Valued Customer',
+            subject: `Order #${activeOrder.id} Delivered & Completed! — EmberGas`,
+            title: `Order #${activeOrder.id} Completed & Delivered`,
+            bodyHtml: `
+              <p>Hello <strong>${curUser.name || 'Customer'}</strong>,</p>
+              <p>Thank you for marking Order <strong>#${activeOrder.id}</strong> (${activeOrder.cylinderSize}) as received & completed!</p>
+              <p>Station Vendor <strong>${activeOrder.vendorName}</strong> has been notified of order completion.</p>
+            `
+          })
+        });
+      } catch (e) {}
+
+      setTimeout(() => { window.location.reload(); }, 1200);
+    }
+
+    let selectedSize = 12.5;
+    let selectedTotal = 13750;
+
+    function selectCylinder(size, price, element) {
+      selectedSize = size;
+      selectedTotal = price;
+      document.querySelectorAll('.cylinder-option').forEach(opt => opt.classList.remove('selected'));
+      element.classList.add('selected');
+      document.getElementById('totalPriceDisplay').innerText = '₦' + price.toLocaleString();
+    }
+
+    function submitQuickOrder(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const addrEl = document.getElementById('deliveryAddr');
+      const addr = addrEl ? addrEl.value.trim() : '';
+      const sType = document.getElementById('serviceType') ? document.getElementById('serviceType').value : 'refill';
+      const vendorSelect = document.getElementById('vendorSelect');
+      const selectedVendor = vendorSelect ? vendorSelect.value : 'Grace LPG Depot Hub';
+
+      if (!addr) {
+        if (window.NotificationManager) NotificationManager.show('Please enter your delivery address', 'error');
+        if (addrEl) addrEl.focus();
+        return false;
+      }
+
+      const curUser = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Valued Customer', email: 'customer@embergas.ng' };
+
+      // Deduct balance from wallet if sufficient
+      if (window.WalletManager) {
+        const currentBal = WalletManager.getBalance(curUser.email);
+        if (currentBal >= selectedTotal) {
+          WalletManager.deduct(curUser.email, selectedTotal, `LPG Refill #${selectedSize}kg`);
+        }
+      }
+
+      // Create Order via OrderStateManager
+      let newOrder;
+      if (window.OrderStateManager) {
+        newOrder = OrderStateManager.createOrder(selectedSize, sType, addr, selectedTotal);
+        newOrder.vendorName = selectedVendor;
+        newOrder.customerName = curUser.name || 'Valued Customer';
+        newOrder.userEmail = curUser.email || 'customer@embergas.ng';
+        OrderStateManager.saveActiveOrder(newOrder);
+      } else {
+        newOrder = { id: 'EG-' + Math.floor(1000 + Math.random() * 9000), cylinderSize: selectedSize + 'kg', vendorName: selectedVendor, total: selectedTotal, address: addr, status: 'PLACED' };
+        localStorage.setItem('activeEmberGasOrder', JSON.stringify(newOrder));
+      }
+
+      if (window.NotificationManager) {
+        NotificationManager.show(`Order #${newOrder.id} placed! Dispatched to ${selectedVendor}.`, 'success');
+      }
+
+      // Send Brevo Email notification asynchronously in background
+      safeFetchApi('/api/auth/notify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toEmail: curUser.email,
+          toName: curUser.name,
+          subject: `Order #${newOrder.id} Placed — EmberGas`,
+          title: `Order #${newOrder.id} Placed Successfully`,
+          bodyHtml: `
+            <p>Hello <strong>${curUser.name}</strong>,</p>
+            <p>Your order for <strong>${newOrder.cylinderSize}</strong> (${newOrder.serviceType || 'Refill'}) has been placed with <strong>${selectedVendor}</strong>.</p>
+            <p>Delivery Address: <strong>${addr}</strong></p>
+            <p>Total Paid: <strong>₦${selectedTotal.toLocaleString()}</strong></p>
+            <p>Vendor station has been notified to accept your request!</p>
+          `
+        })
+      }).catch(err => console.warn('Brevo notify note:', err));
+
+      setTimeout(() => { window.location.href = 'track.html'; }, 500);
+      return false;
+    }
+
+    function reorder(size) {
+      if (window.NotificationManager) {
+        NotificationManager.show(`Re-ordering ${size} gas refill...`, 'success');
+      }
+      setTimeout(() => { window.location.href = 'track.html'; }, 600);
+    }
+
+    let dashTouchStartX = 0, dashTouchStartY = 0, dashTouchEndX = 0, dashTouchEndY = 0;
+    const mainContainer = document.querySelector('main.grid-container');
+
+    if (mainContainer) {
+      mainContainer.addEventListener('touchstart', (e) => {
+        dashTouchStartX = e.changedTouches[0].screenX;
+        dashTouchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      mainContainer.addEventListener('touchend', (e) => {
+        dashTouchEndX = e.changedTouches[0].screenX;
+        dashTouchEndY = e.changedTouches[0].screenY;
+        const diffX = dashTouchEndX - dashTouchStartX;
+        const diffY = dashTouchEndY - dashTouchStartY;
+        
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+          if (diffX < 0) {
+            if (window.NotificationManager) NotificationManager.show('Swiped to: Live Tracking Map', 'success');
+            setTimeout(() => { window.location.href = 'track.html'; }, 400);
+          } else {
+            if (window.NotificationManager) NotificationManager.show('Swiped to: Services & Accessories', 'success');
+            setTimeout(() => { window.location.href = 'services.html'; }, 400);
+          }
+        }
+      }, { passive: true });
+    }
+
+    // ── ON PAGE LOAD: Populate user info & wallet balance & parse service URL params ──────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+      if (currentUser) {
+        const greet = document.getElementById('userGreeting');
+        if (greet) greet.innerText = `${currentUser.name || 'Valued Customer'} 👋`;
+
+        // Load real wallet balance
+        if (window.WalletManager) {
+          const bal = WalletManager.getBalance(currentUser.email);
+          const walletEl = document.getElementById('walletBal');
+          if (walletEl) walletEl.innerText = bal.toLocaleString();
+        }
+
+        // Order count
+        const txList = JSON.parse(localStorage.getItem(`ember_tx_${currentUser.email}`) || '[]');
+        const orderCount = txList.filter(t => t.type === 'DEBIT').length;
+        const badge = document.getElementById('orderCountBadge');
+        if (badge) badge.innerText = `${orderCount} Order${orderCount !== 1 ? 's' : ''}`;
+      }
+
+      loadLiveOrder();
+
+      // ── Populate verified vendors dynamically into vendorSelect ──
+      const vendorSelect = document.getElementById('vendorSelect');
+      if (vendorSelect) {
+        const localAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+        const verifiedVendors = localAccounts.filter(a => a.role === 'vendor');
+        
+        try {
+          const res = await safeFetchApi('/api/auth/users-by-role/vendor', { method: 'GET' });
+          if (res.ok) {
+            const apiVendors = await res.json();
+            apiVendors.forEach(v => {
+              if (!verifiedVendors.some(x => x.email === v.email)) {
+                verifiedVendors.push({ name: v.name, email: v.email });
+              }
+            });
+          }
+        } catch (e) {}
+
+        if (verifiedVendors.length > 0) {
+          vendorSelect.innerHTML = verifiedVendors.map(v => `
+            <option value="${v.name}" data-email="${v.email}" style="color: #111827; background: #FFFFFF;">
+              ${v.name} • ₦1,100/kg [Verified ✅]
+            </option>
+          `).join('');
+        }
+      }
+
+      // ── Handle incoming URL params from services.html ──
+      const params = new URLSearchParams(window.location.search);
+      const paramService = params.get('service');
+      const paramSize = params.get('size');
+
+      if (paramService) {
+        const serviceSelect = document.getElementById('serviceType');
+        if (serviceSelect) {
+          if (paramService === 'new') serviceSelect.value = 'new';
+          else if (paramService === 'swap') serviceSelect.value = 'swap';
+          else serviceSelect.value = 'refill';
+        }
+      }
+
+      if (paramSize) {
+        const sizeNum = parseFloat(paramSize);
+        const priceMap = { 3: 3300, 6: 6600, 12.5: 13750, 25: 27500, 50: 55000 };
+        const price = priceMap[sizeNum] || 13750;
+        
+        // Find matching cylinder option card
+        const options = document.querySelectorAll('.cylinder-option');
+        options.forEach(opt => {
+          if (opt.innerText.includes(`${sizeNum} kg`) || opt.innerText.includes(`${paramSize} kg`)) {
+            selectCylinder(sizeNum, price, opt);
+          }
+        });
+      }
+
+      // If params present, scroll smoothly to the quick order form
+      if (paramService || paramSize) {
+        const orderSection = document.querySelector('.cylinder-selector');
+        if (orderSection) {
+          orderSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

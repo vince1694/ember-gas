@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gas Accessories & Safety Equipment Store — EmberGas</title>
+  <meta name="description" content="Shop certified cooking gas regulators, safety hoses, smart leak detectors, stoves, and cylinder stands on EmberGas." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body { background-color: var(--background-dark); color: var(--text-primary); }
+    
+    .store-hero {
+      padding: 60px 20px 40px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 1)), 
+                  radial-gradient(circle at top, rgba(5, 150, 105, 0.25) 0%, transparent 65%);
+    }
+
+    .category-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 30px auto;
+      max-width: 900px;
+      flex-wrap: wrap;
+      padding: 0 15px;
+    }
+
+    .cat-btn {
+      padding: 10px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      background: var(--surface-dark);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cat-btn.active, .cat-btn:hover {
+      background: var(--primary-color);
+      color: #ffffff;
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 15px rgba(5, 150, 105, 0.35);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 22px;
+      max-width: 1280px;
+      margin: 20px auto 60px;
+      padding: 0 20px;
+    }
+
+    .product-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 22px;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--primary-color);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(5, 150, 105, 0.25);
+    }
+
+    .product-icon-box {
+      width: 70px;
+      height: 70px;
+      border-radius: 18px;
+      background: rgba(5, 150, 105, 0.12);
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 16px;
+    }
+
+    .product-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(16, 185, 129, 0.18);
+      color: #10B981;
+      padding: 3px 10px;
+      border-radius: 16px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .cart-float-bar {
+      position: fixed;
+      bottom: 85px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--primary-color);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 30px;
+      box-shadow: 0 10px 25px rgba(5, 150, 105, 0.5);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .cart-float-bar:hover { transform: scale(1.05); }
+
+    @media (max-width: 768px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; }
+      .product-card { padding: 16px 12px; border-radius: 16px; }
+      .product-icon-box { width: 54px; height: 54px; font-size: 1.6rem; }
+    }
+    @media (max-width: 480px) {
+      .products-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Master Header Nav -->
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <a href="index.html" class="brand-logo">
+        <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+      </a>
+      <nav class="nav-desktop-links" style="display: flex; gap: 16px;">
+        <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
+        <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Dashboard</a>
+        <a href="track.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Track Order</a>
+        <a href="services.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Services</a>
+        <a href="accessories.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Accessories</a>
+        <a href="safety.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Safety</a>
+      </nav>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <!-- Portal Dropdown Switcher -->
+      <div class="portal-dropdown-container nav-desktop-links">
+        <button class="portal-dropdown-btn">
+          <i class="fa-solid fa-shield-cat"></i> Portals <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+        </button>
+        <div class="portal-dropdown-menu">
+          <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user" style="color: var(--primary-color);"></i> Customer Portal</a>
+          <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store" style="color: #10B981;"></i> Vendor Station Hub</a>
+          <a href="refiller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-motorcycle" style="color: #F59E0B;"></i> Refiller Rider Portal</a>
+        </div>
+      </div>
+
+      <!-- Cart Button Header -->
+      <button onclick="toggleCartModal()" style="background: rgba(5,150,105,0.15); border: 1px solid var(--primary-color); color: #fff; padding: 8px 14px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 6px;" class="nav-desktop-links">
+        <i class="fa-solid fa-cart-shopping" style="color: var(--primary-color);"></i> Cart (<span id="cartCountHeader">0</span>)
+      </button>
+
+      <!-- Mobile Hamburger Drawer Trigger Button -->
+      <button onclick="openMobileDrawer()" class="mobile-drawer-trigger" title="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+  <div class="header-spacer"></div>
+
+  <!-- Store Hero -->
+  <section class="store-hero">
+    <span style="background: rgba(5,150,105,0.15); color: var(--primary-color); padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; border: 1px solid rgba(5,150,105,0.3);">
+      <i class="fa-solid fa-shield-halved"></i> SON & DPR Certified Accessories
+    </span>
+    <h1 style="font-size: 2.4rem; font-weight: 800; margin: 12px 0 8px; font-family: var(--font-heading);">
+      Gas Accessories & <span style="color: var(--primary-color);">Safety Store</span>
+    </h1>
+    <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto; font-size: 0.98rem; line-height: 1.6;">
+      High-performance regulators, reinforced safety hoses, smart gas detectors, and stove burners with instant doorstep delivery.
+    </p>
+
+    <!-- Category Filter Tabs -->
+    <div class="category-tabs">
+      <button class="cat-btn active" onclick="filterCat('all', this)"><i class="fa-solid fa-table-cells"></i> All Items</button>
+      <button class="cat-btn" onclick="filterCat('regulator', this)"><i class="fa-solid fa-gauge-high"></i> Regulators</button>
+      <button class="cat-btn" onclick="filterCat('hose', this)"><i class="fa-solid fa-spaghetti"></i> Safety Hoses</button>
+      <button class="cat-btn" onclick="filterCat('stove', this)"><i class="fa-solid fa-fire"></i> Stoves & Burners</button>
+      <button class="cat-btn" onclick="filterCat('smart', this)"><i class="fa-solid fa-microchip"></i> Smart Detectors</button>
+    </div>
+  </section>
+
+  <!-- Products Grid -->
+  <main>
+    <div class="products-grid" id="productsGrid">
+      
+      <!-- Item 1 -->
+      <div class="product-card" data-cat="regulator">
+        <span class="product-badge">Top Seller</span>
+        <div>
+          <div class="product-icon-box"><i class="fa-solid fa-gauge-high"></i></div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Double Safety Low-Pressure Regulator</h3>
+          <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">
+            Features an automatic leak shut-off valve and double diaphragm protection mechanism. Fits all 12.5kg & 25kg cylinders.
+          </p>
+        </div>
+        <div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #10B981; margin-bottom: 12px;">₦8,500</div>
+          <button onclick="addToCart('Double Safety Regulator', 8500)" class="btn-action" style="padding: 10px; font-size: 0.88rem; min-height: 42px;">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Item 2 -->
+      <div class="product-card" data-cat="hose">
+        <span class="product-badge">Fire Resistant</span>
+        <div>
+          <div class="product-icon-box"><i class="fa-solid fa-disease"></i></div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Steel Braided Safety Hose (2M)</h3>
+          <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">
+            High-pressure reinforced rubber hose with inner stainless steel wire mesh. Heat resistant up to 300°C.
+          </p>
+        </div>
+        <div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #10B981; margin-bottom: 12px;">₦5,500</div>
+          <button onclick="addToCart('Steel Braided Safety Hose', 5500)" class="btn-action" style="padding: 10px; font-size: 0.88rem; min-height: 42px;">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Item 3 -->
+      <div class="product-card" data-cat="smart">
+        <span class="product-badge" style="background: rgba(59, 130, 246, 0.18); color: #3B82F6;">Smart Tech</span>
+        <div>
+          <div class="product-icon-box" style="color: #3B82F6; background: rgba(59, 130, 246, 0.12);"><i class="fa-solid fa-wifi"></i></div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Smart WiFi Gas Leak & Level Monitor</h3>
+          <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">
+            Ultrasonic cylinder weight sensor & WiFi gas leak alarm. Sends instant push alert to your phone when gas is low.
+          </p>
+        </div>
+        <div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #3B82F6; margin-bottom: 12px;">₦14,500</div>
+          <button onclick="addToCart('Smart WiFi Gas Monitor', 14500)" class="btn-action" style="background: #3B82F6; padding: 10px; font-size: 0.88rem; min-height: 42px;">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Item 4 -->
+      <div class="product-card" data-cat="stove">
+        <div>
+          <div class="product-icon-box"><i class="fa-solid fa-fire-burner"></i></div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Stainless Steel Double Table Stove</h3>
+          <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">
+            Heavy-duty cast iron double burners with automatic piezo ignition. High thermal efficiency blue flame.
+          </p>
+        </div>
+        <div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #10B981; margin-bottom: 12px;">₦38,000</div>
+          <button onclick="addToCart('Double Table Stove', 38000)" class="btn-action" style="padding: 10px; font-size: 0.88rem; min-height: 42px;">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Item 5 -->
+      <div class="product-card" data-cat="regulator">
+        <div>
+          <div class="product-icon-box"><i class="fa-solid fa-truck-monster"></i></div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Heavy Duty Cylinder Roller Stand</h3>
+          <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">
+            Multi-directional caster wheel base made of stainless steel. Effortlessly roll 12.5kg and 25kg cylinders across kitchen floors.
+          </p>
+        </div>
+        <div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #10B981; margin-bottom: 12px;">₦9,200</div>
+          <button onclick="addToCart('Cylinder Roller Stand', 9200)" class="btn-action" style="padding: 10px; font-size: 0.88rem; min-height: 42px;">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Item 6 -->
+      <div class="product-card" data-cat="hose">
+        <div>
+          <div class="product-icon-box"><i class="fa-solid fa-ring"></i></div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 6px;">Brass High-Pressure Hose Clamps (Pack of 4)</h3>
+          <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">
+            Heavy-duty rust-proof brass screw clamps to firmly secure gas hoses to regulator and stove nozzles.
+          </p>
+        </div>
+        <div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #10B981; margin-bottom: 12px;">₦2,500</div>
+          <button onclick="addToCart('Brass Hose Clamps (Pack of 4)', 2500)" class="btn-action" style="padding: 10px; font-size: 0.88rem; min-height: 42px;">
+            <i class="fa-solid fa-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Floating Mobile Cart Bar -->
+  <div class="cart-float-bar" onclick="toggleCartModal()">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span>Cart (<span id="cartCountFloat">0</span> Items)</span>
+    <span style="margin-left: 10px; background: rgba(0,0,0,0.2); padding: 2px 8px; border-radius: 12px; font-size: 0.82rem;" id="cartTotalFloat">₦0</span>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let cart = [];
+
+    function addToCart(name, price) {
+      cart.push({ name, price });
+      updateCartDisplay();
+      if (window.NotificationManager) {
+        NotificationManager.show(`Added "${name}" to your cart!`, 'success');
+      }
+    }
+
+    function updateCartDisplay() {
+      const count = cart.length;
+      const total = cart.reduce((sum, item) => sum + item.price, 0);
+      document.getElementById('cartCountHeader').innerText = count;
+      document.getElementById('cartCountFloat').innerText = count;
+      document.getElementById('cartTotalFloat').innerText = '₦' + total.toLocaleString();
+    }
+
+    function toggleCartModal() {
+      if (cart.length === 0) {
+        if (window.NotificationManager) NotificationManager.show('Your cart is empty! Add items first.', 'error');
+        return;
+      }
+      
+      AuthGuard.requireAuth((user) => {
+        const total = cart.reduce((sum, item) => sum + item.price, 0);
+        const itemList = cart.map(i => `• ${i.name} (₦${i.price.toLocaleString()})`).join('\n');
+        const waMsg = encodeURIComponent(`Hello EmberGas Store, I am ${user.name} (${user.phone}). I want to order:\n${itemList}\nTotal: ₦${total.toLocaleString()}`);
+        window.open(`https://wa.me/2348031234567?text=${waMsg}`, '_blank');
+      });
+    }
+
+    function filterCat(cat, btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.product-card').forEach(card => {
+        if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

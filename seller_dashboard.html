@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vendor & Station Operations Dashboard — EmberGas</title>
+  <meta name="description" content="LPG refill station manager portal to manage stock, pricing, and incoming gas orders." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body { background-color: var(--background-dark); color: var(--text-primary); }
+    
+    .vendor-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 14px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 25px;
+    }
+    
+    .metric-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .metric-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: rgba(5, 150, 105, 0.15);
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    
+    .stock-toggle-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .status-switch {
+      display: inline-flex;
+      background: rgba(255,255,255,0.05);
+      padding: 4px;
+      border-radius: 20px;
+      gap: 4px;
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    .switch-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 800;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .switch-btn.active { background: #10B981; color: white; }
+    
+    .btn-sm {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-approve { background: #10B981; color: white; }
+    .btn-reject { background: #EF4444; color: white; }
+
+    /* MOBILE SWEEP STYLES FOR VENDOR DASHBOARD */
+    @media (max-width: 900px) {
+      .vendor-header { padding: 12px 16px; }
+      
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+      
+      .metric-card {
+        padding: 14px !important;
+        gap: 10px !important;
+      }
+      
+      .stock-grid-mobile {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+      
+      .vendor-order-card-mobile {
+        background: var(--surface-light);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      
+      .vendor-desktop-table { display: none !important; }
+    }
+    
+    @media (min-width: 901px) {
+      .vendor-mobile-orders-list { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <a href="index.html" class="brand-logo">
+        <i class="fa-solid fa-store"></i> <span id="vendorBrandName">Vendor Hub</span>
+      </a>
+      <span style="background: rgba(0, 177, 79, 0.12); color: #00B14F; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">
+        <i class="fa-solid fa-circle" style="font-size: 0.45rem; vertical-align: middle;"></i> OPEN
+      </span>
+      <nav class="nav-desktop-links" style="display: flex; gap: 16px; margin-left: 15px;">
+        <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
+        <a href="seller_dashboard.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Vendor Hub</a>
+      </nav>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <!-- Portal Dropdown Switcher -->
+      <div class="portal-dropdown-container nav-desktop-links">
+        <button class="portal-dropdown-btn">
+          <i class="fa-solid fa-shield-cat"></i> Portals <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+        </button>
+        <div class="portal-dropdown-menu">
+          <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user" style="color: var(--primary-color);"></i> Customer Portal</a>
+          <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store" style="color: #00B14F;"></i> Vendor Station Hub</a>
+          <a href="refiller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-motorcycle" style="color: #F59E0B;"></i> Refiller Rider Portal</a>
+        </div>
+      </div>
+
+      <div style="font-size: 0.85rem; font-weight: 700; color: #111827; text-align: right;" id="vendorSubName">Loading...</div>
+
+      <!-- Dynamic Header User Profile Badge & Logout -->
+      <div id="authLink"></div>
+
+      <button onclick="openMobileDrawer()" style="background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: #111827; width: 40px; height: 40px; border-radius: 12px; font-size: 1.1rem; cursor: pointer;">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+  <div class="header-spacer"></div>
+
+  <main style="max-width: 1280px; margin: 20px auto; padding: 0 16px;">
+    <!-- Metrics Row -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">Total Revenue</div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #00B14F;">₦<span id="metricRevenue">0</span></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">Orders Received</div>
+          <div style="font-size: 1.3rem; font-weight: 800;" id="metricOrders">0</div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fa-solid fa-gas-pump"></i></div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">LPG Price / KG</div>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color);">₦<span id="metricRate">1,100</span></div>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-icon"><i class="fa-solid fa-user-check"></i></div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">Vendor Email</div>
+          <div style="font-size: 0.9rem; font-weight: 700; color: #F59E0B;" id="metricEmail">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory & Stock Status Control -->
+    <div class="stock-toggle-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <h3 style="font-size: 1.15rem;"><i class="fa-solid fa-sliders" style="color: var(--primary-color);"></i> Stock & Pricing Control</h3>
+        <button onclick="saveStockPrice()" style="background: var(--primary-color); color: #fff; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer;">
+          <i class="fa-solid fa-floppy-disk"></i> Update Pricing
+        </button>
+      </div>
+
+      <div class="stock-grid-mobile" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        <div style="background: rgba(255,255,255,0.06); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15);">
+          <div style="font-weight: 800; font-size: 0.88rem; color: #10B981; margin-bottom: 8px;">12.5 kg Stock</div>
+          <div class="status-switch">
+            <button class="switch-btn active">IN STOCK</button>
+            <button class="switch-btn">LOW</button>
+            <button class="switch-btn">EMPTY</button>
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.06); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15);">
+          <div style="font-weight: 800; font-size: 0.88rem; color: #10B981; margin-bottom: 8px;">6.0 kg Stock</div>
+          <div class="status-switch">
+            <button class="switch-btn active">IN STOCK</button>
+            <button class="switch-btn">LOW</button>
+            <button class="switch-btn">EMPTY</button>
+          </div>
+        </div>
+
+        <!-- High-Contrast LPG Rate / KG Section -->
+        <div style="background: rgba(16, 185, 129, 0.1); padding: 14px; border-radius: 14px; border: 1.5px solid #10B981;">
+          <div style="font-weight: 800; font-size: 0.88rem; color: #10B981; margin-bottom: 8px;">
+            <i class="fa-solid fa-tag"></i> LPG Rate / KG (₦)
+          </div>
+          <input type="number" id="lpgRate" value="1100" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: #FFFFFF; border: 2px solid #10B981; color: #111827; font-size: 1.15rem; font-weight: 800; outline: none; box-sizing: border-box;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Incoming Orders Stream -->
+    <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;">
+      <h3 style="margin-bottom: 14px; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Live Order Queue</h3>
+      
+      <!-- Desktop Table -->
+      <div class="vendor-desktop-table" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+          <thead>
+            <tr style="color: var(--text-secondary); border-bottom: 1px solid var(--glass-border);">
+              <th style="padding: 10px;">Order ID</th>
+              <th style="padding: 10px;">Customer</th>
+              <th style="padding: 10px;">Cylinder Size</th>
+              <th style="padding: 10px;">Delivery Address</th>
+              <th style="padding: 10px;">Amount</th>
+              <th style="padding: 10px;">Driver</th>
+              <th style="padding: 10px;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="vendorOrdersTableBody">
+            <tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-list-check"></i> No customer orders yet. They will appear here when placed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Touch Cards for Vendor Orders -->
+      <div class="vendor-mobile-orders-list" id="vendorMobileOrders">
+        <div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.88rem;">
+          <i class="fa-solid fa-list-check"></i> No orders yet.
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Delivery Option Dispatch Modal -->
+  <div id="dispatchModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; padding:15px;">
+    <div style="background:#161B22; border:1px solid #30363D; border-radius:20px; max-width:480px; width:100%; padding:24px; color:#F0F6FC;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0; font-size:1.15rem;"><i class="fa-solid fa-truck-fast" style="color:#10B981;"></i> Order Accepted! Select Delivery Option</h3>
+        <button onclick="closeDispatchModal()" style="background:none; border:none; color:#8B949E; font-size:1.3rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p style="color:#8B949E; font-size:0.88rem; margin-bottom:20px;">Cylinder refilled! Choose how you want to deliver this order to the customer:</p>
+
+      <!-- Option 1: Vendor Self Delivery -->
+      <div onclick="dispatchSelfDelivery()" style="background:#0D1117; border:2px solid #10B981; border-radius:14px; padding:16px; margin-bottom:14px; cursor:pointer;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:50%; background:rgba(16,185,129,0.2); color:#10B981; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <div style="font-weight:800; font-size:0.95rem; color:#fff;">Option A: Vendor Self-Delivery</div>
+            <div style="font-size:0.78rem; color:#8B949E;">Deliver directly to customer without using a rider.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Option 2: Assign to Rider -->
+      <div style="background:#0D1117; border:1px solid #30363D; border-radius:14px; padding:16px;">
+        <div style="font-weight:800; font-size:0.95rem; color:#fff; margin-bottom:8px;">
+          <i class="fa-solid fa-motorcycle" style="color:#F59E0B;"></i> Option B: Assign Registered Refiller Rider
+        </div>
+        <select id="dispatchRiderSelect" style="width:100%; padding:10px 12px; border-radius:10px; background:#161B22; border:1px solid #30363D; color:#fff; font-size:0.88rem; margin-bottom:12px;">
+          <option value="Musa K. (Rider #02)">Musa K. (08031122334) • Available [Verified ✅]</option>
+        </select>
+        <button onclick="dispatchToSelectedRider()" style="width:100%; background:#F59E0B; border:none; color:#111827; padding:11px; border-radius:10px; font-weight:800; cursor:pointer;">
+          Assign Order to Selected Rider →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // ── Redirect vendor if not logged in ──────────────────────────────────
+    const vendorUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!vendorUser || (vendorUser.role !== 'vendor' && vendorUser.role !== 'admin')) {
+      if (window.NotificationManager) NotificationManager.show('Vendor access only. Please log in as a vendor.', 'error');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    } else {
+      // Populate real vendor identity
+      document.getElementById('vendorBrandName').innerText = vendorUser.name + ' Hub';
+      document.getElementById('vendorSubName').innerText = vendorUser.name;
+      document.getElementById('metricEmail').innerText = vendorUser.email || '—';
+    }
+
+    function renderVendorOrders() {
+      // ── Load all platform orders from unified key ──
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const pendingOrders = allOrders.filter(o => o.status === 'PLACED' || o.status === 'ACCEPTED');
+
+      const totalRevenue = allOrders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+      document.getElementById('metricRevenue').innerText = totalRevenue.toLocaleString();
+      document.getElementById('metricOrders').innerText = allOrders.length + ' Orders';
+
+      // Render orders queue
+      const tbody = document.getElementById('vendorOrdersTableBody');
+      const mobileList = document.getElementById('vendorMobileOrders');
+
+      if (allOrders.length > 0) {
+        tbody.innerHTML = allOrders.map((o) => {
+          const statusBadge = o.status === 'PLACED'
+            ? '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">PENDING</span>'
+            : o.status === 'ACCEPTED'
+              ? '<span style="background:rgba(16,185,129,0.15);color:#10B981;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">ACCEPTED</span>'
+              : `<span style="background:rgba(107,114,128,0.15);color:#9CA3AF;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">${o.status}</span>`;
+
+          const actionBtns = (o.status === 'PLACED')
+            ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept</button>
+               <button class="btn-sm btn-reject" style="margin-left:4px;" onclick="rejectOrder('${o.id}')">✕ Reject</button>`
+            : (o.status === 'ACCEPTED')
+              ? `<button class="btn-sm btn-approve" onclick="showDispatch('${o.id}')">📦 Dispatch</button>`
+              : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
+
+          return `<tr id="row-${o.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 12px 10px; font-weight:700;">#${o.id}</td>
+            <td style="padding: 12px 10px;">${o.customerName || o.userEmail || '—'}</td>
+            <td style="padding: 12px 10px;">${o.size || o.cylinderSize} kg ${o.serviceType || 'Refill'}</td>
+            <td style="padding: 12px 10px;">${o.address || '—'}</td>
+            <td style="padding: 12px 10px; color:#00B14F; font-weight:800;">₦${Number(o.total).toLocaleString()}</td>
+            <td style="padding: 12px 10px;">${statusBadge}</td>
+            <td style="padding: 12px 10px;">${actionBtns}</td>
+          </tr>`;
+        }).join('');
+
+        mobileList.innerHTML = allOrders.map((o) => {
+          const statusColor = o.status === 'PLACED' ? '#F59E0B' : o.status === 'ACCEPTED' ? '#10B981' : '#9CA3AF';
+          return `<div class="vendor-order-card-mobile" id="m-row-${o.id}">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span style="font-weight: 800;">#${o.id}</span>
+              <span style="color: ${statusColor}; font-weight: 800; font-size:0.8rem;">${o.status}</span>
+            </div>
+            <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || '—'} • ${o.size || o.cylinderSize}kg</div>
+            <div style="font-size: 0.78rem; color: var(--text-secondary); margin: 4px 0; font-weight:600;">₦${Number(o.total).toLocaleString()} • ${o.address || '—'}</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:10px;">
+              ${o.status === 'PLACED'
+                ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Order</button>
+                   <button class="btn-sm btn-reject" style="flex: 1;" onclick="rejectOrder('${o.id}')">✕ Reject</button>`
+                : o.status === 'ACCEPTED'
+                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="showDispatch('${o.id}')">📦 Choose Delivery</button>`
+                  : `<span style="color:#9CA3AF;font-size:0.8rem;padding:6px 0;">${o.status}</span>`
+              }
+            </div>
+          </div>`;
+        }).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-list-check"></i> No customer orders yet. They will appear here when placed.</td></tr>';
+        mobileList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.88rem;"><i class="fa-solid fa-list-check"></i> No orders yet. Orders from customers will show up here.</div>';
+      }
+    }
+
+    renderVendorOrders();
+
+    // Auto-refresh every 5 seconds to pick up new orders from customer
+    setInterval(renderVendorOrders, 5000);
+
+    function saveStockPrice() {
+      const rate = document.getElementById('lpgRate').value;
+      document.getElementById('vendorRate') && (document.getElementById('vendorRate').innerText = Number(rate).toLocaleString());
+      document.getElementById('metricRate') && (document.getElementById('metricRate').innerText = Number(rate).toLocaleString());
+      if (window.NotificationManager) NotificationManager.show(`Gas Price updated to ₦${rate} / kg`, 'success');
+    }
+
+    let currentDispatchOrderId = null;
+
+    function showDispatch(orderId) {
+      currentDispatchOrderId = orderId;
+      // Set this order as the active one
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const order = allOrders.find(o => o.id === orderId);
+      if (order) OrderStateManager.saveActiveOrder(order);
+
+      const modal = document.getElementById('dispatchModal');
+      if (modal) modal.style.display = 'flex';
+      loadRegisteredRiders();
+    }
+
+    function closeDispatchModal() {
+      const modal = document.getElementById('dispatchModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function loadRegisteredRiders() {
+      const select = document.getElementById('dispatchRiderSelect');
+      if (!select) return;
+
+      const localAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const localRiders = localAccounts.filter(a => a.role === 'refiller' || a.role === 'rider');
+
+      try {
+        const res = await safeFetchApi('/api/auth/users-by-role/refiller', { method: 'GET' });
+        if (res.ok) {
+          const apiRiders = await res.json();
+          apiRiders.forEach(r => {
+            if (!localRiders.some(x => x.email === r.email)) {
+              localRiders.push({ name: r.name, phone: r.phone, email: r.email });
+            }
+          });
+        }
+      } catch (e) {}
+
+      if (localRiders.length > 0) {
+        select.innerHTML = localRiders.map(r => `
+          <option value="${r.name} (${r.phone || 'Rider'})" data-email="${r.email}" style="color:#111827;background:#fff;">
+            ${r.name} (${r.phone || 'Available'}) • [Verified Rider ✅]
+          </option>
+        `).join('');
+      }
+    }
+
+    function acceptOrder(orderId) {
+      // Find the order and set it as the active order
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      if (orderIdx === -1) return;
+
+      allOrders[orderIdx].status = 'ACCEPTED';
+      localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+
+      // Mark as active order too
+      OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
+      currentDispatchOrderId = orderId;
+
+      if (window.NotificationManager) NotificationManager.show(`Order #${orderId} Accepted! Cylinder being filled...`, 'success');
+
+      // Send Brevo email to Customer
+      const order = allOrders[orderIdx];
+      safeFetchApi('/api/auth/notify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toEmail: order.userEmail,
+          toName: order.customerName,
+          subject: `Order #${order.id} Accepted by Vendor! — EmberGas`,
+          title: `Vendor Accepted Your Order #${order.id}`,
+          bodyHtml: `
+            <p>Hello <strong>${order.customerName}</strong>,</p>
+            <p>Station Vendor <strong>${vendorUser.name}</strong> has accepted your order for <strong>${order.cylinderSize}</strong>!</p>
+            <p>Your gas cylinder is currently being refilled and prepared for delivery.</p>
+          `
+        })
+      }).catch(() => {});
+
+      renderVendorOrders();
+    }
+
+    function dispatchSelfDelivery() {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const orderIdx = allOrders.findIndex(o => o.id === currentDispatchOrderId);
+
+      let order;
+      if (orderIdx !== -1) {
+        allOrders[orderIdx].status = 'EN_ROUTE';
+        allOrders[orderIdx].riderName = vendorUser.name + ' (Vendor Self-Delivery)';
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+        order = allOrders[orderIdx];
+        OrderStateManager.saveActiveOrder(order);
+      } else {
+        order = OrderStateManager.getActiveOrder();
+        order.riderName = vendorUser.name + ' (Vendor Self-Delivery)';
+        OrderStateManager.updateOrderStatus('EN_ROUTE');
+      }
+
+      if (order && order.userEmail) {
+        safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: order.userEmail,
+            toName: order.customerName,
+            subject: `Order #${order.id} En Route (Vendor Self-Delivery) — EmberGas`,
+            title: `Vendor is Delivering Your Order #${order.id}`,
+            bodyHtml: `
+              <p>Hello <strong>${order.customerName}</strong>,</p>
+              <p>Station Vendor <strong>${vendorUser.name}</strong> is personally delivering your refilled cylinder to you!</p>
+              <p>Delivery Address: <strong>${order.address}</strong></p>
+              <p>Please be available to receive your gas cylinder.</p>
+            `
+          })
+        }).catch(() => {});
+      }
+
+      closeDispatchModal();
+      if (window.NotificationManager) NotificationManager.show('Self-delivery dispatched! Customer notified.', 'success');
+      renderVendorOrders();
+    }
+
+    function dispatchToSelectedRider() {
+      const riderSelect = document.getElementById('dispatchRiderSelect');
+      const chosenRider = riderSelect ? riderSelect.value : 'Assigned Rider';
+      const riderEmail = riderSelect && riderSelect.selectedOptions[0] ? riderSelect.selectedOptions[0].getAttribute('data-email') : null;
+
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const orderIdx = allOrders.findIndex(o => o.id === currentDispatchOrderId);
+
+      let order;
+      if (orderIdx !== -1) {
+        allOrders[orderIdx].status = 'ASSIGNED_TO_RIDER';
+        allOrders[orderIdx].riderName = chosenRider;
+        allOrders[orderIdx].riderEmail = riderEmail;
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+        order = allOrders[orderIdx];
+        OrderStateManager.saveActiveOrder(order);
+      } else {
+        order = OrderStateManager.getActiveOrder();
+        order.riderName = chosenRider;
+        order.riderEmail = riderEmail;
+        OrderStateManager.updateOrderStatus('ASSIGNED_TO_RIDER');
+        OrderStateManager.saveActiveOrder(order);
+      }
+
+      // Notify customer a rider has been assigned
+      if (order && order.userEmail) {
+        safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: order.userEmail,
+            toName: order.customerName,
+            subject: `Rider Assigned to Order #${order.id}! — EmberGas`,
+            title: `A Rider Has Been Assigned to Your Order`,
+            bodyHtml: `
+              <p>Hello <strong>${order.customerName}</strong>,</p>
+              <p>Vendor <strong>${vendorUser.name}</strong> has assigned Rider <strong>${chosenRider}</strong> to deliver your gas refill!</p>
+              <p>Your delivery is coming soon to: <strong>${order.address}</strong></p>
+              <p>Track your delivery live on the EmberGas portal.</p>
+            `
+          })
+        }).catch(() => {});
+      }
+
+      closeDispatchModal();
+      if (window.NotificationManager) NotificationManager.show(`Order assigned to ${chosenRider}! Awaiting rider acceptance.`, 'success');
+      renderVendorOrders();
+    }
+
+    function rejectOrder(orderId) {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      if (orderIdx !== -1) {
+        allOrders[orderIdx].status = 'CANCELLED';
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+      }
+      if (window.NotificationManager) NotificationManager.show('Order Declined', 'error');
+      renderVendorOrders();
+    }
+  </script>
+</body>
+</html>

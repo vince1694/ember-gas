@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — EmberGas Marketplace</title>
+  <meta name="description" content="Sign up for an EmberGas account to order cooking gas, track live delivery, or register as a LPG refiller vendor." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="auth.css">
+
+  <style>
+    /* ── Clean Light Mode Auth Styling ── */
+    .auth-tab-bar {
+      display: flex;
+      gap: 6px;
+      background: #F3F4F6;
+      padding: 5px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      border: 1px solid #E5E7EB;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: #6B7280;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .auth-tab-btn.active {
+      background: #00B14F;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 177, 79, 0.3);
+    }
+
+    .role-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: #F8FAFC;
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid #E5E7EB;
+    }
+    .role-tab {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: transparent;
+      color: #4B5563;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .role-tab.active {
+      background: #00B14F;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 177, 79, 0.3);
+    }
+
+    .account-type-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .type-card {
+      padding: 14px 12px;
+      border-radius: 14px;
+      border: 1px solid #E5E7EB;
+      background: #F8FAFC;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .type-card.active {
+      border-color: #00B14F;
+      background: #E6F7ED;
+      box-shadow: 0 4px 12px rgba(0, 177, 79, 0.15);
+    }
+
+    .strength-meter {
+      height: 5px;
+      background: #E5E7EB;
+      border-radius: 4px;
+      margin-top: -12px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .strength-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s, background-color 0.3s;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .registered-banner {
+      display: none;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10B981;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      color: #10B981;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: left;
+    }
+    .registered-banner.show { display: flex; align-items: center; gap: 10px; }
+
+    /* OTP Modal */
+    .otp-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .otp-overlay.show { display: flex; }
+    .otp-modal {
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 20px;
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    }
+    .otp-inputs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .otp-box {
+      width: 44px;
+      height: 50px;
+      border-radius: 12px;
+      background: #F9FAFB;
+      border: 1px solid #D1D5DB;
+      color: #00B14F;
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-align: center;
+      font-family: monospace;
+    }
+    .otp-box:focus {
+      border-color: #00B14F;
+      background: #FFFFFF;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 177, 79, 0.15);
+    }
+  </style>
+</head>
+<body class="auth-body">
+  <!-- Top Master Header Navigation -->
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <a href="index.html" class="brand-logo">
+        <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
+      </a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="index.html" style="color: #6B7280; font-weight: 700; text-decoration: none; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-arrow-left"></i> Home
+      </a>
+      <button onclick="openMobileDrawer()" class="mobile-drawer-trigger">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+
+  <div class="auth-card" id="mainAuthCard" style="max-width: 480px; padding: 36px 30px;">
+    <!-- Top Mode Selector Tabs (Sign In vs Create Account) -->
+    <div class="auth-tab-bar">
+      <button class="auth-tab-btn" id="tabBtnLogin" onclick="switchAuthMode('login')">
+        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+      </button>
+      <button class="auth-tab-btn active" id="tabBtnSignup" onclick="switchAuthMode('signup')">
+        <i class="fa-solid fa-user-plus"></i> Create Account
+      </button>
+    </div>
+
+    <!-- Banners -->
+    <div class="registered-banner" id="regBanner">
+      <i class="fa-solid fa-circle-check" style="font-size: 1.3rem;"></i>
+      <div>
+        <div style="font-weight: 800; color: #fff;">Account Verified!</div>
+        <div style="font-size: 0.78rem; opacity: 0.9;">Please log in below with your credentials.</div>
+      </div>
+    </div>
+
+    <!-- ────────────────── FORM 1: SIGN UP ────────────────── -->
+    <div id="sectionSignup">
+      <h2 style="font-size: 1.6rem; margin-bottom: 6px;">Create Account</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.9rem;">Join Nigeria's #1 Cooking Gas & LPG Refill Marketplace</p>
+
+      <!-- Account Type Grid (Customer, Vendor, Dispatch Rider) -->
+      <div class="account-type-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
+        <div class="type-card active" id="typeCustomer" onclick="selectSignupType('customer')" style="text-align: center; padding: 12px 6px;">
+          <i class="fa-solid fa-house-fire" style="font-size: 1.3rem; color: var(--primary-color);"></i>
+          <div style="font-weight: 700; font-size: 0.78rem; color: #fff; margin-top: 4px;">Customer</div>
+        </div>
+        <div class="type-card" id="typeVendor" onclick="selectSignupType('vendor')" style="text-align: center; padding: 12px 6px;">
+          <i class="fa-solid fa-gas-pump" style="font-size: 1.3rem; color: var(--primary-color);"></i>
+          <div style="font-weight: 700; font-size: 0.78rem; color: #fff; margin-top: 4px;">Gas Station</div>
+        </div>
+        <div class="type-card" id="typeRefiller" onclick="selectSignupType('refiller')" style="text-align: center; padding: 12px 6px;">
+          <i class="fa-solid fa-motorcycle" style="font-size: 1.3rem; color: var(--primary-color);"></i>
+          <div style="font-weight: 700; font-size: 0.78rem; color: #fff; margin-top: 4px;">Dispatch Rider</div>
+        </div>
+      </div>
+
+      <form class="auth-form" id="signupForm" onsubmit="handleSignupSubmit(event)">
+        <input type="hidden" id="accountType" value="customer">
+
+        <div class="form-group">
+          <input type="text" id="fullname" placeholder="Full Name or Business Name" required>
+          <i class="fa-solid fa-user"></i>
+        </div>
+
+        <div class="form-group">
+          <input type="email" id="signupEmail" placeholder="Email Address" required>
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+
+        <div class="form-group">
+          <input type="tel" id="phone" placeholder="Phone Number (e.g., 08012345678)" required>
+          <i class="fa-solid fa-phone"></i>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="signupPassword" placeholder="Create Password" required oninput="checkStrength(this.value)">
+          <i class="fa-solid fa-lock"></i>
+          <i class="fa-solid fa-eye pw-toggle" id="signupPwToggle" onclick="togglePw('signupPassword', 'signupPwToggle')"></i>
+        </div>
+        <div class="strength-meter">
+          <div class="strength-bar" id="strengthBar"></div>
+        </div>
+
+        <div class="auth-actions" style="margin-bottom: 18px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;">
+            <input type="checkbox" required style="accent-color: var(--primary-color);" checked>
+            <span>I agree to the <a href="#">Terms</a> & <a href="#">Privacy Policy</a></span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-auth" id="sendOtpSubmitBtn">
+          <i class="fa-solid fa-paper-plane"></i> Send Brevo OTP Email & Register
+        </button>
+      </form>
+    </div>
+
+    <!-- ────────────────── FORM 2: LOG IN ────────────────── -->
+    <div id="sectionLogin" style="display: none;">
+      <h2 style="font-size: 1.6rem; margin-bottom: 6px;">Welcome Back</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.9rem;">Select your portal and sign in to your account</p>
+
+      <!-- Role Selection Tabs -->
+      <div class="role-tabs">
+        <button class="role-tab active" data-role="customer" onclick="setLoginRole('customer', 'Customer Dashboard')">
+          <i class="fa-solid fa-user"></i> Customer
+        </button>
+        <button class="role-tab" data-role="vendor" onclick="setLoginRole('vendor', 'Vendor Portal')">
+          <i class="fa-solid fa-store"></i> Vendor
+        </button>
+        <button class="role-tab" data-role="refiller" onclick="setLoginRole('refiller', 'Refiller Rider')">
+          <i class="fa-solid fa-motorcycle"></i> Driver
+        </button>
+      </div>
+
+      <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+        <input type="hidden" id="selectedRole" value="customer">
+
+        <div class="form-group">
+          <input type="email" id="email" placeholder="Email Address" required>
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="password" placeholder="Password" required>
+          <i class="fa-solid fa-lock"></i>
+          <i class="fa-solid fa-eye pw-toggle" id="loginPwToggle" onclick="togglePw('password', 'loginPwToggle')"></i>
+        </div>
+
+        <div class="auth-actions">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" checked style="accent-color: var(--primary-color);"> Remember me
+          </label>
+          <a href="#">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn-auth" id="loginBtn">
+          Log In to <span id="portalLabel">Customer Dashboard</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <a href="index.html" style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+    </div>
+  </div>
+
+  <!-- OTP Verification Modal -->
+  <div class="otp-overlay" id="otpModal">
+    <div class="otp-modal">
+      <div style="width: 52px; height: 52px; background: rgba(0,177,79,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: #00B14F; font-size: 1.4rem;">
+        <i class="fa-solid fa-envelope-circle-check"></i>
+      </div>
+      <h3 style="margin: 0 0 6px; font-size: 1.25rem; color: #111827;">Enter Brevo Email OTP</h3>
+      <p style="margin: 0; font-size: 0.82rem; color: #6B7280;">
+        Check your inbox for the 6-digit code sent to <br><strong id="otpEmailTarget" style="color: #111827;">email@example.com</strong>
+      </p>
+
+      <div class="otp-inputs">
+        <input type="text" class="otp-box" id="otp1" maxlength="1" oninput="focusNext(this, 'otp2')">
+        <input type="text" class="otp-box" id="otp2" maxlength="1" oninput="focusNext(this, 'otp3')">
+        <input type="text" class="otp-box" id="otp3" maxlength="1" oninput="focusNext(this, 'otp4')">
+        <input type="text" class="otp-box" id="otp4" maxlength="1" oninput="focusNext(this, 'otp5')">
+        <input type="text" class="otp-box" id="otp5" maxlength="1" oninput="focusNext(this, 'otp6')">
+        <input type="text" class="otp-box" id="otp6" maxlength="1">
+      </div>
+
+      <button onclick="confirmOtpAndRegister()" class="btn-auth" style="margin-bottom: 10px;">
+        <i class="fa-solid fa-shield-check"></i> Verify & Complete Registration
+      </button>
+
+      <!-- Resend OTP -->
+      <div style="margin-top: 14px; font-size: 0.82rem; color: #6B7280;">
+        Didn't get the code?
+        <button id="resendOtpBtn" onclick="resendOtp()" style="background: transparent; border: none; color: #00B14F; font-weight: 700; font-size: 0.82rem; cursor: pointer; padding: 0 4px;">
+          Resend OTP
+        </button>
+        <span id="resendCountdown" style="color: #6B7280; font-size: 0.78rem;"></span>
+      </div>
+      
+      <button onclick="closeOtpModal()" style="background: transparent; border: none; color: #8B949E; font-size: 0.82rem; cursor: pointer; margin-top: 10px; display: block;">
+        Cancel / Edit Details
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let currentLoginRole = 'customer';
+    let pendingSignupUser = null;
+    let serverOtpCode = null;
+    let resendTimer = null;
+    let resendSeconds = 0;
+
+    function switchAuthMode(mode) {
+      const isSignup = mode === 'signup';
+      document.getElementById('tabBtnSignup').classList.toggle('active', isSignup);
+      document.getElementById('tabBtnLogin').classList.toggle('active', !isSignup);
+      document.getElementById('sectionSignup').style.display = isSignup ? 'block' : 'none';
+      document.getElementById('sectionLogin').style.display = isSignup ? 'none' : 'block';
+    }
+
+    function setLoginRole(role, labelText) {
+      currentLoginRole = role;
+      document.getElementById('selectedRole').value = role;
+      document.getElementById('portalLabel').innerText = labelText;
+      document.querySelectorAll('.role-tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-role') === role));
+    }
+
+    function selectSignupType(type) {
+      document.getElementById('accountType').value = type;
+      if (document.getElementById('typeCustomer')) document.getElementById('typeCustomer').classList.toggle('active', type === 'customer');
+      if (document.getElementById('typeVendor')) document.getElementById('typeVendor').classList.toggle('active', type === 'vendor');
+      if (document.getElementById('typeRefiller')) document.getElementById('typeRefiller').classList.toggle('active', type === 'refiller');
+    }
+
+    function togglePw(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    function checkStrength(val) {
+      const bar = document.getElementById('strengthBar');
+      if (!val) { bar.style.width = '0%'; return; }
+      let score = 0;
+      if (val.length >= 6) score += 33;
+      if (/[A-Z]/.test(val) || /[0-9]/.test(val)) score += 33;
+      if (/[^A-Za-z0-9]/.test(val) || val.length >= 10) score += 34;
+
+      bar.style.width = score + '%';
+      bar.style.backgroundColor = score < 50 ? '#EF4444' : score < 80 ? '#F59E0B' : '#10B981';
+    }
+
+    function focusNext(current, nextId) {
+      if (current.value.length >= 1) {
+        document.getElementById(nextId).focus();
+      }
+    }
+
+    // Check URL parameters on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const path = window.location.pathname.split('/').pop();
+      const params = new URLSearchParams(window.location.search);
+
+      if (path === 'signup.html' || params.get('mode') === 'signup') {
+        switchAuthMode('signup');
+      }
+
+      if (params.get('registered') === 'true') {
+        document.getElementById('regBanner').classList.add('show');
+        const emailParam = params.get('email');
+        if (emailParam) document.getElementById('email').value = emailParam;
+      } else if (params.get('auth_required') === 'true') {
+        document.getElementById('authReqBanner').classList.add('show');
+      }
+    });
+
+    async function safeFetchApi(path, options) {
+      const hosts = Array.from(new Set([
+        '',
+        `http://${window.location.hostname || '127.0.0.1'}:5000`,
+        'http://127.0.0.1:5000',
+        'http://localhost:5000'
+      ]));
+
+      let lastError;
+      for (const host of hosts) {
+        try {
+          const res = await fetch((host ? host : '') + path, options);
+          if (res.status < 500) return res;
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      throw lastError || new Error('Server not reachable');
+    }
+
+    async function handleSignupSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('fullname').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('signupPassword').value;
+
+      if (!name || !email || !phone || !password) {
+        if (window.NotificationManager) NotificationManager.show('Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Reset OTP boxes
+      for (let i = 1; i <= 6; i++) {
+        document.getElementById(`otp${i}`).value = '';
+      }
+
+      pendingSignupUser = { name, email, phone, password, role: document.getElementById('accountType').value };
+      document.getElementById('otpEmailTarget').innerText = email;
+
+      if (window.NotificationManager) {
+        NotificationManager.show(`Sending OTP to ${email} via Brevo Email...`, 'success');
+      }
+
+      // Call Backend API — sends real Brevo email to the user's email address
+      try {
+        const res = await safeFetchApi('/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name, phone })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to send OTP. Check email address and try again.', 'error');
+          return;
+        }
+        if (window.NotificationManager) {
+          NotificationManager.show(`OTP sent to ${email}. Please check your inbox and spam folder!`, 'success');
+        }
+      } catch (err) {
+        console.error('Backend unreachable:', err.message);
+        if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure the backend is running: cd server && node server.js', 'error');
+        return;
+      }
+
+      // Show OTP modal and start resend countdown
+      document.getElementById('otpModal').classList.add('show');
+      document.getElementById('otp1').focus();
+      startResendCountdown(30);
+    }
+
+    async function confirmOtpAndRegister() {
+      if (!pendingSignupUser) return;
+
+      // Collect user-entered OTP code
+      let enteredOtp = '';
+      for (let i = 1; i <= 6; i++) {
+        enteredOtp += document.getElementById(`otp${i}`).value.trim();
+      }
+
+      if (enteredOtp.length < 6) {
+        if (window.NotificationManager) NotificationManager.show('Please enter the full 6-digit OTP code sent to your email', 'error');
+        return;
+      }
+
+      // Verify OTP against backend
+      try {
+        const verifyRes = await safeFetchApi('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: pendingSignupUser.email, otpCode: enteredOtp })
+        });
+        const verifyData = await verifyRes.json();
+        if (!verifyData.isVerified) {
+          if (window.NotificationManager) NotificationManager.show('Incorrect OTP! Check your email inbox and try again.', 'error');
+          return;
+        }
+      } catch (err) {
+        console.warn('Verify OTP backend error:', err.message);
+      }
+
+      // Save new account to local registry
+      const registeredAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const alreadyExists = registeredAccounts.some(a => a.email.toLowerCase() === pendingSignupUser.email.toLowerCase());
+      if (!alreadyExists) {
+        registeredAccounts.push(pendingSignupUser);
+        localStorage.setItem('emberGasAccounts', JSON.stringify(registeredAccounts));
+      }
+
+      // Close modal
+      closeOtpModal();
+
+      if (window.NotificationManager) {
+        NotificationManager.show('✅ Account verified successfully! Logging you in...', 'success');
+      }
+
+      // Auto-login user upon successful OTP verification
+      const activeUserObj = {
+        name: pendingSignupUser.name,
+        email: pendingSignupUser.email,
+        phone: pendingSignupUser.phone,
+        role: pendingSignupUser.role || 'customer',
+        loginTime: new Date().toISOString()
+      };
+      localStorage.setItem('currentUser', JSON.stringify(activeUserObj));
+
+      // Determine correct redirect based on role:
+      // Customer -> dashboard.html
+      // Vendor -> seller_dashboard.html
+      // Refiller Rider -> refiller_dashboard.html
+      const redirectMap = {
+        customer: 'dashboard.html',
+        vendor: 'seller_dashboard.html',
+        refiller: 'refiller_dashboard.html',
+        rider: 'refiller_dashboard.html',
+        admin: 'admin.html'
+      };
+      const targetPage = redirectMap[activeUserObj.role] || 'dashboard.html';
+
+      setTimeout(() => {
+        window.location.href = targetPage;
+      }, 800);
+    }
+
+    function closeOtpModal() {
+      document.getElementById('otpModal').classList.remove('show');
+      clearInterval(resendTimer);
+      document.getElementById('resendCountdown').innerText = '';
+      document.getElementById('resendOtpBtn').disabled = false;
+    }
+
+    function startResendCountdown(seconds = 30) {
+      const btn = document.getElementById('resendOtpBtn');
+      const countdown = document.getElementById('resendCountdown');
+      btn.disabled = true;
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+      resendSeconds = seconds;
+      countdown.innerText = `(${resendSeconds}s)`;
+      clearInterval(resendTimer);
+      resendTimer = setInterval(() => {
+        resendSeconds--;
+        countdown.innerText = `(${resendSeconds}s)`;
+        if (resendSeconds <= 0) {
+          clearInterval(resendTimer);
+          countdown.innerText = '';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        }
+      }, 1000);
+    }
+
+    async function resendOtp() {
+      if (!pendingSignupUser) return;
+      const { email, name, phone } = pendingSignupUser;
+
+      for (let i = 1; i <= 6; i++) document.getElementById(`otp${i}`).value = '';
+      document.getElementById('otp1').focus();
+
+      if (window.NotificationManager) NotificationManager.show(`Resending OTP to ${email}...`, 'success');
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name, phone })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to resend OTP. Try again.', 'error');
+          return;
+        }
+        if (window.NotificationManager) NotificationManager.show(`New OTP sent to ${email}. Check your inbox!`, 'success');
+        startResendCountdown(30);
+      } catch (err) {
+        if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure the backend is running.', 'error');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('selectedRole').value;
+
+      const registeredAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const userAccount = registeredAccounts.find(a => a.email.toLowerCase() === email.toLowerCase());
+
+      if (!userAccount) {
+        if (window.NotificationManager) {
+          NotificationManager.show('Account not found! Switch to "Create Account" tab to register.', 'error');
+        } else {
+          alert('Account not found! Please create an account first.');
+        }
+        return;
+      }
+
+      if (userAccount.password !== password) {
+        if (window.NotificationManager) NotificationManager.show('Incorrect password! Check your credentials.', 'error');
+        return;
+      }
+
+      const activeUserObj = {
+        name: userAccount.name,
+        email: userAccount.email,
+        phone: userAccount.phone,
+        role: userAccount.role || role,
+        loginTime: new Date().toISOString()
+      };
+      localStorage.setItem('currentUser', JSON.stringify(activeUserObj));
+
+      if (window.NotificationManager) NotificationManager.show(`Welcome back, ${activeUserObj.name}! Redirecting...`, 'success');
+
+      const targetRole = activeUserObj.role || role;
+      setTimeout(() => {
+        switch (targetRole) {
+          case 'customer': window.location.href = 'dashboard.html'; break;
+          case 'vendor': window.location.href = 'seller_dashboard.html'; break;
+          case 'refiller': window.location.href = 'refiller_dashboard.html'; break;
+          default: window.location.href = 'dashboard.html';
+        }
+      }, 600);
+    }
+
+    // --- OPTIMIZED MOBILE SWEEP GESTURE ENGINE FOR AUTH CARDS ---
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const cardEl = document.getElementById('mainAuthCard');
+
+    if (cardEl) {
+      cardEl.addEventListener('touchstart', (e) => {
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      cardEl.addEventListener('touchend', (e) => {
+        const tag = e.target.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+
+        const touchEndX = e.changedTouches[0].screenX;
+        const touchEndY = e.changedTouches[0].screenY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+
+        // Require substantial horizontal swipe (> 60px) and low vertical drift (< 45px)
+        if (Math.abs(diffX) > 60 && Math.abs(diffY) < 45) {
+          const isSignupSection = document.getElementById('sectionSignup').style.display !== 'none';
+
+          if (diffX < 0) {
+            // Swipe Left
+            if (!isSignupSection) {
+              switchAuthMode('signup');
+              if (window.NotificationManager) NotificationManager.show('Swiped Left: Create Account Mode', 'success');
+            } else {
+              // Cycle signup account types: customer -> vendor -> refiller
+              const currentType = document.getElementById('accountType').value;
+              const typeMap = { customer: 'vendor', vendor: 'refiller', refiller: 'customer' };
+              const nextType = typeMap[currentType] || 'customer';
+              selectSignupType(nextType);
+              if (window.NotificationManager) {
+                const labels = { customer: 'Customer Account', vendor: 'Gas Station Vendor', refiller: 'Dispatch Rider' };
+                NotificationManager.show(`Account Type: ${labels[nextType]}`, 'success');
+              }
+            }
+          } else {
+            // Swipe Right
+            if (isSignupSection) {
+              switchAuthMode('login');
+              if (window.NotificationManager) NotificationManager.show('Swiped Right: Sign In Mode', 'success');
+            } else {
+              // Cycle login roles: refiller -> vendor -> customer
+              const currentRole = document.getElementById('selectedRole').value;
+              const roleMap = { refiller: 'vendor', vendor: 'customer', customer: 'refiller' };
+              const prevRole = roleMap[currentRole] || 'customer';
+              const labelMap = { customer: 'Customer Dashboard', vendor: 'Vendor Portal', refiller: 'Rider Portal' };
+              setLoginRole(prevRole, labelMap[prevRole]);
+              if (window.NotificationManager) NotificationManager.show(`Selected Portal: ${labelMap[prevRole]}`, 'success');
+            }
+          }
+        }
+      }, { passive: true });
+    }
+  </script>
+</body>
+</html>

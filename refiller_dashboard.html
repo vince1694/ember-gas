@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Refiller & Driver Portal — EmberGas</title>
+  <meta name="description" content="EmberGas delivery rider dashboard to accept orders and update delivery status." />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body { background-color: var(--background-dark); color: var(--text-primary); }
+    .driver-card {
+      background: var(--surface-dark);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin: 25px 0;
+      position: relative;
+    }
+    .stepper::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: #E5E7EB;
+      z-index: 1;
+    }
+    .step {
+      position: relative;
+      z-index: 2;
+      background: #FFFFFF;
+      padding: 0 8px;
+      text-align: center;
+    }
+    .step-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #F3F4F6;
+      border: 2px solid #E5E7EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 6px;
+      font-size: 0.85rem;
+    }
+    .step.completed .step-icon {
+      background: #00B14F;
+      border-color: #00B14F;
+      color: white;
+    }
+    .step.active .step-icon {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 0 12px rgba(0, 177, 79, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <header style="padding: 16px 24px; background: #FFFFFF; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center;">
+    <div style="font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+      <a href="refiller_dashboard.html" style="color: #111827; text-decoration: none;"><i class="fa-solid fa-motorcycle" style="color: var(--primary-color);"></i> EmberGas Driver Portal</a>
+      <span style="background: rgba(0, 177, 79, 0.12); color: #00B14F; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">ACTIVE ON DUTY</span>
+    </div>
+    
+    <!-- Dynamic Header User Profile Badge & Logout -->
+    <div id="authLink"></div>
+  </header>
+
+  <main style="max-width: 600px; margin: 25px auto; padding: 0 15px;">
+    <!-- Active Delivery Assignment -->
+    <div class="driver-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span style="color: var(--primary-color); font-weight: 700;">ASSIGNED DELIVERY</span>
+        <span style="font-size: 0.85rem; color: var(--text-secondary);" id="riderOrderNum">Order #EG-9482</span>
+      </div>
+
+      <h2 style="font-size: 1.4rem; margin-bottom: 6px; color: #111827;" id="riderCustomerName">Tunde Afolabi</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 15px;">
+        <i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> <span id="riderAddress">14 Bode Thomas St, Surulere, Lagos</span>
+      </p>
+
+      <div style="background: #F9FAFB; border: 1px solid #E5E7EB; padding: 14px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between;">
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">Cylinder Payload</div>
+          <div style="font-weight: 700; color: #111827;" id="riderPayload">12.5 kg Refill</div>
+        </div>
+        <div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">Collect Cash / Transfer</div>
+          <div style="font-weight: 700; color: #00B14F;" id="riderAmount">₦13,750</div>
+        </div>
+      </div>
+
+      <!-- Delivery Stepper -->
+      <div class="stepper">
+        <div class="step completed">
+          <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+          <div style="font-size: 0.7rem;">Accepted</div>
+        </div>
+        <div class="step completed">
+          <div class="step-icon"><i class="fa-solid fa-gas-pump"></i></div>
+          <div style="font-size: 0.7rem;">Filled</div>
+        </div>
+        <div class="step active" id="stepRider">
+          <div class="step-icon"><i class="fa-solid fa-motorcycle"></i></div>
+          <div style="font-size: 0.7rem;">En Route</div>
+        </div>
+        <div class="step" id="stepDelivered">
+          <div class="step-icon"><i class="fa-solid fa-house"></i></div>
+          <div style="font-size: 0.7rem;">Delivered</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        <a href="tel:08031122334" style="background: var(--surface-light); color: white; border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px; font-weight: 700; text-align: center; text-decoration: none; font-size: 0.88rem;">
+          <i class="fa-solid fa-phone"></i> Call Customer
+        </a>
+        <button onclick="if(window.WhatsAppNotificationEngine) WhatsAppNotificationEngine.sendRiderArrivalAlert(); else if(window.NotificationManager) NotificationManager.show('WhatsApp Alert Sent!', 'success');" style="background: rgba(37, 211, 102, 0.18); border: 1px solid #25D366; color: #25D366; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp Arrival
+        </button>
+      </div>
+      
+      <!-- Rider Accept & Complete Action Buttons -->
+      <div id="acceptRiderBox" style="margin-bottom: 12px; display: none;">
+        <button onclick="riderAcceptDelivery()" style="width: 100%; background: #F59E0B; color: #111827; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 0.95rem;">
+          <i class="fa-solid fa-hand-holding-hand"></i> Accept Vendor Delivery Request
+        </button>
+      </div>
+
+      <div id="completeRiderBox">
+        <button onclick="markDelivered()" style="width: 100%; background: #10B981; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 0.95rem;">
+          <i class="fa-solid fa-circle-check"></i> Complete Delivery & Hand Over
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    // ── Redirect rider if not logged in ──────────────────────────────────
+    const riderUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!riderUser || (riderUser.role !== 'refiller' && riderUser.role !== 'rider' && riderUser.role !== 'admin')) {
+      if (window.NotificationManager) NotificationManager.show('Rider portal access only.', 'error');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+    }
+
+    function loadRiderOrder() {
+      // Try to find an order assigned to this rider from the shared list
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const riderName = riderUser ? riderUser.name : '';
+
+      // Find order assigned to this rider, or any ASSIGNED_TO_RIDER order if rider matches
+      let order = allOrders.find(o =>
+        (o.status === 'ASSIGNED_TO_RIDER' || o.status === 'EN_ROUTE' || o.status === 'DELIVERED') &&
+        (o.riderEmail === (riderUser && riderUser.email) || o.riderName && o.riderName.includes(riderName))
+      );
+
+      // Fall back to active order from localStorage
+      if (!order && window.OrderStateManager) {
+        const active = OrderStateManager.getActiveOrder();
+        if (active && (active.status === 'ASSIGNED_TO_RIDER' || active.status === 'EN_ROUTE')) {
+          order = active;
+        }
+      }
+
+      if (order) {
+        if (document.getElementById('riderOrderNum')) document.getElementById('riderOrderNum').innerText = `Order #${order.id}`;
+        if (document.getElementById('riderCustomerName')) document.getElementById('riderCustomerName').innerText = order.customerName || 'Valued Customer';
+        if (document.getElementById('riderAddress')) document.getElementById('riderAddress').innerText = order.address || '—';
+        if (document.getElementById('riderPayload')) document.getElementById('riderPayload').innerText = `${order.cylinderSize} ${order.serviceType || ''}`;
+        if (document.getElementById('riderAmount')) document.getElementById('riderAmount').innerText = `₦${(order.amount || order.total || 13750).toLocaleString()}`;
+
+        const acceptBox = document.getElementById('acceptRiderBox');
+        const completeBox = document.getElementById('completeRiderBox');
+
+        if (order.status === 'ASSIGNED_TO_RIDER') {
+          if (acceptBox) acceptBox.style.display = 'block';
+          if (completeBox) completeBox.style.display = 'none';
+        } else if (order.status === 'EN_ROUTE') {
+          if (acceptBox) acceptBox.style.display = 'none';
+          if (completeBox) completeBox.style.display = 'block';
+        }
+
+        if (order.status === 'DELIVERED' || order.status === 'COMPLETED') {
+          const stepRider = document.getElementById('stepRider');
+          const stepDelivered = document.getElementById('stepDelivered');
+          if (stepRider) stepRider.className = 'step completed';
+          if (stepDelivered) stepDelivered.className = 'step active';
+          if (acceptBox) acceptBox.style.display = 'none';
+          if (completeBox) completeBox.style.display = 'none';
+        }
+      } else {
+        // No assigned order — show a waiting state
+        if (document.getElementById('riderOrderNum')) document.getElementById('riderOrderNum').innerText = 'No Order Assigned';
+        if (document.getElementById('riderCustomerName')) document.getElementById('riderCustomerName').innerText = 'Waiting for Assignment...';
+        if (document.getElementById('riderAddress')) document.getElementById('riderAddress').innerText = 'No active delivery';
+        document.getElementById('acceptRiderBox').style.display = 'none';
+        document.getElementById('completeRiderBox').style.display = 'none';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadRiderOrder);
+    // Auto-refresh every 5 seconds to pick up vendor assignment
+    setInterval(loadRiderOrder, 5000);
+
+    async function riderAcceptDelivery() {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const riderName = riderUser ? riderUser.name : '';
+      const orderIdx = allOrders.findIndex(o =>
+        o.status === 'ASSIGNED_TO_RIDER' &&
+        (o.riderEmail === (riderUser && riderUser.email) || (o.riderName && o.riderName.includes(riderName)))
+      );
+
+      let order;
+      if (orderIdx !== -1) {
+        allOrders[orderIdx].status = 'EN_ROUTE';
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+        order = allOrders[orderIdx];
+        OrderStateManager.saveActiveOrder(order);
+      } else {
+        order = OrderStateManager.getActiveOrder();
+        OrderStateManager.updateOrderStatus('EN_ROUTE');
+      }
+
+      if (window.NotificationManager) {
+        NotificationManager.show('Delivery Request Accepted! Customer notified & en route!', 'success');
+      }
+
+      // Send Brevo Email to Customer that rider accepted delivery request
+      if (order && order.userEmail) {
+        safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: order.userEmail,
+            toName: order.customerName,
+            subject: `Rider Accepted Your Delivery! It's Coming Soon — EmberGas`,
+            title: `Rider Accepted Delivery Request #${order.id}`,
+            bodyHtml: `
+              <p>Hello <strong>${order.customerName}</strong>,</p>
+              <p>Refiller Rider <strong>${riderUser.name}</strong> has accepted your delivery request from <strong>${order.vendorName}</strong>!</p>
+              <p>Your gas cylinder is <strong>en route</strong> and coming soon to: <strong>${order.address}</strong>.</p>
+              <p>Track your delivery live on the EmberGas portal.</p>
+            `
+          })
+        }).catch(e => {});
+      }
+
+      const acceptBox = document.getElementById('acceptRiderBox');
+      const completeBox = document.getElementById('completeRiderBox');
+      if (acceptBox) acceptBox.style.display = 'none';
+      if (completeBox) completeBox.style.display = 'block';
+    }
+
+    async function markDelivered() {
+      const stepRider = document.getElementById('stepRider');
+      const stepDelivered = document.getElementById('stepDelivered');
+      if (stepRider) stepRider.className = 'step completed';
+      if (stepDelivered) stepDelivered.className = 'step active';
+
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const riderName = riderUser ? riderUser.name : '';
+      const orderIdx = allOrders.findIndex(o =>
+        o.status === 'EN_ROUTE' &&
+        (o.riderEmail === (riderUser && riderUser.email) || (o.riderName && o.riderName.includes(riderName)))
+      );
+
+      let order;
+      if (orderIdx !== -1) {
+        allOrders[orderIdx].status = 'DELIVERED';
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+        order = allOrders[orderIdx];
+        OrderStateManager.saveActiveOrder(order);
+      } else {
+        order = OrderStateManager.updateOrderStatus('DELIVERED');
+      }
+
+      if (order && order.userEmail) {
+        safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: order.userEmail,
+            toName: order.customerName,
+            subject: `Order #${order.id} Arrived & Delivered! — EmberGas`,
+            title: `Order #${order.id} Delivered`,
+            bodyHtml: `
+              <p>Hello <strong>${order.customerName}</strong>,</p>
+              <p>Your LPG cylinder refill (Order <strong>#${order.id}</strong>) has arrived at your address!</p>
+              <p>Please open your customer dashboard and click <strong>"Mark as Received & Completed"</strong> to complete the order.</p>
+            `
+          })
+        }).catch(e => {});
+      }
+
+      if (window.NotificationManager) {
+        NotificationManager.show('Delivery marked as DELIVERED! Customer notified to confirm receipt.', 'success');
+      }
+
+      document.getElementById('completeRiderBox').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
