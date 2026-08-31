@@ -227,17 +227,16 @@ const auth = {
 // --- STRICT AUTHENTICATION GUARD CLASS ---
 class AuthGuard {
     static getProtectedPages() {
-        return ['dashboard.html', 'seller_dashboard.html', 'refiller_dashboard.html', 'track.html', 'admin.html'];
+        return ['dashboard.html', 'seller_dashboard.html', 'track.html', 'admin.html'];
     }
 
     // Maps each page to the ONLY roles allowed to access it
     static getPageRoles() {
         return {
             'dashboard.html':           ['customer', 'user'],
-            'seller_dashboard.html':    ['vendor', 'seller'],
-            'refiller_dashboard.html':  ['refiller', 'rider'],
+            'seller_dashboard.html':    ['vendor', 'seller', 'filling_station', 'independent_seller'],
             'admin.html':               ['admin'],
-            'track.html':               ['customer', 'user', 'vendor', 'seller', 'refiller', 'rider', 'admin']
+            'track.html':               ['customer', 'user', 'vendor', 'seller', 'admin']
         };
     }
 
@@ -261,8 +260,6 @@ class AuthGuard {
                     customer: 'dashboard.html',
                     vendor:   'seller_dashboard.html',
                     seller:   'seller_dashboard.html',
-                    refiller: 'refiller_dashboard.html',
-                    rider:    'refiller_dashboard.html',
                     admin:    'admin.html'
                 }[userRole] || 'dashboard.html';
 
@@ -699,28 +696,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- GLOBAL ROBUST API FETCH HELPER ---
     async function safeFetchApi(path, options) {
-        const hosts = Array.from(new Set([
-            '',
-            `http://${window.location.hostname || '127.0.0.1'}:5000`,
-            'http://127.0.0.1:5000',
-            'http://localhost:5000'
-        ]));
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const hosts = isLocalhost 
+            ? ['', `http://${window.location.hostname}:5000`, 'http://127.0.0.1:5000']
+            : [''];
 
         let lastError;
         for (const host of hosts) {
             try {
                 const targetUrl = host ? (host + path) : path;
                 const res = await fetch(targetUrl, options);
-                const contentType = res.headers.get('content-type') || '';
-                if (res.status === 404 && contentType.includes('text/html') && host === '') {
-                    continue;
-                }
-                if (res.status < 500) return res;
+                return res;
             } catch (err) {
                 lastError = err;
             }
         }
-        throw lastError || new Error('Server not reachable');
+        throw lastError || new Error('Server not reachable. Please check your internet connection.');
     }
     window.safeFetchApi = safeFetchApi;
 

@@ -3,1026 +3,714 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Authentication — EmberGas Marketplace</title>
-  <meta name="description" content="Sign in or create an account on EmberGas to order cooking gas, track live delivery, or register as a LPG refiller vendor." />
-  
+  <title>Sign In — EmberGas Marketplace</title>
+  <meta name="description" content="Sign in to your EmberGas account. Order cooking gas or manage your gas station vendor portal.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="auth.css">
-
   <style>
-    /* ── Clean Light Mode Auth Styling ── */
-    .auth-tab-bar {
-      display: flex;
-      gap: 6px;
-      background: #F3F4F6;
-      padding: 5px;
-      border-radius: 16px;
-      margin-bottom: 24px;
-      border: 1px solid #E5E7EB;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00B14F;
+      --green-dark: #008F3E;
+      --green-light: #E6F7ED;
+      --orange: #F97316;
+      --bg: #F0F4F8;
+      --card: #FFFFFF;
+      --text: #111827;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --radius: 18px;
+      --shadow: 0 8px 32px rgba(0,0,0,0.10);
     }
-    .auth-tab-btn {
-      flex: 1;
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      background: transparent;
-      color: #6B7280;
-      font-weight: 700;
-      font-size: 0.92rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-    }
-    .auth-tab-btn.active {
-      background: #00B14F;
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(0, 177, 79, 0.3);
+      padding: 20px;
+      background-image: radial-gradient(circle at 20% 20%, rgba(0,177,79,0.08) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 80%, rgba(249,115,22,0.06) 0%, transparent 60%);
     }
 
-    .role-tabs {
+    .page-wrap {
+      width: 100%;
+      max-width: 440px;
       display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      background: #F8FAFC;
-      padding: 6px;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Logo ── */
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      justify-content: center;
+    }
+    .logo-flame {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #00B14F, #00D863);
       border-radius: 14px;
-      border: 1px solid #E5E7EB;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 1.4rem;
+      box-shadow: 0 4px 16px rgba(0,177,79,0.3);
     }
-    .role-tab {
-      flex: 1;
-      padding: 10px 8px;
-      border: none;
-      background: transparent;
-      color: #4B5563;
-      font-size: 0.85rem;
-      font-weight: 700;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .role-tab.active {
-      background: #00B14F;
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(0, 177, 79, 0.3);
+    .logo-name { font-size: 1.6rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+    .logo-name span { color: var(--green); }
+
+    /* ── Card ── */
+    .auth-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 28px;
+      border: 1px solid var(--border);
     }
 
-    .account-type-grid {
+    .card-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .card-header h1 { font-size: 1.6rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .card-header p { font-size: 0.9rem; color: var(--muted); }
+
+    /* ── Portal Toggle ── */
+    .portal-toggle {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 28px;
     }
-    .type-card {
-      padding: 14px 12px;
+    .portal-btn {
+      padding: 14px 10px;
       border-radius: 14px;
-      border: 1px solid #E5E7EB;
-      background: #F8FAFC;
+      border: 2px solid var(--border);
+      background: #F9FAFB;
       cursor: pointer;
       text-align: center;
       transition: all 0.2s ease;
+      font-family: 'Outfit', sans-serif;
     }
-    .type-card.active {
-      border-color: #00B14F;
-      background: #E6F7ED;
-      box-shadow: 0 4px 12px rgba(0, 177, 79, 0.15);
+    .portal-btn .pb-icon {
+      font-size: 1.6rem;
+      margin-bottom: 6px;
+      display: block;
     }
+    .portal-btn .pb-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+      display: block;
+    }
+    .portal-btn .pb-sub {
+      font-size: 0.72rem;
+      color: #9CA3AF;
+      display: block;
+      margin-top: 2px;
+    }
+    .portal-btn.active {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .portal-btn.active .pb-label { color: var(--green-dark); }
 
-    .strength-meter {
-      height: 5px;
-      background: #E5E7EB;
-      border-radius: 4px;
-      margin-top: -12px;
-      margin-bottom: 20px;
-      overflow: hidden;
+    /* ── Form Fields ── */
+    .field-group { position: relative; margin-bottom: 16px; }
+    .field-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .field-group input {
+      width: 100%;
+      padding: 13px 16px 13px 44px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      background: #FAFAFA;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .strength-bar {
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s, background-color 0.3s;
+    .field-group input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0,177,79,0.12);
+      background: #fff;
     }
-
-    .pw-toggle {
+    .field-icon {
       position: absolute;
-      right: 16px;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9CA3AF;
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+    .field-group label ~ .field-icon { top: calc(50% + 13px); }
+    .pw-eye {
+      position: absolute;
+      right: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: #9CA3AF;
       cursor: pointer;
+      font-size: 0.9rem;
     }
+    .field-group label ~ .pw-eye { top: calc(50% + 13px); }
 
-    .registered-banner {
-      display: none;
-      background: #E6F7ED;
-      border: 1px solid #00B14F;
+    /* ── Submit Button ── */
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #00B14F, #00D863);
+      color: #fff;
+      border: none;
       border-radius: 14px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      color: #00B14F;
-      font-size: 0.88rem;
-      font-weight: 600;
-      text-align: left;
-    }
-    .registered-banner.show { display: flex; align-items: center; gap: 12px; }
-
-    /* OTP Modal */
-    .otp-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      z-index: 1000;
+      font-size: 1rem;
+      font-weight: 800;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      display: flex;
       align-items: center;
       justify-content: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0,177,79,0.3);
+      margin-top: 6px;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,177,79,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── Forgot & Links ── */
+    .forgot-row {
+      text-align: right;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+    .forgot-row a {
+      font-size: 0.83rem;
+      color: var(--green);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+    .alt-action {
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .alt-action a { color: var(--green); font-weight: 700; text-decoration: none; }
+
+    /* ── Error Banner ── */
+    .err-banner {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #991B1B;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .err-banner.show { display: flex; }
+
+    /* ── Forgot Password Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
       padding: 20px;
     }
-    .otp-overlay.show { display: flex; }
-    .otp-modal {
-      background: #FFFFFF;
-      border: 1px solid #E5E7EB;
-      border-radius: 20px;
-      padding: 32px 28px;
-      max-width: 420px;
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 28px 24px;
       width: 100%;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      position: relative;
     }
-    .otp-inputs {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin: 20px 0;
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 32px; height: 32px;
+      background: #F3F4F6; border: none; border-radius: 50%;
+      font-size: 1.1rem; cursor: pointer; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
     }
-    .otp-box {
-      width: 44px;
-      height: 50px;
+    .modal-title { font-size: 1.2rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .modal-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 20px; }
+    .modal-field {
+      position: relative;
+      margin-bottom: 14px;
+    }
+    .modal-field input {
+      width: 100%;
+      padding: 13px 16px 13px 44px;
+      border: 1.5px solid var(--border);
       border-radius: 12px;
-      background: #F9FAFB;
-      border: 1px solid #D1D5DB;
-      color: #00B14F;
-      font-size: 1.4rem;
-      font-weight: 800;
-      text-align: center;
-      font-family: monospace;
-    }
-    .otp-box:focus {
-      border-color: #00B14F;
-      background: #FFFFFF;
+      font-size: 0.95rem;
+      font-family: 'Outfit', sans-serif;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(0, 177, 79, 0.15);
+      transition: border-color 0.2s;
+    }
+    .modal-field input:focus { border-color: var(--green); }
+    .modal-field i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #9CA3AF; }
+    .btn-modal {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #00B14F, #00D863);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 4px;
+    }
+    .btn-modal:disabled { opacity: 0.6; cursor: not-allowed; }
+    .otp-code-display {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      margin: 14px 0;
+      display: none;
+    }
+    .otp-code-display .otp-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: 8px;
+    }
+    .otp-code-display p { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Toast ── */
+    .toast-wrap {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      background: #1F2937;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 50px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: all 0.3s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success i { color: #34D399; }
+    .toast.error i { color: #F87171; }
+
+    /* ── Footer ── */
+    .footer-links {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .footer-links a { color: var(--green); text-decoration: none; }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 24px 18px; }
+      .portal-btn .pb-icon { font-size: 1.3rem; }
     }
   </style>
 </head>
-<body class="auth-body">
-  <!-- Top Master Header Navigation -->
-  <header class="master-header">
-    <div style="display: flex; align-items: center; gap: 20px;">
-      <a href="index.html" class="brand-logo">
-        <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
-      </a>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="page-wrap">
+  <!-- Logo -->
+  <div class="logo-row">
+    <div class="logo-flame"><i class="fa-solid fa-fire-flame-curved"></i></div>
+    <div class="logo-name">Ember<span>Gas</span></div>
+  </div>
+
+  <!-- Auth Card -->
+  <div class="auth-card" id="mainAuthCard">
+    <div class="card-header">
+      <h1>Welcome back 👋</h1>
+      <p>Choose your portal and sign in to continue</p>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <a href="index.html" style="color: #6B7280; font-weight: 700; text-decoration: none; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
-        <i class="fa-solid fa-arrow-left"></i> Home
-      </a>
-      <button onclick="openMobileDrawer()" class="mobile-drawer-trigger">
-        <i class="fa-solid fa-bars"></i>
+    <!-- Portal Selector (Customer / Vendor) -->
+    <div class="portal-toggle">
+      <button class="portal-btn active" id="portalCustomer" onclick="selectPortal('customer')">
+        <span class="pb-icon">🛒</span>
+        <span class="pb-label">Customer</span>
+        <span class="pb-sub">Order gas online</span>
+      </button>
+      <button class="portal-btn" id="portalVendor" onclick="selectPortal('vendor')">
+        <span class="pb-icon">⛽</span>
+        <span class="pb-label">Gas Vendor</span>
+        <span class="pb-sub">Manage your station</span>
       </button>
     </div>
-  </header>
 
-  <div class="bg-shape bg-shape-1"></div>
-  <div class="bg-shape bg-shape-2"></div>
+    <!-- Error Banner -->
+    <div class="err-banner" id="errBanner">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span id="errMsg">Error message here</span>
+    </div>
 
-  <div class="auth-card" id="mainAuthCard" style="max-width: 480px; padding: 36px 30px;">
-    <!-- Top Mode Selector Tabs (Sign In vs Create Account) -->
-    <div class="auth-tab-bar">
-      <button class="auth-tab-btn active" id="tabBtnLogin" onclick="switchAuthMode('login')">
-        <i class="fa-solid fa-right-to-bracket"></i> Sign In
+    <!-- Login Form -->
+    <form id="loginForm" onsubmit="handleLogin(event)" novalidate>
+      <div class="field-group">
+        <label for="loginEmail">Email Address</label>
+        <i class="fa-solid fa-envelope field-icon"></i>
+        <input type="email" id="loginEmail" placeholder="yourname@email.com" autocomplete="email" required>
+      </div>
+
+      <div class="field-group">
+        <label for="loginPassword">Password</label>
+        <i class="fa-solid fa-lock field-icon"></i>
+        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required>
+        <i class="fa-solid fa-eye pw-eye" id="pwEye" onclick="togglePw('loginPassword','pwEye')"></i>
+      </div>
+
+      <div class="forgot-row">
+        <a href="#" onclick="openForgotModal(event)">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn-primary" id="loginBtn">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        <span>Sign In</span>
       </button>
-      <button class="auth-tab-btn" id="tabBtnSignup" onclick="switchAuthMode('signup')">
-        <i class="fa-solid fa-user-plus"></i> Create Account
-      </button>
-    </div>
+    </form>
 
-    <!-- Banners -->
-    <div class="registered-banner" id="regBanner">
-      <i class="fa-solid fa-circle-check" style="font-size: 1.3rem;"></i>
-      <div>
-        <div style="font-weight: 800; color: #fff;">Account Verified!</div>
-        <div style="font-size: 0.78rem; opacity: 0.9;">Please log in below with your credentials.</div>
-      </div>
-    </div>
+    <div class="divider"></div>
 
-    <div class="registered-banner" id="authReqBanner" style="border-color: #F59E0B; background: rgba(245, 158, 11, 0.15); color: #F59E0B;">
-      <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.3rem;"></i>
-      <div>
-        <div style="font-weight: 800; color: #fff;">Account Required</div>
-        <div style="font-size: 0.78rem; opacity: 0.9;">Log in or create a new account to continue.</div>
-      </div>
-    </div>
-
-    <!-- ────────────────── FORM 1: LOG IN ────────────────── -->
-    <div id="sectionLogin">
-      <h2 style="font-size: 1.6rem; margin-bottom: 6px;">Welcome Back</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.9rem;">Select your portal and sign in to your account</p>
-
-      <!-- Role Selection Tabs -->
-      <div class="role-tabs" style="grid-template-columns: 1fr 1fr;">
-        <button class="role-tab active" data-role="customer" onclick="setLoginRole('customer', 'Customer Dashboard')">
-          <i class="fa-solid fa-user"></i> Customer
-        </button>
-        <button class="role-tab" data-role="vendor" onclick="setLoginRole('vendor', 'Vendor Station Hub')">
-          <i class="fa-solid fa-store"></i> Gas Station Vendor
-        </button>
-      </div>
-
-      <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
-        <input type="hidden" id="selectedRole" value="customer">
-
-        <div class="form-group">
-          <input type="email" id="email" placeholder="Email Address" required>
-          <i class="fa-solid fa-envelope"></i>
-        </div>
-
-        <div class="form-group">
-          <input type="password" id="password" placeholder="Password" required>
-          <i class="fa-solid fa-lock"></i>
-          <i class="fa-solid fa-eye pw-toggle" id="loginPwToggle" onclick="togglePw('password', 'loginPwToggle')"></i>
-        </div>
-
-        <div class="auth-actions">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-            <input type="checkbox" checked style="accent-color: var(--primary-color);"> Remember me
-          </label>
-          <a href="#" onclick="openForgotPasswordModal(event)" style="color:#00B14F; font-weight:800;">Forgot Password?</a>
-        </div>
-
-        <button type="submit" class="btn-auth" id="loginBtn">
-          Log In to <span id="portalLabel">Customer Dashboard</span>
-        </button>
-      </form>
-    </div>
-
-    <!-- ────────────────── FORM 2: SIGN UP ────────────────── -->
-    <div id="sectionSignup" style="display: none;">
-      <h2 style="font-size: 1.6rem; margin-bottom: 6px;">Create Account</h2>
-      <p style="color: var(--text-secondary); margin-bottom: 18px; font-size: 0.9rem;">Join Nigeria's #1 Cooking Gas & LPG Refill Marketplace</p>
-
-      <!-- Account Type Grid (Customer, Vendor) -->
-      <div class="account-type-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
-        <div class="type-card active" id="typeCustomer" onclick="selectSignupType('customer')" style="text-align: center; padding: 14px 6px;">
-          <i class="fa-solid fa-house-fire" style="font-size: 1.4rem; color: var(--primary-color);"></i>
-          <div style="font-weight: 800; font-size: 0.85rem; color: #fff; margin-top: 4px;">Customer</div>
-        </div>
-        <div class="type-card" id="typeVendor" onclick="selectSignupType('vendor')" style="text-align: center; padding: 14px 6px;">
-          <i class="fa-solid fa-gas-pump" style="font-size: 1.4rem; color: var(--primary-color);"></i>
-          <div style="font-weight: 800; font-size: 0.85rem; color: #fff; margin-top: 4px;">Gas Station Vendor</div>
-        </div>
-      </div>
-
-      <form class="auth-form" id="signupForm" onsubmit="handleSignupSubmit(event)">
-        <input type="hidden" id="accountType" value="customer">
-
-        <div class="form-group">
-          <input type="text" id="fullname" placeholder="Full Name or Business Name" required>
-          <i class="fa-solid fa-user"></i>
-        </div>
-
-        <div class="form-group">
-          <input type="email" id="signupEmail" placeholder="Email Address" required>
-          <i class="fa-solid fa-envelope"></i>
-        </div>
-
-        <div class="form-group">
-          <input type="tel" id="phone" placeholder="Phone Number (e.g., 08012345678)" required>
-          <i class="fa-solid fa-phone"></i>
-        </div>
-
-        <div class="form-group">
-          <input type="password" id="signupPassword" placeholder="Create Password" required oninput="checkStrength(this.value)">
-          <i class="fa-solid fa-lock"></i>
-          <i class="fa-solid fa-eye pw-toggle" id="signupPwToggle" onclick="togglePw('signupPassword', 'signupPwToggle')"></i>
-        </div>
-        <div class="strength-meter">
-          <div class="strength-bar" id="strengthBar"></div>
-        </div>
-
-        <div class="auth-actions" style="margin-bottom: 18px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;">
-            <input type="checkbox" required style="accent-color: var(--primary-color);" checked>
-            <span>I agree to the <a href="#">Terms</a> & <a href="#">Privacy Policy</a></span>
-          </label>
-        </div>
-
-        <button type="submit" class="btn-auth" id="sendOtpSubmitBtn">
-          <i class="fa-solid fa-paper-plane"></i> Send Brevo OTP Email & Register
-        </button>
-      </form>
-    </div>
-
-    <!-- Footer -->
-    <div class="auth-footer">
-      <a href="index.html" style="color: var(--text-secondary); font-size: 0.85rem;"><i class="fa-solid fa-arrow-left"></i> Return to Homepage</a>
+    <div class="alt-action">
+      Don't have an account? <a href="signup.html">Create Account</a>
     </div>
   </div>
 
-  <!-- OTP Verification Modal -->
-  <div class="otp-overlay" id="otpModal">
-    <div class="otp-modal">
-      <div style="width: 52px; height: 52px; background: rgba(0,177,79,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; color: #00B14F; font-size: 1.4rem;">
-        <i class="fa-solid fa-envelope-circle-check"></i>
-      </div>
-      <h3 style="margin: 0 0 6px; font-size: 1.25rem; color: #111827;">Enter Brevo Email OTP</h3>
-      <p style="margin: 0; font-size: 0.82rem; color: #6B7280;">
-        Check your inbox for the 6-digit code sent to <br><strong id="otpEmailTarget" style="color: #111827;">email@example.com</strong>
-      </p>
+  <div class="footer-links">
+    <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Homepage</a>
+  </div>
+</div>
 
-      <div class="otp-inputs">
-        <input type="text" class="otp-box" id="otp1" maxlength="1" oninput="focusNext(this, 'otp2')">
-        <input type="text" class="otp-box" id="otp2" maxlength="1" oninput="focusNext(this, 'otp3')">
-        <input type="text" class="otp-box" id="otp3" maxlength="1" oninput="focusNext(this, 'otp4')">
-        <input type="text" class="otp-box" id="otp4" maxlength="1" oninput="focusNext(this, 'otp5')">
-        <input type="text" class="otp-box" id="otp5" maxlength="1" oninput="focusNext(this, 'otp6')">
-        <input type="text" class="otp-box" id="otp6" maxlength="1">
-      </div>
+<!-- Forgot Password Modal -->
+<div class="modal-overlay" id="forgotModal" onclick="if(event.target===this)closeForgotModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeForgotModal()">&times;</button>
 
-      <button onclick="confirmOtpAndRegister()" class="btn-auth" style="margin-bottom: 10px;">
-        <i class="fa-solid fa-shield-check"></i> Verify & Complete Registration
-      </button>
-
-      <!-- Resend OTP -->
-      <div style="margin-top: 14px; font-size: 0.82rem; color: #6B7280;">
-        Didn't get the code?
-        <button id="resendOtpBtn" onclick="resendOtp()" style="background: transparent; border: none; color: #00B14F; font-weight: 700; font-size: 0.82rem; cursor: pointer; padding: 0 4px;">
-          Resend OTP
-        </button>
-        <span id="resendCountdown" style="color: #6B7280; font-size: 0.78rem;"></span>
+    <!-- Step 1 -->
+    <div id="fpStep1">
+      <div style="font-size:2rem;margin-bottom:10px;">🔐</div>
+      <div class="modal-title">Reset Password</div>
+      <div class="modal-sub">Enter the email address linked to your account and we'll send you a reset code.</div>
+      <div class="modal-field">
+        <i class="fa-solid fa-envelope"></i>
+        <input type="email" id="fpEmail" placeholder="Your account email" autocomplete="email">
       </div>
-      
-      <button onclick="closeOtpModal()" style="background: transparent; border: none; color: #8B949E; font-size: 0.82rem; cursor: pointer; margin-top: 10px; display: block;">
-        Cancel / Edit Details
+      <button class="btn-modal" id="fpSendBtn" onclick="sendResetCode()">
+        <i class="fa-solid fa-paper-plane"></i> Send Reset Code
       </button>
     </div>
-  </div>
 
-  <!-- Forgot Password Reset Modal -->
-  <div class="otp-overlay" id="forgotPasswordModal" style="display:none;" onclick="if(event.target===this) closeForgotPasswordModal();">
-    <div class="otp-modal" style="max-width:440px; text-align:left; padding:28px 24px; border-radius:20px; background:#FFFFFF;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-        <h3 style="margin:0; font-size:1.2rem; font-weight:800; color:#111827;">
-          <i class="fa-solid fa-key" style="color:#00B14F;"></i> Reset Password
-        </h3>
-        <button onclick="closeForgotPasswordModal()" style="background:#F3F4F6; border:none; color:#4B5563; width:30px; height:30px; border-radius:50%; font-size:1.1rem; cursor:pointer;">&times;</button>
+    <!-- Step 2 -->
+    <div id="fpStep2" style="display:none;">
+      <div style="font-size:2rem;margin-bottom:10px;">📬</div>
+      <div class="modal-title">Enter Reset Code</div>
+      <div class="modal-sub" id="fpStep2Sub">We've sent a 6-digit code to your email.</div>
+
+      <!-- OTP display (auto-filled fallback) -->
+      <div class="otp-code-display" id="otpDisplay">
+        <div class="otp-num" id="otpDisplayNum"></div>
+        <p>Your reset code (use this if email is delayed)</p>
       </div>
 
-      <!-- Step 1: Request OTP -->
-      <div id="fpStep1">
-        <p style="font-size:0.85rem; color:#6B7280; margin-bottom:16px;">Enter your account email address to receive a 6-digit password reset code.</p>
-        <div class="form-group" style="margin-bottom:14px; position:relative;">
-          <input type="email" id="fpEmail" placeholder="Your account email" required style="width:100%; padding:12px 14px 12px 40px; border-radius:12px; border:1px solid #D1D5DB; font-size:0.9rem; outline:none; box-sizing:border-box;">
-          <i class="fa-solid fa-envelope" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9CA3AF;"></i>
-        </div>
-        <button onclick="submitForgotPasswordEmail()" class="btn-auth" id="fpSendBtn">
-          <i class="fa-solid fa-paper-plane"></i> Send Reset Code
-        </button>
+      <div class="modal-field">
+        <i class="fa-solid fa-shield-halved"></i>
+        <input type="text" id="fpOtpCode" placeholder="6-digit reset code" maxlength="6" style="letter-spacing:6px;font-weight:800;font-size:1.1rem;">
       </div>
-
-      <!-- Step 2: Verify OTP & Reset Password -->
-      <div id="fpStep2" style="display:none;">
-        <p style="font-size:0.85rem; color:#6B7280; margin-bottom:14px;">Enter the 6-digit code sent to your email and your new password below.</p>
-        <div class="form-group" style="margin-bottom:12px; position:relative;">
-          <input type="text" id="fpOtpCode" placeholder="Enter 6-Digit Code" maxlength="6" required style="width:100%; padding:12px 14px 12px 40px; border-radius:12px; border:1px solid #D1D5DB; font-size:0.95rem; font-weight:800; letter-spacing:2px; outline:none; box-sizing:border-box;">
-          <i class="fa-solid fa-shield-halved" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#00B14F;"></i>
-        </div>
-        <div class="form-group" style="margin-bottom:16px; position:relative;">
-          <input type="password" id="fpNewPassword" placeholder="Create New Password" required style="width:100%; padding:12px 14px 12px 40px; border-radius:12px; border:1px solid #D1D5DB; font-size:0.9rem; outline:none; box-sizing:border-box;">
-          <i class="fa-solid fa-lock" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9CA3AF;"></i>
-        </div>
-        <button onclick="submitResetPassword()" class="btn-auth" id="fpResetBtn">
-          <i class="fa-solid fa-check-circle"></i> Reset Password & Log In
-        </button>
+      <div class="modal-field">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="fpNewPw" placeholder="Create new password" autocomplete="new-password">
+      </div>
+      <div class="modal-field">
+        <i class="fa-solid fa-lock"></i>
+        <input type="password" id="fpConfirmPw" placeholder="Confirm new password" autocomplete="new-password">
+      </div>
+      <button class="btn-modal" id="fpResetBtn" onclick="submitResetPassword()">
+        <i class="fa-solid fa-check-circle"></i> Set New Password & Log In
+      </button>
+      <div style="text-align:center;margin-top:12px;">
+        <a href="#" onclick="goBackToStep1(event)" style="font-size:0.83rem;color:var(--green);font-weight:600;">
+          ← Use a different email
+        </a>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="app.js"></script>
-  <script>
-    let currentLoginRole = 'customer';
-    let pendingSignupUser = null;
-    let serverOtpCode = null;
-    let resendTimer = null;
-    let resendSeconds = 0;
+<script src="app.js"></script>
+<script>
+  // ── State ──
+  let selectedPortal = 'customer';
 
-    function switchAuthMode(mode) {
-      const isSignup = mode === 'signup';
-      document.getElementById('tabBtnSignup').classList.toggle('active', isSignup);
-      document.getElementById('tabBtnLogin').classList.toggle('active', !isSignup);
-      document.getElementById('sectionSignup').style.display = isSignup ? 'block' : 'none';
-      document.getElementById('sectionLogin').style.display = isSignup ? 'none' : 'block';
+  // ── API helper: always relative on production, fallback chain on local ──
+  async function api(path, opts = {}) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (!isLocal) {
+      // On Vercel/production — always relative
+      const res = await fetch(path, opts);
+      return res;
     }
-
-    function setLoginRole(role, labelText) {
-      currentLoginRole = role;
-      document.getElementById('selectedRole').value = role;
-      document.getElementById('portalLabel').innerText = labelText;
-      document.querySelectorAll('.role-tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-role') === role));
-    }
-
-    function selectSignupType(type) {
-      document.getElementById('accountType').value = type;
-      if (document.getElementById('typeCustomer')) document.getElementById('typeCustomer').classList.toggle('active', type === 'customer');
-      if (document.getElementById('typeVendor')) document.getElementById('typeVendor').classList.toggle('active', type === 'vendor');
-      if (document.getElementById('typeRefiller')) document.getElementById('typeRefiller').classList.toggle('active', type === 'refiller');
-    }
-
-    function togglePw(inputId, iconId) {
-      const input = document.getElementById(inputId);
-      const icon = document.getElementById(iconId);
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.classList.replace('fa-eye', 'fa-eye-slash');
-      } else {
-        input.type = 'password';
-        icon.classList.replace('fa-eye-slash', 'fa-eye');
-      }
-    }
-
-    function checkStrength(val) {
-      const bar = document.getElementById('strengthBar');
-      if (!val) { bar.style.width = '0%'; return; }
-      let score = 0;
-      if (val.length >= 6) score += 33;
-      if (/[A-Z]/.test(val) || /[0-9]/.test(val)) score += 33;
-      if (/[^A-Za-z0-9]/.test(val) || val.length >= 10) score += 34;
-
-      bar.style.width = score + '%';
-      bar.style.backgroundColor = score < 50 ? '#EF4444' : score < 80 ? '#F59E0B' : '#10B981';
-    }
-
-    function focusNext(current, nextId) {
-      if (current.value.length >= 1) {
-        document.getElementById(nextId).focus();
-      }
-    }
-
-    // Check URL parameters on load
-    window.addEventListener('DOMContentLoaded', () => {
-      const path = window.location.pathname.split('/').pop();
-      const params = new URLSearchParams(window.location.search);
-
-      if (path === 'signup.html' || params.get('mode') === 'signup') {
-        switchAuthMode('signup');
-      }
-
-      if (params.get('registered') === 'true') {
-        document.getElementById('regBanner').classList.add('show');
-        const emailParam = params.get('email');
-        if (emailParam) document.getElementById('email').value = emailParam;
-      } else if (params.get('auth_required') === 'true') {
-        document.getElementById('authReqBanner').classList.add('show');
-      }
-    });
-
-    // --- Robust API Helper with Fallback for IPv4/IPv6 & localhost Mismatch ---
-    async function safeFetchApi(path, options) {
-      const hosts = Array.from(new Set([
-        '',
-        `http://${window.location.hostname || '127.0.0.1'}:5000`,
-        'http://127.0.0.1:5000',
-        'http://localhost:5000'
-      ]));
-
-      let lastError;
-      for (const host of hosts) {
-        try {
-          const targetUrl = host ? (host + path) : path;
-          const res = await fetch(targetUrl, options);
-          const contentType = res.headers.get('content-type') || '';
-          if (res.status === 404 && contentType.includes('text/html') && host === '') {
-            continue;
-          }
-          if (res.status < 500) return res;
-        } catch (err) {
-          lastError = err;
-        }
-      }
-      throw lastError || new Error('Server not reachable');
-    }
-
-    async function handleSignupSubmit(e) {
-      e.preventDefault();
-      const role = document.getElementById('accountType').value;
-      const name = document.getElementById('fullname').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const password = document.getElementById('signupPassword').value;
-
-      if (!name || !email || !phone || !password) {
-        if (window.NotificationManager) NotificationManager.show('Please fill in all required fields', 'error');
-        return;
-      }
-
-      // Reset OTP boxes
-      for (let i = 1; i <= 6; i++) {
-        document.getElementById(`otp${i}`).value = '';
-      }
-
-      pendingSignupUser = { name, email, phone, password, role };
-      document.getElementById('otpEmailTarget').innerText = email;
-
-      if (window.NotificationManager) {
-        NotificationManager.show(`Sending OTP to ${email} via Brevo Email...`, 'success');
-      }
-
-      // Call Backend API — sends real Brevo email to the user's email address
+    // Local dev — try relative first, then port 5000
+    const hosts = ['', 'http://127.0.0.1:5000', 'http://localhost:5000'];
+    let lastErr;
+    for (const h of hosts) {
       try {
-        const res = await safeFetchApi('/api/auth/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name, phone })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to send OTP. Check email address and try again.', 'error');
-          return;
+        const res = await fetch(h ? h + path : path, opts);
+        if (res.status !== 404 || (await res.headers.get('content-type') || '').includes('application/json')) {
+          return res;
         }
-
-        if (data.otpCode) {
-          for (let i = 1; i <= 6; i++) {
-            const box = document.getElementById(`otp${i}`);
-            if (box && data.otpCode[i - 1]) box.value = data.otpCode[i - 1];
-          }
-        }
-
-        if (window.NotificationManager) {
-          NotificationManager.show(data.emailDelivered 
-            ? `OTP code sent to ${email}! Check inbox/spam.` 
-            : `OTP code ready for ${email}! Click Verify below.`, 'success');
-        }
-      } catch (err) {
-        console.error('Backend unreachable:', err.message);
-        if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure backend server is running.', 'error');
-        return;
-      }
-
-      // Show OTP modal and start resend countdown
-      document.getElementById('otpModal').classList.add('show');
-      document.getElementById('otp1').focus();
-      startResendCountdown(30);
+      } catch (e) { lastErr = e; }
     }
+    throw lastErr || new Error('Cannot reach server');
+  }
 
-    async function confirmOtpAndRegister() {
-      if (!pendingSignupUser) return;
+  // ── Toast ──
+  function toast(msg, type = 'success') {
+    const wrap = document.getElementById('toastWrap');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i><span>${msg}</span>`;
+    wrap.appendChild(el);
+    setTimeout(() => el.classList.add('show'), 10);
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 4000);
+  }
 
-      // Collect user-entered OTP code
-      let enteredOtp = '';
-      for (let i = 1; i <= 6; i++) {
-        enteredOtp += document.getElementById(`otp${i}`).value.trim();
-      }
+  // ── Error banner ──
+  function showErr(msg) {
+    const b = document.getElementById('errBanner');
+    document.getElementById('errMsg').textContent = msg;
+    b.classList.add('show');
+    setTimeout(() => b.classList.remove('show'), 6000);
+  }
+  function hideErr() { document.getElementById('errBanner').classList.remove('show'); }
 
-      if (enteredOtp.length < 6) {
-        if (window.NotificationManager) NotificationManager.show('Please enter the full 6-digit OTP code sent to your email', 'error');
+  // ── Portal selector ──
+  function selectPortal(p) {
+    selectedPortal = p;
+    document.getElementById('portalCustomer').classList.toggle('active', p === 'customer');
+    document.getElementById('portalVendor').classList.toggle('active', p === 'vendor');
+    hideErr();
+  }
+
+  // ── Toggle password visibility ──
+  function togglePw(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    const ico = document.getElementById(iconId);
+    if (inp.type === 'password') { inp.type = 'text'; ico.classList.replace('fa-eye','fa-eye-slash'); }
+    else { inp.type = 'password'; ico.classList.replace('fa-eye-slash','fa-eye'); }
+  }
+
+  // ── LOGIN ──
+  async function handleLogin(e) {
+    e.preventDefault();
+    hideErr();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) { showErr('Please enter your email and password.'); return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Signing in...</span>';
+
+    try {
+      const res = await api('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showErr(data.message || 'Login failed. Please check your credentials.');
         return;
       }
 
-      // Verify OTP against backend
-      try {
-        const verifyRes = await safeFetchApi('/api/auth/verify-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: pendingSignupUser.email, otpCode: enteredOtp })
-        });
-        const verifyData = await verifyRes.json();
-        if (!verifyData.isVerified) {
-          if (window.NotificationManager) NotificationManager.show('Incorrect OTP! Check your email inbox and try again.', 'error');
-          return;
-        }
-      } catch (err) {
-        console.warn('Verify OTP backend error:', err.message);
-      }
-
-      const existingAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const duplicate = existingAccounts.find(a => a.email.toLowerCase() === pendingSignupUser.email.toLowerCase());
-      
-      if (duplicate) {
-        if (window.NotificationManager) NotificationManager.show('Account with this email already exists!', 'error');
-        closeOtpModal();
-        return;
-      }
-
-      existingAccounts.push(pendingSignupUser);
-      localStorage.setItem('emberGasAccounts', JSON.stringify(existingAccounts));
-
-      // Auto-login user upon successful OTP verification
-      const activeUserObj = {
-        name: pendingSignupUser.name,
-        email: pendingSignupUser.email,
-        phone: pendingSignupUser.phone,
-        role: pendingSignupUser.role || 'customer',
+      // Determine where to redirect based on role from DB (ignore portal selection for redirect)
+      const role = (data.role || 'customer').toLowerCase();
+      const user = {
+        _id: data._id,
+        name: data.name,
+        email: data.email,
+        phone: data.phone || '',
+        role: role,
+        businessName: data.businessName || '',
+        address: data.address || '',
+        token: data.token,
         loginTime: new Date().toISOString()
       };
-      localStorage.setItem('currentUser', JSON.stringify(activeUserObj));
+      localStorage.setItem('currentUser', JSON.stringify(user));
 
-      closeOtpModal();
-      if (window.NotificationManager) {
-        NotificationManager.show(`Account verified & logged in as ${activeUserObj.name}! Redirecting to dashboard...`, 'success');
-      }
-
-      const targetRole = activeUserObj.role || 'customer';
-      setTimeout(() => {
-        switch (targetRole) {
-          case 'customer': window.location.href = 'dashboard.html'; break;
-          case 'vendor': window.location.href = 'seller_dashboard.html'; break;
-          case 'refiller': window.location.href = 'refiller_dashboard.html'; break;
-          default: window.location.href = 'dashboard.html';
-        }
-      }, 600);
-    }
-
-    function closeOtpModal() {
-      document.getElementById('otpModal').classList.remove('show');
-      clearInterval(resendTimer);
-      document.getElementById('resendCountdown').innerText = '';
-      document.getElementById('resendOtpBtn').disabled = false;
-    }
-
-    function startResendCountdown(seconds = 30) {
-      const btn = document.getElementById('resendOtpBtn');
-      const countdown = document.getElementById('resendCountdown');
-      btn.disabled = true;
-      btn.style.opacity = '0.4';
-      btn.style.cursor = 'not-allowed';
-      resendSeconds = seconds;
-      countdown.innerText = `(${resendSeconds}s)`;
-      clearInterval(resendTimer);
-      resendTimer = setInterval(() => {
-        resendSeconds--;
-        countdown.innerText = `(${resendSeconds}s)`;
-        if (resendSeconds <= 0) {
-          clearInterval(resendTimer);
-          countdown.innerText = '';
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-        }
-      }, 1000);
-    }
-
-    async function resendOtp() {
-      if (resendSeconds > 0 || !pendingSignupUser) return;
-      const { email, name, phone } = pendingSignupUser;
-
-      // Clear OTP boxes
-      for (let i = 1; i <= 6; i++) document.getElementById(`otp${i}`).value = '';
-      document.getElementById('otp1').focus();
-
-      if (window.NotificationManager) NotificationManager.show(`Resending OTP to ${email}...`, 'success');
-
-      try {
-        const res = await safeFetchApi('/api/auth/send-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, name, phone })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to resend OTP. Try again.', 'error');
-          return;
-        }
-
-        if (data.otpCode) {
-          for (let i = 1; i <= 6; i++) {
-            const box = document.getElementById(`otp${i}`);
-            if (box && data.otpCode[i - 1]) box.value = data.otpCode[i - 1];
-          }
-        }
-
-        if (window.NotificationManager) NotificationManager.show(`New OTP code ready for ${email}!`, 'success');
-        startResendCountdown(30);
-      } catch (err) {
-        if (window.NotificationManager) NotificationManager.show('Server not reachable. Make sure the backend is running.', 'error');
-      }
-    }
-
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const selectedPortal = document.getElementById('selectedRole').value;
-
-      if (!email || !password) {
-        if (window.NotificationManager) NotificationManager.show('Please enter your email and password.', 'error');
-        return;
-      }
-
-      let userAccount = null;
-
-      // ── STEP 1: Attempt Cloud Authentication via MongoDB Atlas API ──
-      try {
-        const loginRes = await safeFetchApi('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        if (loginRes.ok) {
-          const dbUser = await loginRes.json();
-          userAccount = {
-            name: dbUser.name,
-            email: dbUser.email,
-            phone: dbUser.phone,
-            role: dbUser.role || 'customer',
-            address: dbUser.address || '',
-            token: dbUser.token,
-            password: password
-          };
-          console.log('[LOGIN SUCCESS] Authenticated via MongoDB Atlas:', dbUser.email);
-        } else if (loginRes.status === 401) {
-          if (window.NotificationManager) NotificationManager.show('Incorrect password or credentials! Check your email and password.', 'error');
-          return;
-        }
-      } catch (err) {
-        console.warn('Backend login connection note:', err.message);
-      }
-
-      // ── STEP 2: Local fallback if cloud DB lookup returned no account ──
-      if (!userAccount) {
-        const emberAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-        const users = JSON.parse(localStorage.getItem('gasUsers') || '[]');
-        const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
-        const registeredAccounts = [...emberAccounts, ...users, ...vendors];
-        userAccount = registeredAccounts.find(a => a.email && a.email.toLowerCase() === email.toLowerCase());
-
-        if (userAccount && userAccount.password !== password) {
-          if (window.NotificationManager) NotificationManager.show('Incorrect password! Check your credentials.', 'error');
-          return;
-        }
-      }
-
-      if (!userAccount) {
-        if (window.NotificationManager) {
-          NotificationManager.show('Account not found! Click "Create Account" below to register.', 'error');
-        }
-        return;
-      }
-
-      // ── AUTO-DETECT ROLE & SEAMLESS DASHBOARD REDIRECTION ──────────────────
-      const accountRole = userAccount.role || 'customer';
-      const roleAliasMap = {
-        customer: 'customer',
-        vendor: 'vendor',
-        seller: 'vendor',
-        refiller: 'refiller',
-        rider: 'refiller',
-        admin: 'admin'
-      };
-      const canonicalRole = roleAliasMap[accountRole] || 'customer';
-
-      // Save authenticated user to localStorage
-      localStorage.setItem('currentUser', JSON.stringify({
-        name: userAccount.name,
-        email: userAccount.email,
-        phone: userAccount.phone || '',
-        role: canonicalRole,
-        address: userAccount.address || '',
-        token: userAccount.token || '',
-        loginTime: new Date().toISOString()
-      }));
-
-      // Auto-sync account into local emberGasAccounts array for offline resilience
-      const emberAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      if (!emberAccounts.some(a => a.email && a.email.toLowerCase() === userAccount.email.toLowerCase())) {
-        emberAccounts.push(userAccount);
-        localStorage.setItem('emberGasAccounts', JSON.stringify(emberAccounts));
-      }
-
-      if (window.NotificationManager) {
-        NotificationManager.show(`Welcome back, ${userAccount.name}! Logging you in...`, 'success');
-      }
+      toast(`Welcome back, ${data.name}! 🎉`, 'success');
 
       setTimeout(() => {
-        if (canonicalRole === 'vendor' || canonicalRole === 'seller') {
+        if (role === 'vendor' || role === 'seller' || role === 'filling_station') {
           window.location.href = 'seller_dashboard.html';
+        } else if (role === 'admin') {
+          window.location.href = 'admin.html';
         } else {
           window.location.href = 'dashboard.html';
         }
-      }, 500);
-      return false;
-      // ────────────────────────────────────────────────────────────
+      }, 800);
 
-      const activeUserObj = {
-        name: userAccount.name,
-        email: userAccount.email,
-        phone: userAccount.phone,
-        role: canonicalRole,
-        loginTime: new Date().toISOString()
-      };
-      localStorage.setItem('currentUser', JSON.stringify(activeUserObj));
-
-      setTimeout(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const redirectUrl = urlParams.get('redirect');
-        const serviceParam = urlParams.get('service');
-        const sizeParam = urlParams.get('size');
-
-        let target = 'dashboard.html';
-        if (canonicalRole === 'vendor') target = 'seller_dashboard.html';
-        else if (canonicalRole === 'refiller') target = 'refiller_dashboard.html';
-        else if (canonicalRole === 'admin') target = 'admin.html';
-        else if (redirectUrl) {
-          target = redirectUrl;
-        } else if (serviceParam || sizeParam) {
-          target = `dashboard.html?service=${serviceParam || ''}&size=${sizeParam || ''}`;
-        }
-        window.location.href = target;
-      }, 600);
+    } catch (err) {
+      showErr('Cannot connect to server. Please check your internet and try again.');
+      console.error('Login error:', err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i><span>Sign In</span>';
     }
+  }
 
-    // --- OPTIMIZED MOBILE SWEEP GESTURE ENGINE FOR AUTH CARDS ---
-    let touchStartX = 0;
-    let touchStartY = 0;
-    const cardEl = document.getElementById('mainAuthCard');
+  // ── FORGOT PASSWORD ──
+  function openForgotModal(e) {
+    e?.preventDefault();
+    document.getElementById('forgotModal').classList.add('show');
+    document.getElementById('fpEmail').value = document.getElementById('loginEmail').value || '';
+    document.getElementById('fpStep1').style.display = 'block';
+    document.getElementById('fpStep2').style.display = 'none';
+  }
+  function closeForgotModal() { document.getElementById('forgotModal').classList.remove('show'); }
+  function goBackToStep1(e) {
+    e?.preventDefault();
+    document.getElementById('fpStep1').style.display = 'block';
+    document.getElementById('fpStep2').style.display = 'none';
+  }
 
-    if (cardEl) {
-      cardEl.addEventListener('touchstart', (e) => {
-        const tag = e.target.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-      }, { passive: true });
+  async function sendResetCode() {
+    const email = document.getElementById('fpEmail').value.trim();
+    if (!email) { toast('Please enter your email address.', 'error'); return; }
 
-      cardEl.addEventListener('touchend', (e) => {
-        const tag = e.target.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+    const btn = document.getElementById('fpSendBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
 
-        const touchEndX = e.changedTouches[0].screenX;
-        const touchEndY = e.changedTouches[0].screenY;
-        const diffX = touchEndX - touchStartX;
-        const diffY = touchEndY - touchStartY;
+    try {
+      const res = await api('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
 
-        // Require substantial horizontal swipe (> 60px) and low vertical drift (< 45px)
-        if (Math.abs(diffX) > 60 && Math.abs(diffY) < 45) {
-          const isSignupSection = document.getElementById('sectionSignup').style.display !== 'none';
-
-          if (diffX < 0) {
-            // Swipe Left
-            if (!isSignupSection) {
-              switchAuthMode('signup');
-              if (window.NotificationManager) NotificationManager.show('Swiped Left: Create Account Mode', 'success');
-            } else {
-              // Cycle signup account types: customer -> vendor -> refiller
-              const currentType = document.getElementById('accountType').value;
-              const typeMap = { customer: 'vendor', vendor: 'refiller', refiller: 'customer' };
-              const nextType = typeMap[currentType] || 'customer';
-              selectSignupType(nextType);
-              if (window.NotificationManager) {
-                const labels = { customer: 'Customer Account', vendor: 'Gas Station Vendor', refiller: 'Dispatch Rider' };
-                NotificationManager.show(`Account Type: ${labels[nextType]}`, 'success');
-              }
-            }
-          } else {
-            // Swipe Right
-            if (isSignupSection) {
-              switchAuthMode('login');
-              if (window.NotificationManager) NotificationManager.show('Swiped Right: Sign In Mode', 'success');
-            } else {
-              // Cycle login roles: refiller -> vendor -> customer
-              const currentRole = document.getElementById('selectedRole').value;
-              const roleMap = { refiller: 'vendor', vendor: 'customer', customer: 'refiller' };
-              const prevRole = roleMap[currentRole] || 'customer';
-              const labelMap = { customer: 'Customer Dashboard', vendor: 'Vendor Portal', refiller: 'Rider Portal' };
-              setLoginRole(prevRole, labelMap[prevRole]);
-              if (window.NotificationManager) NotificationManager.show(`Selected Portal: ${labelMap[prevRole]}`, 'success');
-            }
-          }
-        }
-      }, { passive: true });
-    }
-
-    // ── FORGOT PASSWORD LOGIC ──
-    function openForgotPasswordModal(e) {
-      if (e && e.preventDefault) e.preventDefault();
-      document.getElementById('forgotPasswordModal').style.display = 'flex';
-      document.getElementById('fpStep1').style.display = 'block';
-      document.getElementById('fpStep2').style.display = 'none';
-    }
-
-    function closeForgotPasswordModal() {
-      document.getElementById('forgotPasswordModal').style.display = 'none';
-    }
-
-    async function submitForgotPasswordEmail() {
-      const email = document.getElementById('fpEmail').value.trim();
-      if (!email) {
-        if (window.NotificationManager) NotificationManager.show('Please enter your account email address', 'error');
+      if (!res.ok) {
+        toast(data.message || 'Account not found with that email.', 'error');
         return;
       }
 
-      const btn = document.getElementById('fpSendBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending Reset Code...';
+      // Show step 2
+      document.getElementById('fpStep1').style.display = 'none';
+      document.getElementById('fpStep2').style.display = 'block';
+      document.getElementById('fpStep2Sub').textContent = `We sent a 6-digit code to ${email}. Check your inbox or spam folder.`;
 
-      try {
-        const fetchFn = window.safeFetchApi || (async (url, opts) => {
-          const endpoints = ['', 'http://127.0.0.1:5000', 'http://localhost:5000'];
-          for (const ep of endpoints) {
-            try {
-              const res = await fetch((ep ? ep + url : url), opts);
-              if (res.status < 500) return res;
-            } catch (e) {}
-          }
-          throw new Error('Server not reachable. Make sure backend is running.');
-        });
-
-        const res = await fetchFn('/api/auth/forgot-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email })
-        });
-        const data = await res.json();
-
-        if (res.ok) {
-          if (window.NotificationManager) NotificationManager.show(data.message || 'OTP reset code sent to your email!', 'success');
-          if (data.otpCode) {
-            document.getElementById('fpOtpCode').value = data.otpCode;
-          }
-          document.getElementById('fpStep1').style.display = 'none';
-          document.getElementById('fpStep2').style.display = 'block';
-        } else {
-          if (window.NotificationManager) NotificationManager.show(data.message || 'Account not found with this email. Please register first.', 'error');
-        }
-      } catch (err) {
-        console.error('Forgot password error:', err);
-        if (window.NotificationManager) NotificationManager.show(err.message || 'Failed to send reset code', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reset Code';
+      // Auto-fill code if email delivery may be slow (Brevo fallback)
+      if (data.otpCode) {
+        document.getElementById('fpOtpCode').value = data.otpCode;
+        document.getElementById('otpDisplayNum').textContent = data.otpCode;
+        document.getElementById('otpDisplay').style.display = 'block';
       }
+
+      toast(data.message || 'Reset code sent!', 'success');
+    } catch (err) {
+      toast('Cannot connect to server. Check your internet.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reset Code';
     }
+  }
 
-    async function submitResetPassword() {
-      const email = document.getElementById('fpEmail').value.trim();
-      const otpCode = document.getElementById('fpOtpCode').value.trim();
-      const newPassword = document.getElementById('fpNewPassword').value;
+  async function submitResetPassword() {
+    const email = document.getElementById('fpEmail').value.trim();
+    const otpCode = document.getElementById('fpOtpCode').value.trim();
+    const newPw = document.getElementById('fpNewPw').value;
+    const confirmPw = document.getElementById('fpConfirmPw').value;
 
-      if (!email || !otpCode || !newPassword) {
-        if (window.NotificationManager) NotificationManager.show('Please complete all fields', 'error');
+    if (!otpCode || otpCode.length < 6) { toast('Please enter the 6-digit reset code.', 'error'); return; }
+    if (!newPw || newPw.length < 6) { toast('New password must be at least 6 characters.', 'error'); return; }
+    if (newPw !== confirmPw) { toast("Passwords don't match.", 'error'); return; }
+
+    const btn = document.getElementById('fpResetBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+    try {
+      const res = await api('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otpCode, newPassword: newPw })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast(data.message || 'Failed to reset password.', 'error');
         return;
       }
 
-      const btn = document.getElementById('fpResetBtn');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating Password...';
-
-      try {
-        const fetchFn = window.safeFetchApi || (async (url, opts) => {
-          const endpoints = ['', 'http://127.0.0.1:5000', 'http://localhost:5000'];
-          for (const ep of endpoints) {
-            try {
-              const res = await fetch((ep ? ep + url : url), opts);
-              if (res.status < 500) return res;
-            } catch (e) {}
-          }
-          throw new Error('Server not reachable');
-        });
-
-        const res = await fetchFn('/api/auth/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, otpCode, newPassword })
-        });
-        const data = await res.json();
-
-        if (res.ok && data.user) {
-          if (window.NotificationManager) NotificationManager.show('Password updated successfully! Logging you in...', 'success');
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          setTimeout(() => {
-            closeForgotPasswordModal();
-            window.location.href = data.user.role === 'vendor' ? 'seller_dashboard.html' : 'dashboard.html';
-          }, 1000);
-        } else {
-          if (window.NotificationManager) NotificationManager.show(data.message || 'Failed to reset password', 'error');
-        }
-      } catch (err) {
-        if (window.NotificationManager) NotificationManager.show('Error updating password', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Reset Password & Log In';
+      if (data.user) {
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        toast('Password updated! Redirecting...', 'success');
+        closeForgotModal();
+        setTimeout(() => {
+          const role = (data.user.role || 'customer').toLowerCase();
+          window.location.href = (role === 'vendor') ? 'seller_dashboard.html' : 'dashboard.html';
+        }, 1000);
       }
+    } catch (err) {
+      toast('Server error. Please try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Set New Password & Log In';
     }
-  </script>
+  }
+
+  // ── Init: pre-fill portal from URL ──
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const portal = params.get('portal');
+    if (portal === 'vendor') selectPortal('vendor');
+
+    // If already logged in, redirect
+    const cu = localStorage.getItem('currentUser');
+    if (cu) {
+      try {
+        const u = JSON.parse(cu);
+        if (u.token) {
+          const role = (u.role || 'customer').toLowerCase();
+          window.location.href = (role === 'vendor' || role === 'seller') ? 'seller_dashboard.html' : 'dashboard.html';
+        }
+      } catch(e) {}
+    }
+  });
+</script>
 </body>
 </html>
