@@ -1183,55 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- AUTOMATIC MOBILE BOTTOM NAVIGATION BAR ---
     function initMobileBottomNav() {
-        if (document.getElementById('global-mobile-nav')) return;
-
-        const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-        if (page === 'login.html' || page === 'signup.html' || page === 'admin.html' || document.body.classList.contains('auth-body')) return;
-
-        const user = JSON.parse(localStorage.getItem('currentUser'));
-        const userRole = (user?.role || 'customer').toLowerCase();
-        
-        const userDashPage = {
-            customer: 'dashboard.html',
-            vendor:   'seller_dashboard.html',
-            seller:   'seller_dashboard.html',
-            admin:    'admin.html'
-        }[userRole] || 'dashboard.html';
-
-        const userDashLabel = {
-            customer: 'Refill',
-            vendor:   'Vendor',
-            admin:    'Admin'
-        }[userRole] || 'Refill';
-
-        const mobileNav = document.createElement('nav');
-        mobileNav.id = 'global-mobile-nav';
-        mobileNav.className = 'mobile-bottom-nav';
-        mobileNav.innerHTML = `
-            <a href="index.html" class="mobile-nav-item ${page === 'index.html' || page === '' ? 'active' : ''}">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
-            </a>
-            <a href="track.html" class="mobile-nav-item ${page === 'track.html' ? 'active' : ''}">
-                <i class="fa-solid fa-location-dot"></i>
-                <span>Track</span>
-            </a>
-            <a href="${userDashPage}" class="mobile-nav-item elevated-action ${page === userDashPage ? 'active' : ''}" title="${userDashLabel} Portal">
-                <div class="action-circle">
-                    <i class="fa-solid ${userRole === 'vendor' ? 'fa-store' : 'fa-fire-flame-curved'}"></i>
-                </div>
-                <span style="margin-top: 4px; color: var(--primary-color);">${userDashLabel}</span>
-            </a>
-            <a href="services.html" class="mobile-nav-item ${page === 'services.html' || page === 'accessories.html' ? 'active' : ''}">
-                <i class="fa-solid fa-cubes"></i>
-                <span>Services</span>
-            </a>
-            <a href="${userDashPage}" class="mobile-nav-item">
-                <i class="fa-solid fa-user"></i>
-                <span>Account</span>
-            </a>
-        `;
-        document.body.appendChild(mobileNav);
+        // Disabled per user request
     }
 
     // --- AUTOMATIC MOBILE SLIDE DRAWER MENU ---

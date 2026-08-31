@@ -353,8 +353,23 @@
         <i class="fa-solid fa-bolt" style="color: #00B14F;"></i> Station Quick Services & Actions
       </h3>
       <div class="quick-links-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+        <a href="index.html" class="quick-link-card" style="text-decoration: none;">
+          <i class="fa-solid fa-house" style="color: #3B82F6; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Home</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">EmberGas Main</div>
+        </a>
+        <div onclick="if(typeof openProfileModal==='function') openProfileModal()" class="quick-link-card">
+          <i class="fa-solid fa-user" style="color: #F59E0B; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">My Profile</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">Manage Account</div>
+        </div>
+        <a href="services.html" class="quick-link-card" style="text-decoration: none;">
+          <i class="fa-solid fa-cubes" style="color: #10B981; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Services</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">LPG & Accessories</div>
+        </a>
         <div onclick="openAddStockModal()" class="quick-link-card">
-          <i class="fa-solid fa-plus-circle" style="color: #3B82F6; font-size: 1.3rem;"></i>
+          <i class="fa-solid fa-plus-circle" style="color: #8B5CF6; font-size: 1.3rem;"></i>
           <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Add Stock Package</div>
           <div style="font-size: 0.72rem; color: #6B7280;">New cylinder sizes</div>
         </div>
@@ -364,12 +379,12 @@
           <div style="font-size: 0.72rem; color: #6B7280;">Save LPG rate / kg</div>
         </div>
         <div onclick="document.getElementById('liveOrderQueue').scrollIntoView({behavior:'smooth'})" class="quick-link-card">
-          <i class="fa-solid fa-truck-ramp-box" style="color: #F59E0B; font-size: 1.3rem;"></i>
+          <i class="fa-solid fa-truck-ramp-box" style="color: #EF4444; font-size: 1.3rem;"></i>
           <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Station Orders</div>
           <div style="font-size: 0.72rem; color: #6B7280;">Manage queue</div>
         </div>
         <div onclick="window.location.reload()" class="quick-link-card">
-          <i class="fa-solid fa-rotate" style="color: #8B5CF6; font-size: 1.3rem;"></i>
+          <i class="fa-solid fa-rotate" style="color: #6366F1; font-size: 1.3rem;"></i>
           <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Refresh Stream</div>
           <div style="font-size: 0.72rem; color: #6B7280;">Live sync</div>
         </div>
