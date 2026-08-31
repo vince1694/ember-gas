@@ -2793,51 +2793,14 @@ body.menu-open {
     border-radius: 12px;
     font-size: 1.15rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    z-index: 1001;
 }
 
-.mobile-drawer-trigger i {
-    color: #111827 !important;
-}
-
-.mobile-drawer-trigger:hover {
-    background: #E6F7ED !important;
-    border-color: #00B14F !important;
-}
-
-.mobile-drawer-trigger:hover i {
-    color: #00B14F !important;
-}
-
-/* Hide mobile bottom navigation ONLY when slide drawer is open */
-body.drawer-open .mobile-bottom-nav {
-    display: none !important;
-}
-
-/* ── RESPONSIVE STYLES (max-width: 768px) ──────────────────────────────── */
+/* Mobile Sweep */
 @media (max-width: 768px) {
-    .nav-desktop-links {
-        display: none !important;
-    }
-
-    /* Responsive Grid for Quick Links */
-    .quick-links-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px !important;
-    }
-
-
-    .master-header {
-        padding: 12px 18px !important;
-    }
-
-    .brand-logo {
-        font-size: 1.25rem !important;
-    }
-}.quick-links-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
+    body { padding-bottom: 0 !important; }
+    .nav-desktop-links { display: none !important; }
+    .master-header { padding: 12px 18px !important; }
+    .brand-logo { font-size: 1.25rem !important; }
 }
+
+

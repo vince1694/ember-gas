@@ -216,23 +216,28 @@
     /* ── QUICK LINKS GRID ── */
     .quick-links-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
       margin-top: 10px;
     }
 
     .quick-tile {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      border-radius: 16px;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 10px;
+      border-radius: 14px;
       border: 1.5px solid #E5E7EB;
       background: #F9FAFB;
       text-decoration: none;
       color: #111827;
+      text-align: center;
+      cursor: pointer;
       transition: all 0.22s ease;
       position: relative;
+      min-height: 80px;
     }
 
     .quick-tile:hover {
@@ -242,13 +247,13 @@
     }
 
     .tile-icon-box {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       flex-shrink: 0;
     }
 
@@ -264,9 +269,9 @@
     .tile-red .tile-icon-box   { background: #FEE2E2; color: #DC2626; }
     .tile-red:hover            { border-color: #DC2626; }
 
-    .tile-title { font-weight: 800; font-size: 0.9rem; color: #111827; margin-bottom: 2px; }
-    .tile-sub   { font-size: 0.74rem; color: #6B7280; }
-    .tile-arrow { margin-left: auto; font-size: 0.75rem; color: #9CA3AF; }
+    .tile-title { font-weight: 800; font-size: 0.78rem; color: #111827; }
+    .tile-sub   { font-size: 0.7rem; color: #6B7280; display: none; }
+    .tile-arrow { display: none; }
 
     /* ── PROFILE POPUP MODAL ── */
     .profile-modal-overlay {
@@ -854,34 +859,34 @@
           <i class="fa-solid fa-bolt" style="color: #00B14F;"></i> Quick Services & Actions
         </h3>
         <div class="quick-links-grid">
-          <a href="index.html" class="quick-tile tile-blue" style="text-align: center; padding: 16px;">
-            <div class="tile-icon-box" style="margin: 0 auto 10px;"><i class="fa-solid fa-house"></i></div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">Home Page</div>
+          <a href="index.html" class="quick-tile tile-blue">
+            <div class="tile-icon-box"><i class="fa-solid fa-house"></i></div>
+            <div class="tile-title">Home</div>
           </a>
 
-          <div onclick="window.openGlobalProfileModal && window.openGlobalProfileModal()" class="quick-tile tile-amber" style="text-align: center; padding: 16px; cursor: pointer;">
-            <div class="tile-icon-box" style="margin: 0 auto 10px;"><i class="fa-solid fa-user"></i></div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">My Profile</div>
+          <div onclick="window.openGlobalProfileModal && window.openGlobalProfileModal()" class="quick-tile tile-amber">
+            <div class="tile-icon-box"><i class="fa-solid fa-user"></i></div>
+            <div class="tile-title">My Profile</div>
           </div>
 
-          <a href="track.html" class="quick-tile tile-green" style="text-align: center; padding: 16px;">
-            <div class="tile-icon-box" style="margin: 0 auto 10px;"><i class="fa-solid fa-location-crosshairs"></i></div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">Track Order</div>
+          <a href="track.html" class="quick-tile tile-green">
+            <div class="tile-icon-box"><i class="fa-solid fa-location-crosshairs"></i></div>
+            <div class="tile-title">Track Order</div>
           </a>
 
-          <a href="services.html" class="quick-tile tile-blue" style="text-align: center; padding: 16px;">
-            <div class="tile-icon-box" style="margin: 0 auto 10px;"><i class="fa-solid fa-wrench"></i></div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">LPG Services</div>
+          <a href="services.html" class="quick-tile tile-blue">
+            <div class="tile-icon-box"><i class="fa-solid fa-wrench"></i></div>
+            <div class="tile-title">LPG Services</div>
           </a>
 
-          <a href="accessories.html" class="quick-tile tile-amber" style="text-align: center; padding: 16px;">
-            <div class="tile-icon-box" style="margin: 0 auto 10px;"><i class="fa-solid fa-toolbox"></i></div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">Accessories</div>
+          <a href="accessories.html" class="quick-tile tile-amber">
+            <div class="tile-icon-box"><i class="fa-solid fa-toolbox"></i></div>
+            <div class="tile-title">Accessories</div>
           </a>
 
-          <a href="safety.html" class="quick-tile tile-red" style="text-align: center; padding: 16px;">
-            <div class="tile-icon-box" style="margin: 0 auto 10px;"><i class="fa-solid fa-shield-heart"></i></div>
-            <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">Safety Guide</div>
+          <a href="safety.html" class="quick-tile tile-red">
+            <div class="tile-icon-box"><i class="fa-solid fa-shield-heart"></i></div>
+            <div class="tile-title">Safety Guide</div>
           </a>
         </div>
       </div>
