@@ -222,21 +222,7 @@
       margin-bottom: 10px;
     }
 
-    /* ── SWIPE HINT PILL ── */
-    .swipe-hint-pill {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-size: 0.75rem;
-      color: #00B14F;
-      background: rgba(0, 177, 79, 0.08);
-      border: 1px dashed rgba(0, 177, 79, 0.35);
-      padding: 7px 14px;
-      border-radius: 20px;
-      margin-bottom: 16px;
-      font-weight: 700;
-    }
+
 
     .quick-link-card {
       background: #F9FAFB;
@@ -303,11 +289,7 @@
   <div class="header-spacer"></div>
 
   <main>
-    <!-- Swipe Hint Pill -->
-    <div class="swipe-hint-pill">
-      <i class="fa-solid fa-hand-pointer"></i>
-      <span>Swipe left for Live Orders • Swipe right for Inventory Control</span> ↔
-    </div>
+
 
     <!-- ── VENDOR WELCOME BANNER ── -->
     <div class="vendor-welcome">
@@ -898,44 +880,7 @@
       renderVendorOrders();
     }
 
-    // --- OPTIMIZED MOBILE SWEEP GESTURE ENGINE FOR VENDOR DASHBOARD ---
-    let vendorTouchStartX = 0;
-    let vendorTouchStartY = 0;
 
-    document.addEventListener('touchstart', (e) => {
-      const tag = e.target.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || e.target.closest('#riderDispatchModal') || e.target.closest('#addStockModal')) return;
-      vendorTouchStartX = e.touches[0].clientX;
-      vendorTouchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    document.addEventListener('touchend', (e) => {
-      const tag = e.target.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || e.target.closest('#riderDispatchModal') || e.target.closest('#addStockModal')) return;
-
-      const touchEndX = e.changedTouches[0].clientX;
-      const touchEndY = e.changedTouches[0].clientY;
-      const diffX = touchEndX - vendorTouchStartX;
-      const diffY = touchEndY - vendorTouchStartY;
-
-      if (Math.abs(diffX) > 50 && Math.abs(diffY) < 45) {
-        if (diffX < 0) {
-          // Swipe Left ➔ Jump to Live Orders Operations Stream
-          const orderSection = document.getElementById('liveOrderQueue') || document.querySelector('.vendor-orders-card');
-          if (orderSection) {
-            orderSection.scrollIntoView({ behavior: 'smooth' });
-            if (window.NotificationManager) NotificationManager.show('👉 Swiped: Live Orders Operations Stream', 'success');
-          }
-        } else {
-          // Swipe Right ➔ Jump to Inventory Stock Control
-          const inventorySection = document.getElementById('inventoryStockControl') || document.querySelector('.stock-toggle-card');
-          if (inventorySection) {
-            inventorySection.scrollIntoView({ behavior: 'smooth' });
-            if (window.NotificationManager) NotificationManager.show('👈 Swiped: Station Stock & Inventory Control', 'success');
-          }
-        }
-      }
-    }, { passive: true });
   </script>
 </body>
 </html>

@@ -1184,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('global-mobile-nav')) return;
 
         const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-        if (page === 'login.html' || page === 'signup.html' || document.body.classList.contains('auth-body')) return;
+        if (page === 'login.html' || page === 'signup.html' || page === 'admin.html' || document.body.classList.contains('auth-body')) return;
 
         const user = JSON.parse(localStorage.getItem('currentUser'));
         const userRole = (user?.role || 'customer').toLowerCase();
@@ -1237,7 +1237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('global-drawer-backdrop')) return;
 
         const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
-        if (page === 'login.html' || page === 'signup.html' || document.body.classList.contains('auth-body')) return;
+        if (page === 'login.html' || page === 'signup.html' || page === 'admin.html' || document.body.classList.contains('auth-body')) return;
 
         const backdrop = document.createElement('div');
         backdrop.id = 'global-drawer-backdrop';
@@ -1338,72 +1338,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         initMobileBottomNav();
         initMobileDrawer();
-        initGlobalTouchSwipeEngine();
         initDesktopSweepController();
     }, 100);
 });
 
-// ── GLOBAL MOBILE SWEEP (TOUCH SWIPE GESTURE CONTROLLER) ─────────────────
-function initGlobalTouchSwipeEngine() {
-    let startX = 0;
-    let startY = 0;
-
-    const pageSequence = [
-        { path: 'index.html', name: 'Home' },
-        { path: 'dashboard.html', name: 'Customer Dashboard' },
-        { path: 'track.html', name: 'Live Tracking' },
-        { path: 'services.html', name: 'Gas Services' },
-        { path: 'accessories.html', name: 'Accessories Store' },
-        { path: 'safety.html', name: 'Safety Guide' }
-    ];
-
-    window.addEventListener('touchstart', (e) => {
-        if (!e.touches || e.touches.length > 1) return;
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-    }, { passive: true });
-
-    window.addEventListener('touchend', (e) => {
-        if (!e.changedTouches || e.changedTouches.length === 0) return;
-
-        // Skip input or textarea elements to allow text selection/cursor positioning
-        const tag = e.target.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-
-        const endX = e.changedTouches[0].clientX;
-        const endY = e.changedTouches[0].clientY;
-
-        const diffX = endX - startX;
-        const diffY = endY - startY;
-
-        // Require substantial horizontal swipe (> 70px) and minimal vertical drift
-        if (Math.abs(diffX) > 70 && Math.abs(diffY) < 50) {
-            const currentPath = window.location.pathname.split('/').pop() || 'index.html';
-            let currentIndex = pageSequence.findIndex(p => p.path === currentPath);
-            if (currentIndex === -1) currentIndex = 0;
-
-            if (diffX < 0 && currentIndex < pageSequence.length - 1) {
-                // Swipe Left -> Next Page
-                const nextPage = pageSequence[currentIndex + 1];
-                if (window.NotificationManager) {
-                    NotificationManager.show(`Swiped Left: Opening ${nextPage.name}...`, 'success');
-                }
-                setTimeout(() => { window.location.href = nextPage.path; }, 350);
-            } else if (diffX > 0) {
-                // Swipe Right -> Previous Page or Open Drawer
-                if (currentIndex > 0) {
-                    const prevPage = pageSequence[currentIndex - 1];
-                    if (window.NotificationManager) {
-                        NotificationManager.show(`Swiped Right: Back to ${prevPage.name}...`, 'success');
-                    }
-                    setTimeout(() => { window.location.href = prevPage.path; }, 350);
-                } else if (window.openMobileDrawer) {
-                    window.openMobileDrawer();
-                }
-            }
-        }
-    }, { passive: true });
-}
 
 // ── GLOBAL DESKTOP SWEEP (ACTIVE NAV & KEYBOARD ACCESSIBILITY) ───────────
 function initDesktopSweepController() {
