@@ -927,7 +927,7 @@
     async function submitForgotPasswordEmail() {
       const email = document.getElementById('fpEmail').value.trim();
       if (!email) {
-        if (window.NotificationManager) NotificationManager.show('Please enter your account email', 'error');
+        if (window.NotificationManager) NotificationManager.show('Please enter your account email address', 'error');
         return;
       }
 
@@ -936,7 +936,18 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending Reset Code...';
 
       try {
-        const res = await safeFetchApi('/api/auth/forgot-password', {
+        const fetchFn = window.safeFetchApi || (async (url, opts) => {
+          const endpoints = ['', 'http://127.0.0.1:5000', 'http://localhost:5000'];
+          for (const ep of endpoints) {
+            try {
+              const res = await fetch((ep ? ep + url : url), opts);
+              if (res.status < 500) return res;
+            } catch (e) {}
+          }
+          throw new Error('Server not reachable. Make sure backend is running.');
+        });
+
+        const res = await fetchFn('/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
@@ -951,10 +962,11 @@
           document.getElementById('fpStep1').style.display = 'none';
           document.getElementById('fpStep2').style.display = 'block';
         } else {
-          if (window.NotificationManager) NotificationManager.show(data.message || 'Account not found with this email.', 'error');
+          if (window.NotificationManager) NotificationManager.show(data.message || 'Account not found with this email. Please register first.', 'error');
         }
       } catch (err) {
-        if (window.NotificationManager) NotificationManager.show('Failed to send reset code', 'error');
+        console.error('Forgot password error:', err);
+        if (window.NotificationManager) NotificationManager.show(err.message || 'Failed to send reset code', 'error');
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reset Code';
@@ -976,7 +988,18 @@
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating Password...';
 
       try {
-        const res = await safeFetchApi('/api/auth/reset-password', {
+        const fetchFn = window.safeFetchApi || (async (url, opts) => {
+          const endpoints = ['', 'http://127.0.0.1:5000', 'http://localhost:5000'];
+          for (const ep of endpoints) {
+            try {
+              const res = await fetch((ep ? ep + url : url), opts);
+              if (res.status < 500) return res;
+            } catch (e) {}
+          }
+          throw new Error('Server not reachable');
+        });
+
+        const res = await fetchFn('/api/auth/reset-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, otpCode, newPassword })
