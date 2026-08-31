@@ -779,15 +779,8 @@
         return;
       }
 
-      // ── STRICT ROLE ENFORCEMENT ──────────────────────────────────
+      // ── AUTO-DETECT ROLE & SEAMLESS DASHBOARD REDIRECTION ──────────────────
       const accountRole = userAccount.role || 'customer';
-      const portalLabels = {
-        customer: 'Customer Dashboard',
-        vendor: 'Vendor / Station Portal',
-        refiller: 'Rider / Dispatch Portal'
-      };
-
-      // Map role aliases to canonical role names
       const roleAliasMap = {
         customer: 'customer',
         vendor: 'vendor',
@@ -796,29 +789,38 @@
         rider: 'refiller',
         admin: 'admin'
       };
-      const canonicalRole = roleAliasMap[accountRole] || accountRole;
-      const canonicalSelected = roleAliasMap[selectedPortal] || selectedPortal;
+      const canonicalRole = roleAliasMap[accountRole] || 'customer';
 
-      if (canonicalRole !== canonicalSelected) {
-        const correctPortal = portalLabels[canonicalRole] || canonicalRole;
-        const wrongPortal = portalLabels[canonicalSelected] || canonicalSelected;
-        if (window.NotificationManager) {
-          NotificationManager.show(
-            `❌ Wrong portal! This account is registered as a "${correctPortal}". Please select the correct portal tab above.`,
-            'error'
-          );
-        }
-        // Highlight the correct tab
-        document.querySelectorAll('.role-tab').forEach(t => {
-          t.classList.toggle('active', t.getAttribute('data-role') === canonicalRole);
-        });
-        document.getElementById('selectedRole').value = canonicalRole;
-        const labelMap = { customer: 'Customer Dashboard', vendor: 'Vendor Portal', refiller: 'Rider Portal', admin: 'Admin Center' };
-        if (document.getElementById('portalLabel')) {
-          document.getElementById('portalLabel').innerText = labelMap[canonicalRole] || 'Dashboard';
-        }
-        return;
+      // Save authenticated user to localStorage
+      localStorage.setItem('currentUser', JSON.stringify({
+        name: userAccount.name,
+        email: userAccount.email,
+        phone: userAccount.phone || '',
+        role: canonicalRole,
+        address: userAccount.address || '',
+        token: userAccount.token || '',
+        loginTime: new Date().toISOString()
+      }));
+
+      // Auto-sync account into local emberGasAccounts array for offline resilience
+      const emberAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      if (!emberAccounts.some(a => a.email && a.email.toLowerCase() === userAccount.email.toLowerCase())) {
+        emberAccounts.push(userAccount);
+        localStorage.setItem('emberGasAccounts', JSON.stringify(emberAccounts));
       }
+
+      if (window.NotificationManager) {
+        NotificationManager.show(`Welcome back, ${userAccount.name}! Logging you in...`, 'success');
+      }
+
+      setTimeout(() => {
+        if (canonicalRole === 'vendor' || canonicalRole === 'seller') {
+          window.location.href = 'seller_dashboard.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
+      }, 500);
+      return false;
       // ────────────────────────────────────────────────────────────
 
       const activeUserObj = {
