@@ -821,23 +821,22 @@
         const diffX = touchEndX - touchStartX;
         const diffY = touchEndY - touchStartY;
 
-        // Require substantial horizontal swipe (> 60px) and low vertical drift (< 45px)
-        if (Math.abs(diffX) > 60 && Math.abs(diffY) < 45) {
+        // Require substantial horizontal swipe (> 50px) and low vertical drift (< 45px)
+        if (Math.abs(diffX) > 50 && Math.abs(diffY) < 45) {
           const isSignupSection = document.getElementById('sectionSignup').style.display !== 'none';
 
           if (diffX < 0) {
             // Swipe Left
             if (!isSignupSection) {
               switchAuthMode('signup');
-              if (window.NotificationManager) NotificationManager.show('Swiped Left: Create Account Mode', 'success');
+              if (window.NotificationManager) NotificationManager.show('👉 Swiped: Create Account Mode', 'success');
             } else {
-              // Cycle signup account types: customer -> vendor -> refiller
+              // Cycle signup account types: customer <-> vendor
               const currentType = document.getElementById('accountType').value;
-              const typeMap = { customer: 'vendor', vendor: 'refiller', refiller: 'customer' };
-              const nextType = typeMap[currentType] || 'customer';
+              const nextType = currentType === 'customer' ? 'vendor' : 'customer';
               selectSignupType(nextType);
               if (window.NotificationManager) {
-                const labels = { customer: 'Customer Account', vendor: 'Gas Station Vendor', refiller: 'Dispatch Rider' };
+                const labels = { customer: 'Customer Account', vendor: 'Gas Station Vendor' };
                 NotificationManager.show(`Account Type: ${labels[nextType]}`, 'success');
               }
             }
@@ -845,15 +844,14 @@
             // Swipe Right
             if (isSignupSection) {
               switchAuthMode('login');
-              if (window.NotificationManager) NotificationManager.show('Swiped Right: Sign In Mode', 'success');
+              if (window.NotificationManager) NotificationManager.show('👈 Swiped: Sign In Mode', 'success');
             } else {
-              // Cycle login roles: refiller -> vendor -> customer
+              // Cycle login roles: customer <-> vendor
               const currentRole = document.getElementById('selectedRole').value;
-              const roleMap = { refiller: 'vendor', vendor: 'customer', customer: 'refiller' };
-              const prevRole = roleMap[currentRole] || 'customer';
-              const labelMap = { customer: 'Customer Dashboard', vendor: 'Vendor Portal', refiller: 'Rider Portal' };
-              setLoginRole(prevRole, labelMap[prevRole]);
-              if (window.NotificationManager) NotificationManager.show(`Selected Portal: ${labelMap[prevRole]}`, 'success');
+              const nextRole = currentRole === 'customer' ? 'vendor' : 'customer';
+              const labelMap = { customer: 'Customer Dashboard', vendor: 'Vendor Station Hub' };
+              setLoginRole(nextRole, labelMap[nextRole]);
+              if (window.NotificationManager) NotificationManager.show(`Selected Portal: ${labelMap[nextRole]}`, 'success');
             }
           }
         }
