@@ -15,10 +15,13 @@
 
 /* Hide floating bottom nav and hamburger on auth screens to keep layout clean */
 .auth-body .mobile-bottom-nav,
-body.auth-body #global-mobile-nav {
-    display: none !important;
-}
-.auth-body .mobile-drawer-trigger {
+body.auth-body #global-mobile-nav,
+body.auth-body #global-mobile-drawer,
+body.auth-body #global-drawer-backdrop,
+body.auth-body .floating-bottom-nav,
+body.auth-body .nav-desktop-links,
+body.auth-body .mobile-drawer-trigger,
+body.auth-body .mobile-drawer-btn {
     display: none !important;
 }
 

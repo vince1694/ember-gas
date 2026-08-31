@@ -1124,7 +1124,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function initMobileBottomNav() {
         if (document.getElementById('global-mobile-nav')) return;
 
-        const page = window.location.pathname.split('/').pop() || 'index.html';
+        const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+        if (page === 'login.html' || page === 'signup.html' || document.body.classList.contains('auth-body')) return;
+
         const user = JSON.parse(localStorage.getItem('currentUser'));
         const userRole = (user?.role || 'customer').toLowerCase();
         
@@ -1132,8 +1134,6 @@ document.addEventListener('DOMContentLoaded', () => {
             customer: 'dashboard.html',
             vendor:   'seller_dashboard.html',
             seller:   'seller_dashboard.html',
-            refiller: 'refiller_dashboard.html',
-            rider:    'refiller_dashboard.html',
             admin:    'admin.html'
         }[userRole] || 'dashboard.html';
 
@@ -1165,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fa-solid fa-cubes"></i>
                 <span>Services</span>
             </a>
-            <a href="${userDashPage}" class="mobile-nav-item ${page === 'login.html' || page === 'signup.html' ? 'active' : ''}">
+            <a href="${userDashPage}" class="mobile-nav-item">
                 <i class="fa-solid fa-user"></i>
                 <span>Account</span>
             </a>
@@ -1176,6 +1176,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- AUTOMATIC MOBILE SLIDE DRAWER MENU ---
     function initMobileDrawer() {
         if (document.getElementById('global-drawer-backdrop')) return;
+
+        const page = (window.location.pathname.split('/').pop() || 'index.html').toLowerCase();
+        if (page === 'login.html' || page === 'signup.html' || document.body.classList.contains('auth-body')) return;
 
         const backdrop = document.createElement('div');
         backdrop.id = 'global-drawer-backdrop';
