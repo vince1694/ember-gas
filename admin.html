@@ -253,6 +253,22 @@
 
   <main style="max-width: 1320px; margin: 30px auto; padding: 0 20px;">
     
+    <!-- ── ADMIN LIVE NOTIFICATION / KYB REQUEST ALERT BANNER ── -->
+    <div id="adminKybNotificationBanner" style="display:none; margin-bottom: 20px; background: linear-gradient(135deg, #FEF3C7, #FDE68A); border: 2px solid #F59E0B; border-radius: 18px; padding: 16px 22px; color: #92400E; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 6px 20px rgba(245,158,11,0.15);">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:42px; height:42px; border-radius:12px; background:#F59E0B; color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;">
+          <i class="fa-solid fa-bell fa-bounce"></i>
+        </div>
+        <div>
+          <div style="font-weight:900; font-size:1.02rem; color:#78350F;" id="kybAlertTitle">🔔 Pending KYB Approval Requests</div>
+          <div style="font-size:0.85rem; color:#92400E;" id="kybAlertMessage">Vendor stations have submitted KYB verification requests and are waiting for your license approval.</div>
+        </div>
+      </div>
+      <button onclick="switchAdminTab('kyb', document.querySelector('.admin-tab-btn:nth-child(5)'))" style="background:#D97706; color:#fff; border:none; padding:10px 20px; border-radius:12px; font-weight:800; font-size:0.88rem; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(217,119,6,0.3);">
+        <i class="fa-solid fa-id-card"></i> Review KYB Queue Now
+      </button>
+    </div>
+
     <!-- Admin Navigation Tabs -->
     <div class="admin-nav-tabs">
       <button class="admin-tab-btn active" onclick="switchAdminTab('overview', this)">
@@ -300,6 +316,24 @@
           <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">PENDING CYLINDER ORDERS</div>
           <div style="font-size: 1.8rem; font-weight: 800; color: #8B5CF6; margin: 4px 0;" id="pendingCylinderCount">0</div>
           <div style="font-size: 0.78rem; color: #F59E0B;"><i class="fa-solid fa-circle-dot fa-spin"></i> Awaiting Admin Action</div>
+        </div>
+      </div>
+
+      <!-- Quick Operations Toolbar -->
+      <div style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 20px; padding: 22px; margin-bottom: 30px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+        <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 14px; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-bolt" style="color: #3B82F6;"></i> Admin Quick Actions & Bulk Controls
+        </h3>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button onclick="approveAllPendingKyb()" style="background: #10B981; color: #fff; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16,185,129,0.25);">
+            <i class="fa-solid fa-check-double"></i> 1-Click Approve All Pending KYB
+          </button>
+          <button onclick="switchAdminTab('kyb', document.querySelector('.admin-tab-btn:nth-child(5)'))" style="background: #F59E0B; color: #fff; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(245,158,11,0.25);">
+            <i class="fa-solid fa-building-shield"></i> Open KYB Approval Queue
+          </button>
+          <button onclick="showPlatformAuditSummary()" style="background: #3B82F6; color: #fff; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(59,130,246,0.25);">
+            <i class="fa-solid fa-chart-pie"></i> Platform Audit Summary
+          </button>
         </div>
       </div>
     </div>
@@ -451,14 +485,30 @@
 
     <!-- Section 2: Vendor Verification Table -->
     <div id="tab-kyb" class="glass-card" style="margin-bottom: 40px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 24px; padding: 25px; display:none;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
         <div>
           <h2 style="font-size: 1.25rem; color: #111827;"><i class="fa-solid fa-building-shield" style="color: #3B82F6;"></i> Vendor KYB License Approvals</h2>
           <p style="color: var(--text-secondary); font-size: 0.85rem;">Review DPR licenses, station weight calibration certificates, and address proofs.</p>
         </div>
-        <button onclick="loadKybQueue()" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem;">
-          <i class="fa-solid fa-rotate"></i> Refresh Queue
-        </button>
+        <div style="display:flex; gap:10px;">
+          <button onclick="approveAllPendingKyb()" style="background:#10B981; color:#fff; border:none; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-check-double"></i> Approve All Pending
+          </button>
+          <button onclick="loadKybQueue()" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem;">
+            <i class="fa-solid fa-rotate"></i> Refresh Queue
+          </button>
+        </div>
+      </div>
+
+      <!-- KYB Search & Filter Controls -->
+      <div style="display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; align-items:center; background:#F9FAFB; padding:14px; border-radius:16px; border:1px solid #F3F4F6;">
+        <input type="text" id="kybSearchInput" oninput="loadKybQueue()" placeholder="🔍 Search vendor by name, email or phone..." style="flex:1; min-width:240px; padding:10px 14px; border-radius:12px; border:1px solid #D1D5DB; font-size:0.88rem; outline:none; background:#fff;">
+        <select id="kybFilterStatus" onchange="loadKybQueue()" style="padding:10px 14px; border-radius:12px; border:1px solid #D1D5DB; font-size:0.88rem; font-weight:700; background:#fff; cursor:pointer;">
+          <option value="all">All Vendor Accounts</option>
+          <option value="requested">⚡ Notification Requested Only</option>
+          <option value="pending">⏳ Pending KYB Review</option>
+          <option value="verified">✅ Verified Active</option>
+        </select>
       </div>
 
       <div style="overflow-x: auto;">
@@ -485,7 +535,7 @@
       <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: #111827;"><i class="fa-solid fa-sliders" style="color: #3B82F6;"></i> Platform LPG Ceiling Price Controls</h3>
       <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 20px;">Set maximum allowed retail price per KG across the EmberGas marketplace to prevent extortion.</p>
       
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px;">
         <div>
           <label style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 700; display: block; margin-bottom: 6px;">Market Ceiling Price / KG</label>
           <input type="number" id="adminPriceCeiling" value="1250" style="width: 100%; padding: 12px; border-radius: 12px; background: #F9FAFB; border: 1px solid #D1D5DB; color: #111827; font-size: 1rem; font-weight: 700;">
@@ -497,9 +547,20 @@
         </div>
 
         <div style="display: flex; align-items: flex-end;">
-          <button onclick="saveAdminPrice()" class="btn-action" style="background: #3B82F6; min-height: 46px;">
+          <button onclick="saveAdminPrice()" class="btn-action" style="background: #3B82F6; min-height: 46px; width:100%;">
             <i class="fa-solid fa-floppy-disk"></i> Enforce Platform Rules
           </button>
+        </div>
+      </div>
+
+      <!-- Quick Preset Ceiling Buttons -->
+      <div style="background:#F0F9FF; border:1px solid #BAE6FD; padding:16px; border-radius:16px;">
+        <div style="font-size:0.8rem; font-weight:800; color:#0369A1; margin-bottom:10px;">⚡ QUICK PRESET CEILING RATES</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button onclick="applyPresetPrice(1100)" style="background:#fff; border:1.5px solid #0284C7; color:#0284C7; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">₦1,100 / KG</button>
+          <button onclick="applyPresetPrice(1200)" style="background:#fff; border:1.5px solid #0284C7; color:#0284C7; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">₦1,200 / KG</button>
+          <button onclick="applyPresetPrice(1350)" style="background:#fff; border:1.5px solid #0284C7; color:#0284C7; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">₦1,350 / KG</button>
+          <button onclick="applyPresetPrice(1500)" style="background:#fff; border:1.5px solid #0284C7; color:#0284C7; padding:8px 16px; border-radius:10px; font-weight:800; cursor:pointer;">₦1,500 / KG</button>
         </div>
       </div>
     </div>
@@ -999,6 +1060,24 @@
 
       const kybBadge = document.getElementById('kybTabBadge');
       if (kybBadge) kybBadge.innerText = pendingKyb.length;
+
+      // ── CHECK KYB APPROVAL NOTIFICATIONS SENT BY VENDORS ──
+      const kybRequests = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]').filter(r => r.status === 'PENDING');
+      const banner = document.getElementById('adminKybNotificationBanner');
+      if (banner) {
+        if (kybRequests.length > 0) {
+          banner.style.display = 'flex';
+          const msgEl = document.getElementById('kybAlertMessage');
+          const titleEl = document.getElementById('kybAlertTitle');
+          if (titleEl) titleEl.innerText = `🔔 ${kybRequests.length} Vendor Station${kybRequests.length > 1 ? 's' : ''} Requested KYB License Approval`;
+          if (msgEl) {
+            const names = kybRequests.map(r => `"${r.name || r.email}"`).join(', ');
+            msgEl.innerText = `The following vendor station(s) requested access verification: ${names}. Click to inspect license & grant approval.`;
+          }
+        } else {
+          banner.style.display = 'none';
+        }
+      }
     }
 
     function loadKybQueue() {
@@ -1006,29 +1085,59 @@
       if (!tbody) return;
 
       const allAccounts = getAllAccounts();
-      const vendors = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+      let vendors = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+
+      const kybRequests = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+      const pendingReqEmails = kybRequests.filter(r => r.status === 'PENDING').map(r => (r.email || '').toLowerCase());
 
       const kybBadge = document.getElementById('kybTabBadge');
       if (kybBadge) kybBadge.innerText = vendors.filter(v => v.kybStatus !== 'VERIFIED').length;
 
+      // Filter by Search Input
+      const searchVal = (document.getElementById('kybSearchInput') ? document.getElementById('kybSearchInput').value : '').toLowerCase().trim();
+      if (searchVal) {
+        vendors = vendors.filter(v => 
+          (v.name || '').toLowerCase().includes(searchVal) ||
+          (v.email || '').toLowerCase().includes(searchVal) ||
+          (v.phone || '').toLowerCase().includes(searchVal)
+        );
+      }
+
+      // Filter by Status Dropdown
+      const statusFilter = document.getElementById('kybFilterStatus') ? document.getElementById('kybFilterStatus').value : 'all';
+      if (statusFilter === 'requested') {
+        vendors = vendors.filter(v => pendingReqEmails.includes((v.email || '').toLowerCase()));
+      } else if (statusFilter === 'pending') {
+        vendors = vendors.filter(v => v.kybStatus !== 'VERIFIED');
+      } else if (statusFilter === 'verified') {
+        vendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
+      }
+
       if (vendors.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store"></i> No vendor stations registered in the platform registry yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:28px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i> No vendor stations match the selected search or filter criteria.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = vendors.map(v => {
         const isVerified = v.kybStatus === 'VERIFIED';
+        const isRequested = pendingReqEmails.includes((v.email || '').toLowerCase());
         const dprNo = v.dprNo || '— Not provided';
-        const statusHtml = isVerified
-          ? `<span style="color:#10B981; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`
-          : `<span style="color:#F59E0B; font-weight:800;"><i class="fa-solid fa-clock"></i> Pending KYB Review</span>`;
+
+        let statusHtml = '';
+        if (isVerified) {
+          statusHtml = `<span style="color:#10B981; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`;
+        } else if (isRequested) {
+          statusHtml = `<span style="background:#FEF3C7; color:#D97706; border:1px solid #F59E0B; padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.76rem;"><i class="fa-solid fa-bolt"></i> REQUESTED APPROVAL</span>`;
+        } else {
+          statusHtml = `<span style="color:#F59E0B; font-weight:800;"><i class="fa-solid fa-clock"></i> Pending KYB Review</span>`;
+        }
 
         const actionHtml = isVerified
           ? `<span style="color:#10B981; font-size:0.8rem; font-weight:800;"><i class="fa-solid fa-shield-check"></i> Approved</span>`
-          : `<button class="btn-verify" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Approve License</button>`;
+          : `<button class="btn-verify" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')" style="${isRequested ? 'box-shadow: 0 0 12px rgba(16,185,129,0.6);' : ''}"><i class="fa-solid fa-check"></i> Approve License</button>`;
 
         return `
-          <tr style="border-bottom:1px solid #E5E7EB;">
+          <tr style="border-bottom:1px solid #E5E7EB; ${isRequested ? 'background:#FFFBEB;' : ''}">
             <td style="padding:14px 10px; font-weight:800; color:#111827;"><i class="fa-solid fa-store" style="color:#00B14F; margin-right:6px;"></i> ${v.name || 'Vendor Station'}</td>
             <td style="padding:14px 10px; color:#4B5563;">${v.email}</td>
             <td style="padding:14px 10px;"><code>${dprNo}</code></td>
@@ -1057,9 +1166,69 @@
         if (changed) localStorage.setItem(key, JSON.stringify(arr));
       });
 
+      // Clear from emberGasKybRequests
+      const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+      const updatedReqs = kybReqs.map(r => {
+        if (r.email && r.email.toLowerCase() === email.toLowerCase()) {
+          r.status = 'VERIFIED';
+        }
+        return r;
+      });
+      localStorage.setItem('emberGasKybRequests', JSON.stringify(updatedReqs));
+
       if (window.NotificationManager) NotificationManager.show(`✅ KYB Verified for "${name}"! Vendor can now accept booking requests.`, 'success');
       loadKybQueue();
       loadOverviewMetrics();
+    }
+
+    function approveAllPendingKyb() {
+      const allAccounts = getAllAccounts();
+      const unverified = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()) && a.kybStatus !== 'VERIFIED');
+
+      if (unverified.length === 0) {
+        if (window.NotificationManager) NotificationManager.show('ℹ️ All registered vendor stations are already KYB verified!', 'success');
+        else alert('All registered vendor stations are already KYB verified!');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to approve KYB license access for ${unverified.length} vendor station(s)?`)) return;
+
+      unverified.forEach(v => {
+        if (v.email) verifyVendorByEmail(v.email, v.name || 'Vendor');
+      });
+
+      if (window.NotificationManager) NotificationManager.show(`✅ Successfully approved KYB licenses for ${unverified.length} vendor station(s)!`, 'success');
+    }
+
+    function applyPresetPrice(priceVal) {
+      const input = document.getElementById('adminPriceCeiling');
+      if (input) input.value = priceVal;
+      saveAdminPrice();
+    }
+
+    function showPlatformAuditSummary() {
+      const accounts = getAllAccounts();
+      const customers = accounts.filter(a => (a.role || 'customer').toLowerCase() === 'customer');
+      const vendors = accounts.filter(a => ['vendor', 'seller', 'filling_station'].includes((a.role || '').toLowerCase()));
+      const verifiedVendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
+      
+      const refillOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const cylinderOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const ceiling = localStorage.getItem('emberPriceCeiling') || '1,250';
+
+      const summary = `
+📊 EMBERGAS PLATFORM AUDIT REPORT
+------------------------------------------------
+👥 Total Registered Accounts: ${accounts.length}
+🛒 Registered Customers: ${customers.length}
+🏪 Registered Vendor Stations: ${vendors.length} (${verifiedVendors.length} KYB Verified)
+🔥 Live Gas Refill Bookings: ${refillOrders.length}
+📦 New Cylinder Purchase Orders: ${cylinderOrders.length}
+💰 Current LPG Price Ceiling: ₦${Number(ceiling).toLocaleString()} / KG
+------------------------------------------------
+All services, KYB checks, and live routes operating at 100% compliance.
+      `;
+      alert(summary.trim());
     }
 
     function editAccountByAdmin(email, oldName, oldPhone) {

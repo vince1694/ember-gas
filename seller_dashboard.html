@@ -566,24 +566,82 @@
 
       // Show KYB pending banner if not verified
       if (!window._vendorKybVerified && vendorRole !== 'admin') {
+        const vEmail = vendorUser ? (vendorUser.email || '').toLowerCase() : '';
+        const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+        const isAlreadyRequested = kybReqs.some(r => r.email && r.email.toLowerCase() === vEmail && r.status === 'PENDING');
+
         const bannerDiv = document.createElement('div');
         bannerDiv.id = 'kybPendingBanner';
         bannerDiv.style.cssText = 'position:fixed;top:70px;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+        
+        const btnHtml = isAlreadyRequested
+          ? `<button id="btnRequestKyb" disabled style="background:rgba(255,255,255,0.4);border:1.5px solid rgba(255,255,255,0.6);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:default;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-check"></i> Approval Requested (Pending Admin Review)</button>`
+          : `<button id="btnRequestKyb" onclick="sendKybApprovalRequest(this)" style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.5);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s ease;"><i class="fa-solid fa-paper-plane"></i> Notify Admin for KYB Approval</button>`;
+
         bannerDiv.innerHTML = `
           <div style="display:flex;align-items:center;gap:12px;">
             <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;"></i>
             <div>
               <div style="font-weight:900;font-size:1rem;">⏳ KYB Verification Pending</div>
-              <div style="font-size:0.82rem;opacity:0.92;">Your vendor license has not been approved yet. Contact the EmberGas Admin to complete your KYB review. You cannot accept booking requests until approved.</div>
+              <div style="font-size:0.82rem;opacity:0.92;">Your vendor license has not been approved yet. Send a request to EmberGas Admin to review your KYB license. You cannot accept booking requests until approved.</div>
             </div>
           </div>
-          <a href="admin.html" style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.5);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;text-decoration:none;font-size:0.85rem;"><i class="fa-solid fa-shield-halved"></i> Contact Admin</a>
+          ${btnHtml}
         `;
         document.body.prepend(bannerDiv);
         // Also add margin to body to avoid content hidden behind banner
         document.body.style.paddingTop = (parseInt(document.body.style.paddingTop || '0') + 60) + 'px';
       }
     }
+
+    function sendKybApprovalRequest(btn) {
+      const curUser = JSON.parse(localStorage.getItem('currentUser')) || vendorUser || {};
+      const vName = curUser.name || 'Vendor Station';
+      const vEmail = (curUser.email || '').toLowerCase();
+      const vPhone = curUser.phone || 'N/A';
+
+      // 1. Record in emberGasKybRequests array
+      const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+      if (!kybReqs.some(r => r.email && r.email.toLowerCase() === vEmail)) {
+        kybReqs.push({
+          name: vName,
+          email: vEmail,
+          phone: vPhone,
+          requestedAt: new Date().toISOString(),
+          status: 'PENDING'
+        });
+        localStorage.setItem('emberGasKybRequests', JSON.stringify(kybReqs));
+      }
+
+      // 2. Push Admin Notification
+      const adminNotifs = JSON.parse(localStorage.getItem('emberGasAdminNotifications') || '[]');
+      adminNotifs.unshift({
+        id: 'kyb_req_' + Date.now(),
+        type: 'KYB_REQUEST',
+        title: '🔔 New KYB Approval Request',
+        message: `Station "${vName}" (${vEmail}) requested KYB license verification and access approval.`,
+        timestamp: new Date().toISOString(),
+        vendorEmail: vEmail,
+        read: false
+      });
+      localStorage.setItem('emberGasAdminNotifications', JSON.stringify(adminNotifs));
+
+      // 3. Update UI button
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Approval Requested (Pending Admin Review)';
+        btn.style.background = 'rgba(255,255,255,0.4)';
+        btn.style.cursor = 'default';
+      }
+
+      // 4. Show Notification Toast
+      if (window.NotificationManager) {
+        NotificationManager.show(`✅ KYB Approval Request Sent! EmberGas Super Admin has been notified to review and approve your station license.`, 'success');
+      } else {
+        alert(`✅ KYB Approval Request Sent! EmberGas Super Admin has been notified to review and approve your station license.`);
+      }
+    }
+    window.sendKybApprovalRequest = sendKybApprovalRequest;
 
     function renderVendorOrders() {
       // ── Load all platform orders ──
