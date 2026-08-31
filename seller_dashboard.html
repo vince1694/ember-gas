@@ -437,9 +437,9 @@
       </div>
     </div>
 
-    <!-- Live Incoming Orders Stream -->
+    <!-- Gas Refill Requests Stream -->
     <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;" id="liveOrderQueue">
-      <h3 style="margin-bottom: 14px; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Live Order Queue</h3>
+      <h3 style="margin-bottom: 14px; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Customer Gas Refill Requests</h3>
       
       <!-- Desktop Table -->
       <div class="vendor-desktop-table" style="overflow-x: auto;">
@@ -616,12 +616,12 @@
                 : `<span style="background:rgba(107,114,128,0.15);color:#9CA3AF;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">${o.status}</span>`;
 
           const actionBtns = (o.status === 'PLACED')
-            ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept Order</button>
-               <button class="btn-sm btn-reject" style="margin-left:4px;" onclick="rejectOrder('${o.id}')">✕ Reject</button>`
+            ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
+               <button class="btn-sm btn-reject" style="margin-left:4px;" onclick="rejectOrder('${o.id}')">✕ Decline</button>`
             : (o.status === 'ACCEPTED')
-              ? `<button class="btn-sm btn-approve" style="background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🚚 Start Delivery</button>`
+              ? `<button class="btn-sm btn-approve" style="background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🔄 Refilling Cylinder</button>`
               : (o.status === 'EN_ROUTE')
-                ? `<button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Delivered</button>`
+                ? `<button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>`
                 : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
 
           return `<tr id="row-${o.id}" style="border-bottom: 1px solid #F3F4F6;">
@@ -646,20 +646,20 @@
             <div style="font-size: 0.78rem; color: #6B7280; margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount || 13750).toLocaleString()} • ${o.address || '—'}</div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:10px;">
               ${o.status === 'PLACED'
-                ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Order</button>
-                   <button class="btn-sm btn-reject" style="flex: 1;" onclick="rejectOrder('${o.id}')">✕ Reject</button>`
+                ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
+                   <button class="btn-sm btn-reject" style="flex: 1;" onclick="rejectOrder('${o.id}')">✕ Decline</button>`
                 : o.status === 'ACCEPTED'
-                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🚚 Start Delivery</button>`
+                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🔄 Refilling Cylinder</button>`
                   : o.status === 'EN_ROUTE'
-                    ? `<button class="btn-sm btn-approve" style="flex:1;background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Delivered</button>`
+                    ? `<button class="btn-sm btn-approve" style="flex:1;background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>`
                     : `<span style="color:#9CA3AF;font-size:0.8rem;padding:6px 0;">${o.status}</span>`
               }
             </div>
           </div>`;
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #9CA3AF;"><i class="fa-solid fa-list-check"></i> No customer orders for your vendor station yet. They will appear here when customers book with your depot.</td></tr>';
-        mobileList.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-list-check"></i> No orders yet. Orders booked with your station will show up here.</div>';
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #9CA3AF;"><i class="fa-solid fa-gas-pump"></i> No gas refill requests for your station yet. Requests from customers will appear here.</td></tr>';
+        mobileList.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-gas-pump"></i> No refill requests yet. Requests booked with your station will show up here.</div>';
       }
     }
 
