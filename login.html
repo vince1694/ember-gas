@@ -608,17 +608,40 @@
         console.warn('Verify OTP backend error:', err.message);
       }
 
-      const existingAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const duplicate = existingAccounts.find(a => a.email.toLowerCase() === pendingSignupUser.email.toLowerCase());
-      
-      if (duplicate) {
-        if (window.NotificationManager) NotificationManager.show('Account with this email already exists!', 'error');
-        closeOtpModal();
+      // Save user account permanently to MongoDB Atlas cloud database
+      let dbUserToken = '';
+      try {
+        const regRes = await safeFetchApi('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: pendingSignupUser.name,
+            email: pendingSignupUser.email,
+            phone: pendingSignupUser.phone || '',
+            password: pendingSignupUser.password,
+            role: pendingSignupUser.role || 'vendor'
+          })
+        });
+        const regData = await regRes.json();
+        if (!regRes.ok) {
+          if (window.NotificationManager) NotificationManager.show(regData.message || 'Registration failed in database.', 'error');
+          return;
+        }
+        dbUserToken = regData.token;
+        console.log('[MONGODB REGISTRATION SUCCESS]: Vendor/Customer saved to Cloud DB:', regData.email);
+      } catch (err) {
+        console.error('MongoDB Atlas cloud register error:', err.message);
+        if (window.NotificationManager) NotificationManager.show('Cannot connect to database server.', 'error');
         return;
       }
 
-      existingAccounts.push(pendingSignupUser);
-      localStorage.setItem('emberGasAccounts', JSON.stringify(existingAccounts));
+      const existingAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const duplicate = existingAccounts.find(a => a.email.toLowerCase() === pendingSignupUser.email.toLowerCase());
+      
+      if (!duplicate) {
+        existingAccounts.push(pendingSignupUser);
+        localStorage.setItem('emberGasAccounts', JSON.stringify(existingAccounts));
+      }
 
       // Close modal
       closeOtpModal();
@@ -746,9 +769,6 @@
             password: password
           };
           console.log('[LOGIN SUCCESS] Authenticated via MongoDB Atlas:', dbUser.email);
-        } else if (loginRes.status === 401) {
-          if (window.NotificationManager) NotificationManager.show('Incorrect password or credentials! Check your email and password.', 'error');
-          return;
         }
       } catch (err) {
         console.warn('Backend login connection note:', err.message);

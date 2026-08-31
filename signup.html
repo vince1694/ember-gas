@@ -602,18 +602,22 @@
           body: JSON.stringify({
             name: pendingSignupUser.name,
             email: pendingSignupUser.email,
-            phone: pendingSignupUser.phone,
+            phone: pendingSignupUser.phone || '',
             password: pendingSignupUser.password,
-            role: pendingSignupUser.role || 'customer'
+            role: pendingSignupUser.role || 'vendor'
           })
         });
-        if (regRes.ok) {
-          const regData = await regRes.json();
-          dbUserToken = regData.token;
-          console.log('[MONGODB REGISTRATION SUCCESS]: User saved to Cloud DB:', regData.email);
+        const regData = await regRes.json();
+        if (!regRes.ok) {
+          if (window.NotificationManager) NotificationManager.show(regData.message || 'Registration failed in database.', 'error');
+          return;
         }
+        dbUserToken = regData.token;
+        console.log('[MONGODB REGISTRATION SUCCESS]: User saved to Cloud DB:', regData.email);
       } catch (err) {
-        console.warn('MongoDB Atlas cloud register note:', err.message);
+        console.error('MongoDB Atlas cloud register error:', err.message);
+        if (window.NotificationManager) NotificationManager.show('Cannot connect to database server.', 'error');
+        return;
       }
 
       // Save new account to local registry as offline backup
@@ -749,9 +753,6 @@
             password: password
           };
           console.log('[LOGIN SUCCESS] Authenticated via MongoDB Atlas:', dbUser.email);
-        } else if (loginRes.status === 401) {
-          if (window.NotificationManager) NotificationManager.show('Incorrect password or credentials! Check your email and password.', 'error');
-          return;
         }
       } catch (err) {
         console.warn('Backend login connection note:', err.message);
