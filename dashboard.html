@@ -1355,7 +1355,7 @@
       if (paramSize) {
         const sizeNum = parseFloat(paramSize);
         const priceMap = { 3: 3300, 6: 6600, 12.5: 13750, 25: 27500, 50: 55000 };
-        const price = priceMap[sizeNum] || 13750;
+        const price = priceMap[sizeNum] || 0;
         
         // Find matching cylinder option card
         const options = document.querySelectorAll('.cylinder-option');

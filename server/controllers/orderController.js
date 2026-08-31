@@ -25,14 +25,14 @@ const addOrderItems = expressAsyncHandler(async (req, res) => {
 
     const finalOrderId = id || orderId || ('EG-' + Math.floor(1000 + Math.random() * 9000));
     const finalSize = size || cylinderSize || '12.5';
-    const finalTotal = Number(total || amount || 13750);
+    const finalTotal = Number(total || amount || 0);
 
     const newOrder = new Order({
         orderNumber: '#' + finalOrderId,
         customer: req.user ? req.user._id : null,
         customerName: customerName || (req.user ? req.user.name : 'Valued Customer'),
         customerPhone: req.user ? req.user.phone : '—',
-        sellerName: vendorName || 'Grace LPG Depot Hub',
+        sellerName: vendorName || 'Station Depot',
         cylinderSize: String(finalSize).includes('kg') ? String(finalSize) : finalSize + 'kg',
         totalAmount: finalTotal,
         deliveryAddress: address || '—',
