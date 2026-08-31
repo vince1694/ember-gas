@@ -249,34 +249,21 @@
 <body>
   <header class="master-header">
     <div style="display: flex; align-items: center; gap: 15px;">
-      <a href="index.html" class="brand-logo">
-        <i class="fa-solid fa-store"></i> <span id="vendorBrandName">Vendor Hub</span>
+      <a href="seller_dashboard.html" class="brand-logo">
+        <i class="fa-solid fa-store" style="color: #00B14F;"></i> <span id="vendorBrandName">Vendor Station Hub</span>
       </a>
-      <span style="background: rgba(0, 177, 79, 0.12); color: #00B14F; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">
-        <i class="fa-solid fa-circle" style="font-size: 0.45rem; vertical-align: middle;"></i> OPEN
+      <span style="background: rgba(0, 177, 79, 0.12); color: #00B14F; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">
+        <i class="fa-solid fa-circle" style="font-size: 0.45rem; vertical-align: middle;"></i> STATION ONLINE & OPEN
       </span>
-      <nav class="nav-desktop-links" style="display: flex; gap: 16px; margin-left: 15px;">
-        <a href="index.html" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600;">Home</a>
-        <a href="seller_dashboard.html" style="color: var(--primary-color); font-weight: 700; text-decoration: none; font-size: 0.9rem;">Vendor Hub</a>
-      </nav>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <!-- Portal Dropdown Switcher -->
-      <div class="portal-dropdown-container nav-desktop-links">
-        <button class="portal-dropdown-btn">
-          <i class="fa-solid fa-shield-cat"></i> Portals <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
-        </button>
-        <div class="portal-dropdown-menu">
-          <a href="dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-user" style="color: var(--primary-color);"></i> Customer Portal</a>
-          <a href="seller_dashboard.html" class="portal-dropdown-item"><i class="fa-solid fa-store" style="color: #00B14F;"></i> Vendor Station Hub</a>
-        </div>
-      </div>
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div style="font-size: 0.85rem; font-weight: 800; color: #111827; background: #F3F4F6; padding: 6px 14px; border-radius: 20px; border: 1px solid #E5E7EB;" id="vendorSubName">Vendor Hub</div>
 
-      <div style="font-size: 0.85rem; font-weight: 700; color: #111827; text-align: right;" id="vendorSubName">Loading...</div>
-
-      <!-- Dynamic Header User Profile Badge & Logout -->
-      <div id="authLink"></div>
+      <!-- Vendor Logout Button -->
+      <button onclick="if(window.auth) auth.logout()" style="background: #FEF2F2; border: 1.5px solid #FCA5A5; color: #DC2626; padding: 7px 14px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
 
       <button onclick="openMobileDrawer()" class="mobile-drawer-btn" title="Open Menu">
         <i class="fa-solid fa-bars"></i>
@@ -441,8 +428,12 @@
         <button onclick="dispatchToSelectedRider()" style="width:100%; background:#F59E0B; border:none; color:#111827; padding:11px; border-radius:10px; font-weight:800; cursor:pointer;">
           Assign Order to Selected Rider →
         </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Add New Stock Package Modal -->
-  <div id="addStockModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(17,24,39,0.75); backdrop-filter:blur(6px); z-index:10000; align-items:center; justify-content:center; padding:15px;" onclick="if(event.target===this) closeAddStockModal();">
+  <div id="addStockModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(17,24,39,0.78); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); z-index:999999 !important; align-items:center; justify-content:center; padding:15px; box-sizing:border-box;" onclick="if(event.target===this) closeAddStockModal();">
     <div style="background:#FFFFFF; border-radius:20px; max-width:440px; width:100%; padding:24px; color:#111827; border:1px solid #E5E7EB; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#111827;">
@@ -696,6 +687,10 @@
       if (window.NotificationManager) NotificationManager.show(`Added ${name} (₦${price.toLocaleString()}) to inventory!`, 'success');
       return false;
     }
+
+    window.openAddStockModal = openAddStockModal;
+    window.closeAddStockModal = closeAddStockModal;
+    window.submitNewStockPackage = submitNewStockPackage;
 
     renderVendorOrders();
     renderVendorStock();

@@ -929,9 +929,11 @@
         (curUser.name && o.customerName && o.customerName.toLowerCase() === curUser.name.toLowerCase())
       );
 
-      document.getElementById('orderCountBadge').innerText = myOrders.length + ' Order' + (myOrders.length !== 1 ? 's' : '');
-      const sideCount = document.getElementById('sideOrderCount');
-      if (sideCount) sideCount.innerText = myOrders.length;
+      const orderBadge = document.getElementById('orderCountBadge');
+      if (orderBadge) orderBadge.innerText = myOrders.length;
+
+      const popCount = document.getElementById('popOrderCount');
+      if (popCount) popCount.innerText = myOrders.length;
 
       const tbody = document.getElementById('ordersTableBody');
       const mobileList = document.getElementById('mobileOrdersList');
