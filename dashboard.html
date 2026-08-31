@@ -1333,10 +1333,15 @@
         }
       }
 
-      // ── Handle incoming URL params from services.html ──
       const params = new URLSearchParams(window.location.search);
       const paramService = params.get('service');
       const paramSize = params.get('size');
+      const paramAddress = params.get('address');
+
+      if (paramAddress) {
+        const addrInput = document.getElementById('deliveryAddr');
+        if (addrInput) addrInput.value = decodeURIComponent(paramAddress);
+      }
 
       if (paramService) {
         const serviceSelect = document.getElementById('serviceType');

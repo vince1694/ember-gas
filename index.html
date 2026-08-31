@@ -484,11 +484,12 @@
       AuthGuard.requireAuth((user) => {
         const addr = document.getElementById('homeAddr').value;
         const size = document.getElementById('homeSize').value;
-        OrderStateManager.createOrder(parseFloat(size), 'Cylinder Refill Only', addr);
         if (window.NotificationManager) {
-          NotificationManager.show(`Order created for ${user.name}! Redirecting to tracking...`, 'success');
+          NotificationManager.show(`Redirecting to vendor station selection...`, 'success');
         }
-        setTimeout(() => { window.location.href = 'track.html'; }, 600);
+        setTimeout(() => {
+          window.location.href = `dashboard.html?size=${size}&address=${encodeURIComponent(addr || '')}`;
+        }, 400);
       });
     }
   </script>
