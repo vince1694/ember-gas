@@ -35,12 +35,15 @@
 
     .admin-nav-tabs {
       display: flex;
-      gap: 12px;
-      margin: 25px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 10px;
+      margin: 20px 0;
+      border-bottom: 1px solid #E5E7EB;
       padding-bottom: 12px;
-      flex-wrap: wrap;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
     }
+    .admin-nav-tabs::-webkit-scrollbar { display: none; }
 
     .admin-tab-btn {
       background: rgba(255, 255, 255, 0.04);
@@ -144,8 +147,11 @@
     }
 
     @media (max-width: 768px) {
-      .admin-standalone-header { padding: 14px 18px; }
+      .admin-standalone-header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
       .admin-grid { grid-template-columns: 1fr; }
+      .table-desktop-view { display: none !important; }
+      .mobile-orders-list { display: flex !important; }
+      .security-badge { display: none; }
     }
   </style>
 </head>
@@ -220,14 +226,8 @@
       <button class="admin-tab-btn" onclick="switchAdminTab('kyb', this)">
         <i class="fa-solid fa-id-card"></i> Vendor KYB Queue (3 Pending)
       </button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('dispatch', this)">
-        <i class="fa-solid fa-tower-broadcast"></i> Live Dispatch Stream
-      </button>
       <button class="admin-tab-btn" onclick="switchAdminTab('price', this)">
         <i class="fa-solid fa-sliders"></i> LPG Price Controls
-      </button>
-      <button class="admin-tab-btn" onclick="switchAdminTab('logs', this)">
-        <i class="fa-solid fa-file-shield"></i> Security Audit Logs
       </button>
     </div>
 
@@ -346,16 +346,41 @@
     <!-- Section: Users & Vendors Management -->
     <div id="tab-users" style="display:none;">
       <div class="glass-card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 24px; padding: 25px; margin-bottom: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
           <div>
-            <h2 style="font-size: 1.25rem; color: #111827;"><i class="fa-solid fa-users" style="color: #3B82F6;"></i> Platform User & Vendor Account Registry</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem;">Overview of registered customer, vendor station, and rider accounts across EmberGas.</p>
+            <h2 style="font-size: 1.25rem; color: #111827;"><i class="fa-solid fa-users-gear" style="color: #3B82F6;"></i> Platform User & Vendor Registry</h2>
+            <p style="color: #6B7280; font-size: 0.85rem; margin-top:2px;">Manage registered accounts, inspect user details, and delete customer or vendor accounts separately.</p>
           </div>
-          <button onclick="loadUserRegistry()" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem;">
-            <i class="fa-solid fa-rotate"></i> Refresh List
+          <button onclick="loadUserRegistry()" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-rotate"></i> Refresh Registry
           </button>
         </div>
-        <div style="overflow-x: auto;">
+
+        <!-- Summary Metric Badges -->
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:20px;">
+          <div style="background:#F0F9FF; border:1px solid #BAE6FD; padding:12px 16px; border-radius:14px;">
+            <div style="font-size:0.75rem; font-weight:800; color:#0369A1; text-transform:uppercase;">TOTAL ACCOUNTS</div>
+            <div style="font-size:1.5rem; font-weight:900; color:#0284C7;" id="regTotalCount">0</div>
+          </div>
+          <div style="background:#F0FDF4; border:1px solid #BBF7D0; padding:12px 16px; border-radius:14px;">
+            <div style="font-size:0.75rem; font-weight:800; color:#15803D; text-transform:uppercase;">CUSTOMERS</div>
+            <div style="font-size:1.5rem; font-weight:900; color:#16A34A;" id="regCustomerCount">0</div>
+          </div>
+          <div style="background:#FEF3C7; border:1px solid #FDE68A; padding:12px 16px; border-radius:14px;">
+            <div style="font-size:0.75rem; font-weight:800; color:#B45309; text-transform:uppercase;">VENDOR STATIONS</div>
+            <div style="font-size:1.5rem; font-weight:900; color:#D97706;" id="regVendorCount">0</div>
+          </div>
+        </div>
+
+        <!-- Filter Sub-Tabs -->
+        <div style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
+          <button class="cat-btn active" id="btnFilterAll" onclick="filterUserRegistry('all', this)"><i class="fa-solid fa-users"></i> All Accounts</button>
+          <button class="cat-btn" id="btnFilterCustomer" onclick="filterUserRegistry('customer', this)"><i class="fa-solid fa-user"></i> Customers Only</button>
+          <button class="cat-btn" id="btnFilterVendor" onclick="filterUserRegistry('vendor', this)"><i class="fa-solid fa-store"></i> Vendors Only</button>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="table-desktop-view" style="overflow-x: auto;">
           <table class="table-admin" style="color:#111827;">
             <thead>
               <tr style="background:#F9FAFB;">
@@ -371,6 +396,11 @@
               <!-- Dynamically populated -->
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile Cards List View -->
+        <div class="mobile-orders-list" id="userRegistryMobileList" style="display:none; flex-direction:column; gap:12px;">
+          <!-- Dynamically populated for mobile -->
         </div>
       </div>
     </div>
@@ -606,32 +636,69 @@
     }
 
     // ── USERS & VENDORS REGISTRY SCRIPT ──
-    function loadUserRegistry() {
-      const tbody = document.getElementById('userRegistryBody');
-      if (!tbody) return;
+    let currentUserRegistryFilter = 'all';
 
+    function filterUserRegistry(type, btn) {
+      currentUserRegistryFilter = type;
+      document.querySelectorAll('#tab-users .cat-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      loadUserRegistry();
+    }
+
+    function getAllAccounts() {
       const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
       const users = JSON.parse(localStorage.getItem('gasUsers') || '[]');
       const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
 
       const all = [...accounts, ...users, ...vendors];
-      // Unique by email
       const uniqueMap = new Map();
       all.forEach(a => { if (a && a.email && !uniqueMap.has(a.email.toLowerCase())) uniqueMap.set(a.email.toLowerCase(), a); });
-      const uniqueAccounts = Array.from(uniqueMap.values());
+      return Array.from(uniqueMap.values());
+    }
 
-      if (uniqueAccounts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="padding:20px; text-align:center; color:#9CA3AF;">No registered users or vendors found.</td></tr>';
+    function loadUserRegistry() {
+      const tbody = document.getElementById('userRegistryBody');
+      const mobileList = document.getElementById('userRegistryMobileList');
+      if (!tbody) return;
+
+      const allAccounts = getAllAccounts();
+      const customerCount = allAccounts.filter(a => (a.role || 'customer').toLowerCase() === 'customer' || (a.role || '').toLowerCase() === 'user').length;
+      const vendorCount = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase())).length;
+
+      const totalEl = document.getElementById('regTotalCount');
+      if (totalEl) totalEl.innerText = allAccounts.length;
+      const custEl = document.getElementById('regCustomerCount');
+      if (custEl) custEl.innerText = customerCount;
+      const vendEl = document.getElementById('regVendorCount');
+      if (vendEl) vendEl.innerText = vendorCount;
+
+      let filtered = allAccounts;
+      if (currentUserRegistryFilter === 'customer') {
+        filtered = allAccounts.filter(a => (a.role || 'customer').toLowerCase() === 'customer' || (a.role || '').toLowerCase() === 'user');
+      } else if (currentUserRegistryFilter === 'vendor') {
+        filtered = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-users"></i> No ${currentUserRegistryFilter} accounts registered yet.</td></tr>`;
+        if (mobileList) mobileList.innerHTML = `<div style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-users"></i> No ${currentUserRegistryFilter} accounts registered yet.</div>`;
         return;
       }
 
-      tbody.innerHTML = uniqueAccounts.map(a => {
-        const role = a.role || 'customer';
-        const roleBadge = role === 'admin' 
+      tbody.innerHTML = filtered.map(a => {
+        const role = (a.role || 'customer').toLowerCase();
+        const isVendor = ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(role);
+        const isAdmin = role === 'admin';
+        const roleBadge = isAdmin
           ? '<span style="background:#DBEAFE; color:#1E40AF; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">ADMIN</span>'
-          : (role === 'vendor' || role === 'seller' || role === 'filling_station')
-            ? '<span style="background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">VENDOR</span>'
-            : '<span style="background:#F3F4F6; color:#374151; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">CUSTOMER</span>';
+          : isVendor
+            ? '<span style="background:#FEF3C7; color:#B45309; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">VENDOR STATION</span>'
+            : '<span style="background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">CUSTOMER</span>';
+
+        const deleteBtn = isAdmin ? '<span style="color:#9CA3AF; font-size:0.78rem;">Protected</span>' : `
+          <button onclick="deleteAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${isVendor ? 'Vendor' : 'Customer'}')" style="background:rgba(239,68,68,0.14); color:#EF4444; border:1px solid rgba(239,68,68,0.3); padding:6px 12px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+            <i class="fa-solid fa-trash"></i> Delete ${isVendor ? 'Vendor' : 'User'}
+          </button>`;
 
         return `
           <tr style="border-bottom:1px solid #E5E7EB;">
@@ -640,14 +707,87 @@
             <td style="padding:12px 10px;">${roleBadge}</td>
             <td style="padding:12px 10px; color:#6B7280;">${a.phone || '—'}</td>
             <td style="padding:12px 10px;"><span style="color:#10B981; font-weight:800;">● Active</span></td>
-            <td style="padding:12px 10px;">
-              <span style="color:#9CA3AF; font-size:0.8rem;"><i class="fa-solid fa-user-check" style="color:#10B981;"></i> Verified</span>
-            </td>
+            <td style="padding:12px 10px;">${deleteBtn}</td>
           </tr>
         `;
       }).join('');
+
+      if (mobileList) {
+        mobileList.innerHTML = filtered.map(a => {
+          const role = (a.role || 'customer').toLowerCase();
+          const isVendor = ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(role);
+          const isAdmin = role === 'admin';
+          const roleBadge = isAdmin
+            ? '<span style="background:#DBEAFE; color:#1E40AF; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">ADMIN</span>'
+            : isVendor
+              ? '<span style="background:#FEF3C7; color:#B45309; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">VENDOR STATION</span>'
+              : '<span style="background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">CUSTOMER</span>';
+
+          const deleteBtn = isAdmin ? '' : `
+            <button onclick="deleteAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${isVendor ? 'Vendor' : 'Customer'}')" style="width:100%; margin-top:8px; background:rgba(239,68,68,0.14); color:#EF4444; border:1px solid rgba(239,68,68,0.3); padding:8px; border-radius:10px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+              <i class="fa-solid fa-trash"></i> Delete ${isVendor ? 'Vendor' : 'Customer'} Account
+            </button>`;
+
+          return `
+            <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:16px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <div style="font-weight:800; font-size:0.95rem; color:#111827;">${a.name || 'User'}</div>
+                ${roleBadge}
+              </div>
+              <div style="font-size:0.82rem; color:#4B5563; margin-bottom:3px;"><i class="fa-solid fa-envelope" style="color:#9CA3AF;"></i> ${a.email}</div>
+              <div style="font-size:0.82rem; color:#6B7280;"><i class="fa-solid fa-phone" style="color:#9CA3AF;"></i> ${a.phone || '—'}</div>
+              ${deleteBtn}
+            </div>
+          `;
+        }).join('');
+      }
     }
 
+    function deleteAccountByAdmin(email, accountType) {
+      if (!email) return;
+      const confirmMsg = `⚠️ PERMANENT ACCOUNT DELETION\n\nAre you sure you want to PERMANENTLY DELETE this ${accountType} account (${email})?\n\nThis will remove their profile, wallet, and records from EmberGas.`;
+      if (!confirm(confirmMsg)) return;
+
+      // Clean emberGasAccounts
+      const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const filteredAcc = accounts.filter(a => a.email && a.email.toLowerCase() !== email.toLowerCase());
+      localStorage.setItem('emberGasAccounts', JSON.stringify(filteredAcc));
+
+      // Clean gasUsers & gasVendors
+      const users = JSON.parse(localStorage.getItem('gasUsers') || '[]');
+      const filteredUsers = users.filter(a => a.email && a.email.toLowerCase() !== email.toLowerCase());
+      localStorage.setItem('gasUsers', JSON.stringify(filteredUsers));
+
+      const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+      const filteredVendors = vendors.filter(a => a.email && a.email.toLowerCase() !== email.toLowerCase());
+      localStorage.setItem('gasVendors', JSON.stringify(filteredVendors));
+
+      // Clean wallet
+      const wallets = JSON.parse(localStorage.getItem('emberGasWallets') || '{}');
+      delete wallets[email];
+      localStorage.setItem('emberGasWallets', JSON.stringify(wallets));
+
+      // If active user is deleted, clear currentUser
+      const curUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (curUser && curUser.email && curUser.email.toLowerCase() === email.toLowerCase()) {
+        localStorage.removeItem('currentUser');
+      }
+
+      // Sync backend API non-blocking
+      if (window.safeFetchApi) {
+        safeFetchApi('/api/auth/delete-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        }).catch(() => {});
+      }
+
+      if (window.NotificationManager) {
+        NotificationManager.show(`🗑️ ${accountType} account (${email}) permanently deleted!`, 'success');
+      }
+
+      loadUserRegistry();
+    }
     function loadCylinderOrders() {
       const orders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
       const badge = document.getElementById('cylinderOrderBadge');
