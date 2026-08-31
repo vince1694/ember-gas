@@ -777,6 +777,51 @@
         </div>
       </div>
 
+      <!-- ── ORDER DETAILS POPUP MODAL ── -->
+      <div id="orderSuccessModal" style="display: none; position: fixed; inset: 0; background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(6px); z-index: 100000; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
+        <div style="background: #FFFFFF; border-radius: 24px; max-width: 460px; width: 100%; padding: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); border: 1px solid #E5E7EB; position: relative; animation: slideUp 0.25s ease;">
+          <button type="button" onclick="closeOrderModal()" style="position: absolute; top: 18px; right: 18px; background: #F3F4F6; color: #4B5563; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <div style="width: 56px; height: 56px; border-radius: 16px; background: #E6F7ED; color: #00B14F; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 16px;">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+
+          <div style="font-size: 0.8rem; font-weight: 800; color: #00B14F; text-transform: uppercase; letter-spacing: 0.5px;">ORDER DETAILS & RECEIPT</div>
+          <h3 style="font-size: 1.35rem; font-weight: 900; color: #111827; margin: 4px 0 16px;" id="modalOrderId">#Order</h3>
+
+          <div style="background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 16px; padding: 18px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #6B7280; font-weight: 600;">Depot / Vendor:</span>
+              <strong style="color: #111827;" id="modalVendor">—</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #6B7280; font-weight: 600;">Package / Item:</span>
+              <strong style="color: #00B14F; font-weight: 800;" id="modalPayload">—</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #6B7280; font-weight: 600;">Delivery Address:</span>
+              <strong style="color: #111827; text-align: right; max-width: 220px;" id="modalAddress">—</strong>
+            </div>
+            <div style="height: 1px; background: #E5E7EB; margin: 2px 0;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #111827; font-weight: 800; font-size: 1rem;">Total Amount Paid:</span>
+              <strong style="color: #00B14F; font-size: 1.25rem; font-weight: 900;" id="modalAmount">₦0</strong>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <a href="track.html" class="btn-action" style="flex: 1; text-align: center; text-decoration: none; padding: 12px; font-size: 0.9rem;">
+              <i class="fa-solid fa-location-crosshairs"></i> Track Real-Time Delivery
+            </a>
+            <button onclick="closeOrderModal()" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #374151; padding: 12px 18px; border-radius: 12px; font-weight: 800; cursor: pointer;">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- ── RECENT GAS REFILL BOOKINGS ─────────────────────────────────────── -->
       <div class="glass-card" style="margin-top: 20px;">
         <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: #111827; display: flex; align-items: center; justify-content: space-between;">
@@ -1190,47 +1235,122 @@
     }
 
     function loadLiveOrder() {
-      if (!window.OrderStateManager) return;
-      const order = OrderStateManager.getActiveOrder();
       const banner = document.getElementById('liveOrderBanner');
+      if (!banner) return;
+
       const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
 
-      if (order && order.status !== 'COMPLETED' && order.status !== 'CANCELLED' &&
-          (!order.userEmail || order.userEmail === curUser.email || order.customerName === curUser.name)) {
-        const title = document.getElementById('liveOrderTitle');
-        const meta = document.getElementById('liveOrderMeta');
-        const badge = document.getElementById('liveOrderBadge');
-        const completeBtn = document.getElementById('markCompletedBtn');
-
-        if (banner) banner.style.display = 'block';
-        if (title) title.innerText = `Order #${order.id} • ${order.cylinderSize} ${order.serviceType || 'Refill'}`;
-        if (meta) {
-          meta.innerHTML = `
-            <span><i class="fa-solid fa-store" style="color:#10B981;"></i> Depot: <strong>${order.vendorName || 'EmberGas Station'}</strong></span>
-            <span><i class="fa-solid fa-location-dot" style="color:#10B981;"></i> ${order.address || '—'}</span>
-            <span><i class="fa-solid fa-wallet" style="color:#10B981;"></i> Total: ₦${(order.amount || 0).toLocaleString()}</span>
-          `;
-        }
-
-        const statusLabels = {
-          PLACED: '● PLACED — Awaiting Vendor Confirmation',
-          ACCEPTED: '● VENDOR ACCEPTED — Cylinder Being Filled',
-          EN_ROUTE: '● EN ROUTE — Service Delivery in Progress',
-          DELIVERED: '● DELIVERED — Service Completed',
-          PENDING_ADMIN: '● PENDING ADMIN — Order Received by EmberGas Admin',
-          PROCESSING: '● ADMIN PROCESSING — Preparing New Cylinder Order',
-          DISPATCHED: '● DISPATCHED — New Cylinder En Route to Your Address'
-        };
-
-        if (badge) badge.innerHTML = `<i class="fa-solid fa-circle-dot fa-spin"></i> ${statusLabels[order.status] || order.status}`;
-        
-        if (completeBtn) {
-          completeBtn.style.display = (order.status === 'EN_ROUTE' || order.status === 'DELIVERED') ? 'inline-flex' : 'none';
-        }
-      } else {
-        if (banner) banner.style.display = 'none';
+      const combined = [...allOrders, ...adminOrders];
+      if (activeSingle && !combined.some(o => o.id === activeSingle.id)) {
+        combined.unshift(activeSingle);
       }
+
+      // Filter ALL active / pending orders for this logged in customer
+      const activeCustomerOrders = combined.filter(o => {
+        const isMyOrder = !o.userEmail || 
+                          (curUser.email && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || 
+                          (curUser.name && o.customerName === curUser.name);
+        const isActiveStatus = o.status !== 'COMPLETED' && o.status !== 'CANCELLED';
+        return isMyOrder && isActiveStatus;
+      });
+
+      if (activeCustomerOrders.length === 0) {
+        banner.style.display = 'none';
+        banner.innerHTML = '';
+        return;
+      }
+
+      banner.style.display = 'block';
+
+      const statusLabels = {
+        PLACED: '● PLACED — Awaiting Vendor Confirmation',
+        ACCEPTED: '● VENDOR ACCEPTED — Cylinder Being Filled',
+        EN_ROUTE: '● EN ROUTE — Service Delivery in Progress',
+        DELIVERED: '● DELIVERED — Service Completed',
+        PENDING_ADMIN: '● PENDING ADMIN — Order Received by EmberGas Admin',
+        PROCESSING: '● ADMIN PROCESSING — Preparing New Cylinder Order',
+        DISPATCHED: '● DISPATCHED — New Cylinder En Route to Your Address'
+      };
+
+      const awaitingVendorCount = activeCustomerOrders.filter(o => o.status === 'PLACED').length;
+
+      let bannerHeaderHtml = `
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #E5E7EB; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="status-badge status-active" style="background:#FEF3C7; color:#92400E; border:1px solid #F59E0B; padding:5px 12px; font-weight:800;">
+              <i class="fa-solid fa-clock fa-spin"></i> LIVE ORDER STREAM (${activeCustomerOrders.length})
+            </span>
+            ${awaitingVendorCount > 0 ? `<span style="font-size:0.78rem; background:#FEF2F2; color:#DC2626; border:1px solid #FCA5A5; padding:4px 10px; border-radius:20px; font-weight:800;">${awaitingVendorCount} Awaiting Vendor Confirmation</span>` : ''}
+          </div>
+          <span style="font-size:0.8rem; color:#6B7280; font-weight:600;">Real-Time Status Monitor</span>
+        </div>
+      `;
+
+      let cardsHtml = activeCustomerOrders.map(order => {
+        const payloadStr = order.itemsSummary || (order.cylinderSize ? `${order.cylinderSize} kg ${order.serviceType || 'Refill'}` : 'Gas Order');
+        const amt = Number(order.total || order.amount || 0).toLocaleString();
+        const statusText = statusLabels[order.status] || (`● ${order.status}`);
+        const isDeletable = order.status === 'EN_ROUTE' || order.status === 'DELIVERED';
+        const isPlaced = order.status === 'PLACED';
+
+        return `
+          <div style="background: #FFFFFF; border: 1.5px solid ${isPlaced ? '#F59E0B' : '#00B14F'}; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+              <div>
+                <span class="status-badge" style="${isPlaced ? 'background:#FEF3C7; color:#92400E; border:1px solid #F59E0B;' : 'background:#D1FAE5; color:#065F46;'} font-weight:800;">
+                  <i class="fa-solid fa-circle-dot fa-spin"></i> ${statusText}
+                </span>
+                <h4 style="margin: 6px 0 0; font-size: 1.05rem; color: #111827;">Order #${order.id} • ${payloadStr}</h4>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button onclick="openOrderDetailsModal('${order.id}')" class="btn-action" style="width: auto; padding: 8px 14px; font-size: 0.8rem; min-height: 36px; background:#F3F4F6; color:#00B14F; border:1px solid #E5E7EB; cursor:pointer;">
+                  <i class="fa-solid fa-eye"></i> Details
+                </button>
+                <a href="track.html" class="btn-action" style="width: auto; padding: 8px 14px; font-size: 0.8rem; min-height: 36px; text-decoration: none;">
+                  <i class="fa-solid fa-location-crosshairs"></i> Track
+                </a>
+                ${isDeletable ? `
+                <button onclick="confirmCustomerReceiptById('${order.id}')" class="btn-action" style="width: auto; padding: 8px 14px; font-size: 0.8rem; min-height: 36px; background: #059669; border: none; color: #fff; cursor: pointer;">
+                  <i class="fa-solid fa-circle-check"></i> Mark Received
+                </button>` : ''}
+              </div>
+            </div>
+            <div style="color: #4B5563; font-size: 0.82rem; display: flex; gap: 14px; flex-wrap: wrap; border-top: 1px dashed #E5E7EB; padding-top: 8px; margin-top: 6px;">
+              <span><i class="fa-solid fa-store" style="color:#00B14F;"></i> Depot: <strong>${order.vendorName || 'EmberGas Station'}</strong></span>
+              <span><i class="fa-solid fa-location-dot" style="color:#00B14F;"></i> ${order.address || '—'}</span>
+              <span><i class="fa-solid fa-wallet" style="color:#00B14F;"></i> Total: <strong>₦${amt}</strong></span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      banner.innerHTML = bannerHeaderHtml + cardsHtml;
     }
+
+    function confirmCustomerReceiptById(orderId) {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      let match = allOrders.find(o => String(o.id) === String(orderId));
+      if (match) {
+        match.status = 'COMPLETED';
+        match.completedAt = new Date().toISOString();
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+      }
+      const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
+      if (activeSingle && String(activeSingle.id) === String(orderId)) {
+        activeSingle.status = 'COMPLETED';
+        localStorage.setItem('activeEmberGasOrder', JSON.stringify(activeSingle));
+      }
+
+      if (window.NotificationManager) {
+        NotificationManager.show(`🎉 Order #${orderId} marked as Received & Completed!`, 'success');
+      }
+      loadLiveOrder();
+      renderRecentOrders();
+    }
+    window.confirmCustomerReceiptById = confirmCustomerReceiptById;
 
     async function confirmCustomerReceipt() {
       if (!window.OrderStateManager) return;
