@@ -712,10 +712,15 @@
             ? '<span style="background:#FEF3C7; color:#B45309; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">VENDOR STATION</span>'
             : '<span style="background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.75rem;">CUSTOMER</span>';
 
-        const deleteBtn = isAdmin ? '<span style="color:#9CA3AF; font-size:0.78rem;">Protected</span>' : `
-          <button onclick="deleteAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${isVendor ? 'Vendor' : 'Customer'}')" style="background:rgba(239,68,68,0.14); color:#EF4444; border:1px solid rgba(239,68,68,0.3); padding:6px 12px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-            <i class="fa-solid fa-trash"></i> Delete ${isVendor ? 'Vendor' : 'User'}
-          </button>`;
+        const actionBtns = isAdmin ? '<span style="color:#9CA3AF; font-size:0.78rem;">Protected</span>' : `
+          <div style="display: flex; gap: 6px;">
+            <button onclick="editAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${(a.name || '').replace(/'/g, "\\'")}', '${(a.phone || '').replace(/'/g, "\\'")}')" style="background:rgba(59,130,246,0.14); color:#3B82F6; border:1px solid rgba(59,130,246,0.3); padding:6px 12px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-pen-to-square"></i> Edit
+            </button>
+            <button onclick="deleteAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${isVendor ? 'Vendor' : 'Customer'}')" style="background:rgba(239,68,68,0.14); color:#EF4444; border:1px solid rgba(239,68,68,0.3); padding:6px 12px; border-radius:10px; font-weight:700; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+              <i class="fa-solid fa-trash"></i> Delete
+            </button>
+          </div>`;
 
         return `
           <tr style="border-bottom:1px solid #E5E7EB;">
@@ -724,7 +729,7 @@
             <td style="padding:12px 10px;">${roleBadge}</td>
             <td style="padding:12px 10px; color:#6B7280;">${a.phone || '—'}</td>
             <td style="padding:12px 10px;"><span style="color:#10B981; font-weight:800;">● Active</span></td>
-            <td style="padding:12px 10px;">${deleteBtn}</td>
+            <td style="padding:12px 10px;">${actionBtns}</td>
           </tr>
         `;
       }).join('');
@@ -740,10 +745,15 @@
               ? '<span style="background:#FEF3C7; color:#B45309; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">VENDOR STATION</span>'
               : '<span style="background:#D1FAE5; color:#065F46; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">CUSTOMER</span>';
 
-          const deleteBtn = isAdmin ? '' : `
-            <button onclick="deleteAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${isVendor ? 'Vendor' : 'Customer'}')" style="width:100%; margin-top:8px; background:rgba(239,68,68,0.14); color:#EF4444; border:1px solid rgba(239,68,68,0.3); padding:8px; border-radius:10px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-              <i class="fa-solid fa-trash"></i> Delete ${isVendor ? 'Vendor' : 'Customer'} Account
-            </button>`;
+          const actionBtns = isAdmin ? '' : `
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button onclick="editAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${(a.name || '').replace(/'/g, "\\'")}', '${(a.phone || '').replace(/'/g, "\\'")}')" style="flex: 1; background:rgba(59,130,246,0.14); color:#3B82F6; border:1px solid rgba(59,130,246,0.3); padding:8px; border-radius:10px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <i class="fa-solid fa-pen-to-square"></i> Edit
+              </button>
+              <button onclick="deleteAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${isVendor ? 'Vendor' : 'Customer'}')" style="flex: 1; background:rgba(239,68,68,0.14); color:#EF4444; border:1px solid rgba(239,68,68,0.3); padding:8px; border-radius:10px; font-weight:800; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </div>`;
 
           return `
             <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:16px; padding:14px;">
@@ -753,7 +763,7 @@
               </div>
               <div style="font-size:0.82rem; color:#4B5563; margin-bottom:3px;"><i class="fa-solid fa-envelope" style="color:#9CA3AF;"></i> ${a.email}</div>
               <div style="font-size:0.82rem; color:#6B7280;"><i class="fa-solid fa-phone" style="color:#9CA3AF;"></i> ${a.phone || '—'}</div>
-              ${deleteBtn}
+              ${actionBtns}
             </div>
           `;
         }).join('');
@@ -765,10 +775,14 @@
       const confirmMsg = `⚠️ PERMANENT ACCOUNT DELETION\n\nAre you sure you want to PERMANENTLY DELETE this ${accountType} account (${email})?\n\nThis will remove their profile, wallet, and records from EmberGas.`;
       if (!confirm(confirmMsg)) return;
 
-      // Clean emberGasAccounts
+      // Clean emberGasAccounts and users
       const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
       const filteredAcc = accounts.filter(a => a.email && a.email.toLowerCase() !== email.toLowerCase());
       localStorage.setItem('emberGasAccounts', JSON.stringify(filteredAcc));
+
+      const genUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const filteredGen = genUsers.filter(a => a.email && a.email.toLowerCase() !== email.toLowerCase());
+      localStorage.setItem('users', JSON.stringify(filteredGen));
 
       // Clean gasUsers & gasVendors
       const users = JSON.parse(localStorage.getItem('gasUsers') || '[]');
@@ -1015,6 +1029,33 @@
 
       if (window.NotificationManager) NotificationManager.show(`KYB Verified for "${name}"! License Approved.`, 'success');
       loadKybQueue();
+      loadOverviewMetrics();
+    }
+
+    function editAccountByAdmin(email, oldName, oldPhone) {
+      if (!email) return;
+      const newName = prompt(`Enter new name for ${email}:`, oldName || '');
+      if (newName === null) return;
+      const newPhone = prompt(`Enter new phone for ${email}:`, oldPhone || '');
+      if (newPhone === null) return;
+
+      const keys = ['emberGasAccounts', 'users', 'gasUsers', 'gasVendors'];
+      keys.forEach(key => {
+        let arr = JSON.parse(localStorage.getItem(key) || '[]');
+        let updated = false;
+        arr = arr.map(a => {
+          if (a.email && a.email.toLowerCase() === email.toLowerCase()) {
+            a.name = newName;
+            a.phone = newPhone;
+            updated = true;
+          }
+          return a;
+        });
+        if (updated) localStorage.setItem(key, JSON.stringify(arr));
+      });
+
+      if (window.NotificationManager) NotificationManager.show(`Account ${email} updated successfully.`, 'success');
+      loadUserRegistry();
       loadOverviewMetrics();
     }
 

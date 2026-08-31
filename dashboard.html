@@ -920,32 +920,47 @@
 
       try {
         let vendors = [];
-        const res = await safeFetchApi('/api/auth/users-by-role/vendor');
-        if (res && res.ok) {
-          vendors = await res.json();
-        }
+        const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+        const allAcc = [...accounts, ...users, ...gasVendors];
 
-        // Merge local registered vendor accounts
-        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
-        const localVendors = localUsers.filter(u => u.role === 'vendor');
-        localVendors.forEach(lv => {
-          if (!vendors.some(v => v.email && lv.email && v.email.toLowerCase() === lv.email.toLowerCase())) {
-            vendors.push(lv);
+        allAcc.forEach(a => {
+          if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(a.role.toLowerCase())) {
+            if (!vendors.some(v => v.email && a.email && v.email.toLowerCase() === a.email.toLowerCase())) {
+              vendors.push(a);
+            }
           }
         });
 
-        if (vendors && vendors.length > 0) {
-          vendorSelect.innerHTML = vendors.map(v => {
-            const vName = v.name || 'Vendor Station';
+        if (window.safeFetchApi) {
+          const res = await safeFetchApi('/api/auth/users-by-role/vendor');
+          if (res && res.ok) {
+            const apiV = await res.json();
+            apiV.forEach(v => {
+              if (!vendors.some(x => x.email && v.email && x.email.toLowerCase() === v.email.toLowerCase())) {
+                vendors.push(v);
+              }
+            });
+          }
+        }
+
+        const verifiedVendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
+
+        if (verifiedVendors.length > 0) {
+          vendorSelect.innerHTML = verifiedVendors.map(v => {
+            const vName = v.name || v.businessName || 'Vendor Station';
             const vEmail = v.email || '';
             const displayTitle = vName.includes('Hub') || vName.includes('Station') || vName.includes('Depot')
               ? vName
               : `${vName} LPG Depot Hub`;
+            
+            const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
+            const rate = localStorage.getItem(rateKey) || '1100';
 
-            return `<option value="${displayTitle}" data-email="${vEmail}">${displayTitle} (${vEmail}) • ₦1,100/kg [Verified ✅]</option>`;
+            return `<option value="${displayTitle}" data-email="${vEmail}" style="color: #111827; background: #FFFFFF;">${displayTitle} (${vEmail}) • ₦${Number(rate).toLocaleString()}/kg [Verified ✅]</option>`;
           }).join('');
         } else {
-          // No registered vendors found — show placeholder
           vendorSelect.innerHTML = `<option value="" data-email="">— No verified stations available yet. Contact admin. —</option>`;
         }
       } catch (err) {
@@ -1306,32 +1321,7 @@
 
       loadLiveOrder();
 
-      // ── Populate verified vendors dynamically into vendorSelect ──
-      const vendorSelect = document.getElementById('vendorSelect');
-      if (vendorSelect) {
-        const localAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-        const verifiedVendors = localAccounts.filter(a => a.role === 'vendor');
-        
-        try {
-          const res = await safeFetchApi('/api/auth/users-by-role/vendor', { method: 'GET' });
-          if (res.ok) {
-            const apiVendors = await res.json();
-            apiVendors.forEach(v => {
-              if (!verifiedVendors.some(x => x.email === v.email)) {
-                verifiedVendors.push({ name: v.name, email: v.email });
-              }
-            });
-          }
-        } catch (e) {}
-
-        if (verifiedVendors.length > 0) {
-          vendorSelect.innerHTML = verifiedVendors.map(v => `
-            <option value="${v.name}" data-email="${v.email}" style="color: #111827; background: #FFFFFF;">
-              ${v.name} • ₦1,100/kg [Verified ✅]
-            </option>
-          `).join('');
-        }
-      }
+      // (Redundant vendorSelect population removed)
 
       const params = new URLSearchParams(window.location.search);
       const paramService = params.get('service');
