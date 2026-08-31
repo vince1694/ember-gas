@@ -611,11 +611,14 @@
 
     function getAdminStoreProducts() {
       const saved = localStorage.getItem('emberStoreProducts');
-      if (!saved) {
+      if (saved === null) {
         localStorage.setItem('emberStoreProducts', JSON.stringify(defaultStoreProducts));
         return defaultStoreProducts;
       }
-      try { return JSON.parse(saved); } catch (e) { return defaultStoreProducts; }
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : defaultStoreProducts;
+      } catch (e) { return defaultStoreProducts; }
     }
 
     function toggleNewProductForm() {
