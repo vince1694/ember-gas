@@ -168,11 +168,38 @@
         <i class="fa-solid fa-lock"></i> SECURE SSL 256-BIT ENCRYPTED
       </div>
       
-      <a href="login.html" title="Lock Admin Session" style="color: var(--text-secondary); text-decoration: none; font-size: 0.88rem; font-weight: 700; background: rgba(255,255,255,0.06); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--glass-border);">
-        <i class="fa-solid fa-right-from-bracket" style="color: #EF4444;"></i> Lock Session
-      </a>
+      <button onclick="lockAdminSession()" title="Lock Admin Session" style="color: #EF4444; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); font-size: 0.88rem; font-weight: 700; padding: 8px 16px; border-radius: 12px; cursor: pointer;">
+        <i class="fa-solid fa-lock" style="color: #EF4444;"></i> Lock Session
+      </button>
     </div>
   </header>
+
+  <!-- ── ISOLATED ADMIN AUTH GATE OVERLAY ── -->
+  <div id="adminGateModal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #FFFFFF; width: 100%; max-width: 440px; border-radius: 24px; padding: 32px 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.4); border: 1px solid #E5E7EB; text-align: center;">
+      <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(59, 130, 246, 0.12); color: #3B82F6; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px;">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 style="font-size: 1.5rem; font-weight: 900; color: #111827; margin: 0 0 6px;">Admin Access Control</h2>
+      <p style="color: #6B7280; font-size: 0.88rem; margin: 0 0 24px;">Enter your Super Admin Access PIN or credentials to unlock the isolated operations portal.</p>
+
+      <form onsubmit="verifyAdminGate(event)">
+        <div style="margin-bottom: 16px; text-align: left;">
+          <label style="font-size: 0.8rem; font-weight: 800; color: #374151; display: block; margin-bottom: 6px;">Admin Access Key / PIN</label>
+          <input type="password" id="adminGatePasscode" placeholder="Enter PIN (e.g. 1234)" style="width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #D1D5DB; font-size: 1rem; font-weight: 700; outline: none; box-sizing: border-box;" autofocus>
+          <div style="font-size: 0.75rem; color: #9CA3AF; margin-top: 4px;">Default PIN: <code>1234</code> or admin password</div>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 15px; background: #3B82F6; color: #fff; border: none; border-radius: 14px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);">
+          <i class="fa-solid fa-key"></i> Unlock Operations Portal
+        </button>
+      </form>
+      
+      <div style="margin-top: 20px; border-top: 1px solid #F3F4F6; padding-top: 16px;">
+        <a href="index.html" style="color: #6B7280; font-size: 0.85rem; font-weight: 700; text-decoration: none;">← Return to Main Website</a>
+      </div>
+    </div>
+  </div>
 
   <main style="max-width: 1320px; margin: 30px auto; padding: 0 20px;">
     
@@ -685,7 +712,67 @@
       loadCylinderOrders();
     }
 
+    // ── ISOLATED ADMIN GATE SCRIPT ──
+    function checkAdminGateState() {
+      const isVerified = sessionStorage.getItem('adminSessionVerified') === 'true';
+      const curUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      const isAdminUser = curUser && (curUser.role === 'admin' || curUser.role === 'superadmin');
+
+      const modal = document.getElementById('adminGateModal');
+      if (modal) {
+        if (isVerified || isAdminUser) {
+          modal.style.display = 'none';
+        } else {
+          modal.style.display = 'flex';
+        }
+      }
+    }
+
+    function verifyAdminGate(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const code = document.getElementById('adminGatePasscode').value.trim();
+
+      const validKeys = ['1234', 'admin123', 'admin', '0000', 'emberadmin'];
+      const curUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+      if (validKeys.includes(code) || (curUser && curUser.password === code)) {
+        sessionStorage.setItem('adminSessionVerified', 'true');
+        // Ensure admin role flag is active
+        const adminAccount = {
+          id: 'admin_master',
+          name: curUser.name || 'Super Admin Operations',
+          email: curUser.email || 'admin@embergas.ng',
+          role: 'admin'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(adminAccount));
+
+        const modal = document.getElementById('adminGateModal');
+        if (modal) modal.style.display = 'none';
+
+        if (window.NotificationManager) {
+          NotificationManager.show('🔐 Super Admin Portal Unlocked Successfully!', 'success');
+        }
+        loadCylinderOrders();
+        return false;
+      } else {
+        if (window.NotificationManager) {
+          NotificationManager.show('⛔ Invalid Admin Access Key or PIN. Try 1234', 'error');
+        }
+        return false;
+      }
+    }
+
+    function lockAdminSession() {
+      sessionStorage.removeItem('adminSessionVerified');
+      const modal = document.getElementById('adminGateModal');
+      if (modal) modal.style.display = 'flex';
+      if (window.NotificationManager) {
+        NotificationManager.show('🔒 Admin Session Locked', 'success');
+      }
+    }
+
     // Init
+    checkAdminGateState();
     loadCylinderOrders();
   </script>
 </body>

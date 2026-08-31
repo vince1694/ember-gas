@@ -245,6 +245,9 @@ class AuthGuard {
         const currentPath = window.location.pathname.split('/').pop() || 'index.html';
 
         if (this.getProtectedPages().includes(currentPath)) {
+            // Admin portal handles its own inline security gate
+            if (currentPath === 'admin.html') return true;
+
             if (!user) {
                 sessionStorage.setItem('redirectAfterLogin', currentPath);
                 window.location.href = `login.html?auth_required=true&redirect=${encodeURIComponent(currentPath)}`;
