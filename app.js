@@ -1269,47 +1269,67 @@ document.addEventListener('DOMContentLoaded', () => {
         const path = window.location.pathname.split('/').pop() || 'index.html';
 
         drawer.innerHTML = `
-            <div>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                    <a href="index.html" class="brand-logo" style="font-size: 1.3rem;">
-                        <i class="fa-solid fa-fire-flame-curved"></i> EmberGas
-                    </a>
-                    <button class="drawer-close-btn" onclick="closeMobileDrawer()"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-
-                <div style="background: #F8FAFC; padding: 14px; border-radius: 16px; border: 1px solid #E5E7EB; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #00B14F; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; color: #fff;">
-                        ${curUser.name.substring(0,2).toUpperCase()}
-                    </div>
-                    <div>
-                        <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">${curUser.name}</div>
-                        <div style="font-size: 0.75rem; color: #00B14F; font-weight: 700; text-transform: uppercase;">${curUser.role || 'Customer'}</div>
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <a href="index.html" class="drawer-link ${path === 'index.html' || path === '' ? 'active' : ''}"><i class="fa-solid fa-house"></i> Home</a>
-                    <a href="${userDashPage}" class="drawer-link ${path === userDashPage ? 'active' : ''}"><i class="fa-solid fa-gauge-high"></i> ${userDashLabel}</a>
-                    <a href="track.html" class="drawer-link ${path === 'track.html' ? 'active' : ''}"><i class="fa-solid fa-location-dot"></i> Track Live Delivery</a>
-                    <a href="services.html" class="drawer-link ${path === 'services.html' || path === 'accessories.html' ? 'active' : ''}"><i class="fa-solid fa-cubes"></i> Services & Accessories</a>
-                    <a href="safety.html" class="drawer-link ${path === 'safety.html' ? 'active' : ''}"><i class="fa-solid fa-shield-heart"></i> Safety Checklist</a>
-                </div>
+            <div class="drawer-header">
+                <a href="index.html" class="drawer-brand">
+                    <div class="drawer-brand-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                    EmberGas
+                </a>
+                <button class="drawer-close-btn" onclick="closeMobileDrawer()"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div style="padding-top: 16px; border-top: 1px solid #E5E7EB; display: flex; flex-direction: column; gap: 10px;">
+            <div class="drawer-scroll">
                 ${curUser && localStorage.getItem('currentUser') ? `
-                <button onclick="auth.logout()" style="width: 100%; background: #FEE2E2; border: 1px solid #FCA5A5; color: #DC2626; padding: 12px; font-size: 0.9rem; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; transition: all 0.2s ease;">
-                    <i class="fa-solid fa-right-from-bracket"></i> Log Out (${curUser.name.split(' ')[0]})
-                </button>
-                <button onclick="auth.deleteAccountPermanently()" style="width: 100%; background: #7F1D1D; border: 1px solid #991B1B; color: #FEE2E2; padding: 10px; font-size: 0.82rem; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; transition: all 0.2s ease;">
-                    <i class="fa-solid fa-trash-can"></i> Delete Account Permanently
-                </button>
+                <div class="drawer-user-card" onclick="closeMobileDrawer(); openGlobalProfileModal();">
+                    <div class="drawer-user-avatar">${curUser.name.substring(0,2).toUpperCase()}</div>
+                    <div>
+                        <div class="drawer-user-name">${curUser.name.split(' ')[0]}</div>
+                        <div class="drawer-user-role">${curUser.role || 'Customer'}</div>
+                    </div>
+                    <i class="fa-solid fa-pen-to-square drawer-user-edit"></i>
+                </div>
                 ` : `
-                <a href="login.html" style="display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 13px; font-size: 0.92rem; background: #00B14F; color: white; border-radius: 14px; font-weight: 800; box-shadow: 0 4px 14px rgba(0, 177, 79, 0.25);">
-                    <i class="fa-solid fa-right-to-bracket"></i> Sign In / Register Account
+                <a href="login.html" style="margin: 14px 0; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; padding: 12px; font-size: 0.9rem; background: #00B14F; color: white; border-radius: 12px; font-weight: 800; box-shadow: 0 4px 14px rgba(0, 177, 79, 0.25);">
+                    <i class="fa-solid fa-right-to-bracket"></i> Sign In / Register
                 </a>
                 `}
+
+                <div class="drawer-section-label">Main Menu</div>
+                <a href="index.html" class="drawer-link ${path === 'index.html' || path === '' ? 'active' : ''}">
+                    <div class="drawer-link-icon"><i class="fa-solid fa-house"></i></div>
+                    Home
+                </a>
+                <a href="${userDashPage}" class="drawer-link ${path === userDashPage ? 'active' : ''}">
+                    <div class="drawer-link-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                    ${userDashLabel}
+                </a>
+
+                <div class="drawer-divider"></div>
+                <div class="drawer-section-label">Services</div>
+                
+                <a href="track.html" class="drawer-link ${path === 'track.html' ? 'active' : ''}">
+                    <div class="drawer-link-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    Track Live Delivery
+                </a>
+                <a href="services.html" class="drawer-link ${path === 'services.html' || path === 'accessories.html' ? 'active' : ''}">
+                    <div class="drawer-link-icon"><i class="fa-solid fa-cubes"></i></div>
+                    Services & Accessories
+                </a>
+                <a href="safety.html" class="drawer-link ${path === 'safety.html' ? 'active' : ''}">
+                    <div class="drawer-link-icon"><i class="fa-solid fa-shield-heart"></i></div>
+                    Safety Checklist
+                </a>
             </div>
+
+            ${curUser && localStorage.getItem('currentUser') ? `
+            <div class="drawer-footer">
+                <button class="drawer-btn-logout" onclick="auth.logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                </button>
+                <button class="drawer-btn-delete" onclick="auth.deleteAccountPermanently()">
+                    Delete Account
+                </button>
+            </div>
+            ` : ''}
         `;
 
         document.body.appendChild(backdrop);
@@ -1370,3 +1390,109 @@ function initDesktopSweepController() {
     });
 }
 
+// ── GLOBAL PROFILE EDIT MODAL ─────────────────────────────────────────────
+window.openGlobalProfileModal = function() {
+    closeMobileDrawer();
+    const curUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!curUser) return;
+    
+    // Remove if exists
+    const existing = document.getElementById('globalProfileModalWrapper');
+    if (existing) existing.remove();
+    
+    const wrapper = document.createElement('div');
+    wrapper.id = 'globalProfileModalWrapper';
+    wrapper.className = 'global-profile-modal-overlay';
+    wrapper.onclick = (e) => { if (e.target === wrapper) window.closeGlobalProfileModal(); };
+    
+    const initials = curUser.name ? curUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'EG';
+    
+    wrapper.innerHTML = `
+        <div class="global-profile-card">
+            <div class="profile-modal-top">
+                <button class="close-x" onclick="window.closeGlobalProfileModal()"><i class="fa-solid fa-xmark"></i></button>
+                <div class="pm-avatar">${initials}</div>
+                <div class="pm-name">${curUser.name || 'Account'}</div>
+                <div class="pm-role">${curUser.role || 'Customer'}</div>
+            </div>
+            <form id="globalProfileEditForm" class="profile-modal-body" onsubmit="window.saveGlobalProfileEdit(event)">
+                <div class="pm-field">
+                    <label>Full Name</label>
+                    <input type="text" id="gpe_name" class="pm-input" value="${curUser.name || ''}" required>
+                </div>
+                <div class="pm-field">
+                    <label>Phone Number</label>
+                    <input type="tel" id="gpe_phone" class="pm-input" value="${curUser.phone || ''}" required>
+                </div>
+                <div class="pm-field">
+                    <label>Email Address</label>
+                    <input type="email" class="pm-input" value="${curUser.email || ''}" disabled style="background:#F3F4F6; color:#9CA3AF; cursor:not-allowed;">
+                    <div style="font-size:0.68rem; color:#6B7280; margin-top:4px;">Email cannot be changed directly.</div>
+                </div>
+                <button type="submit" class="pm-save-btn">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(wrapper);
+};
+
+window.closeGlobalProfileModal = function() {
+    const modal = document.getElementById('globalProfileModalWrapper');
+    if (modal) modal.remove();
+};
+
+window.saveGlobalProfileEdit = function(e) {
+    e.preventDefault();
+    const curUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!curUser) return;
+    
+    const newName = document.getElementById('gpe_name').value.trim();
+    const newPhone = document.getElementById('gpe_phone').value.trim();
+    
+    if (!newName || !newPhone) return;
+    
+    const email = curUser.email.toLowerCase();
+    
+    // Update all matching accounts in storage
+    const storageKeys = ['currentUser', 'emberGasAccounts', 'users', 'gasUsers', 'gasVendors'];
+    
+    storageKeys.forEach(key => {
+        const item = localStorage.getItem(key);
+        if (!item) return;
+        
+        let data = JSON.parse(item);
+        let updated = false;
+        
+        if (Array.isArray(data)) {
+            data = data.map(a => {
+                if (a.email && a.email.toLowerCase() === email) {
+                    a.name = newName;
+                    a.phone = newPhone;
+                    updated = true;
+                }
+                return a;
+            });
+        } else if (data && data.email && data.email.toLowerCase() === email) {
+            data.name = newName;
+            data.phone = newPhone;
+            updated = true;
+        }
+        
+        if (updated) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+    });
+    
+    if (window.NotificationManager) {
+        NotificationManager.show('Profile updated successfully!', 'success');
+    }
+    window.closeGlobalProfileModal();
+    setTimeout(() => { window.location.reload(); }, 500);
+};
+
+// Aliases for compatibility
+window.openProfileModal = window.openGlobalProfileModal;
+window.closeProfileModal = window.closeGlobalProfileModal;
