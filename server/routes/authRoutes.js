@@ -8,7 +8,9 @@ import {
     verifyOtp,
     deleteAccount,
     getUsersByRole,
-    notifyEmail
+    notifyEmail,
+    forgotPassword,
+    resetPassword
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -21,6 +23,8 @@ router.post('/verify-otp', verifyOtp);
 router.post('/delete-account', deleteAccount);
 router.get('/users-by-role/:role', getUsersByRole);
 router.post('/notify-email', notifyEmail);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 router.route('/profile')
     .get(protect, getUserProfile)
     .put(protect, updateUserProfile);

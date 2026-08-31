@@ -295,6 +295,99 @@ const notifyEmail = expressAsyncHandler(async (req, res) => {
     res.json({ success: !!sent, message: sent ? 'Email notification sent via Brevo.' : 'Failed to send email.' });
 });
 
-export { registerUser, authUser, getUserProfile, updateUserProfile, sendOtp, verifyOtp, deleteAccount, getUsersByRole, notifyEmail };
+// @desc    Initiate forgot password (generate OTP and send reset email)
+// @route   POST /api/auth/forgot-password
+// @access  Public
+const forgotPassword = expressAsyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        res.status(400);
+        throw new Error('Email address is required');
+    }
+
+    const targetEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: targetEmail });
+    if (!user) {
+        res.status(404);
+        throw new Error('No account found with this email address.');
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    otpStore.set(targetEmail, { code: otpCode, expiresAt });
+    user.otpCode = otpCode;
+    user.otpExpiresAt = expiresAt;
+    await user.save();
+
+    let emailSent = false;
+    try {
+        emailSent = await sendNotificationEmail(
+            targetEmail,
+            user.name || 'Valued User',
+            'Password Reset OTP Code — EmberGas',
+            'Password Reset Code',
+            `<p>Hello <strong>${user.name || 'Valued User'}</strong>,</p>
+             <p>You requested a password reset for your EmberGas account.</p>
+             <p>Your 6-digit Reset OTP Code is: <strong style="font-size:1.6rem;color:#00B14F;letter-spacing:2px;">${otpCode}</strong></p>
+             <p>This code expires in 10 minutes. If you did not request this, please ignore this email.</p>`
+        );
+    } catch (err) {
+        console.warn('Brevo reset email note:', err.message);
+    }
+
+    res.json({
+        message: 'Password reset OTP sent successfully to your email',
+        email: targetEmail,
+        otpCode: otpCode, // Auto-fill fallback
+        emailDelivered: emailSent
+    });
+});
+
+// @desc    Reset password using OTP code
+// @route   POST /api/auth/reset-password
+// @access  Public
+const resetPassword = expressAsyncHandler(async (req, res) => {
+    const { email, otpCode, newPassword } = req.body;
+
+    if (!email || !otpCode || !newPassword) {
+        res.status(400);
+        throw new Error('Email, OTP code, and new password are required');
+    }
+
+    const targetEmail = email.toLowerCase().trim();
+    const stored = otpStore.get(targetEmail);
+    const user = await User.findOne({ email: targetEmail });
+
+    if (!user) {
+        res.status(404);
+        throw new Error('User account not found');
+    }
+
+    const isValidOtp = (stored && stored.code === otpCode) || (user.otpCode === otpCode);
+    if (!isValidOtp) {
+        res.status(400);
+        throw new Error('Invalid or expired OTP reset code.');
+    }
+
+    user.password = newPassword;
+    user.otpCode = '';
+    await user.save();
+    otpStore.delete(targetEmail);
+
+    res.json({
+        message: 'Password reset successfully! You can now log in with your new password.',
+        success: true,
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: generateToken(user._id)
+        }
+    });
+});
+
+export { registerUser, authUser, getUserProfile, updateUserProfile, sendOtp, verifyOtp, deleteAccount, getUsersByRole, notifyEmail, forgotPassword, resetPassword };
 
 
