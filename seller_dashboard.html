@@ -324,7 +324,7 @@
           <div class="metric-val" style="color: #00B14F;">₦<span id="metricRevenue">0</span></div>
         </div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card" onclick="setVendorOrderFilter('active')" style="cursor: pointer; transition: transform 0.2s;" title="Click to view Active Requests">
         <div class="metric-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
         <div>
           <div class="metric-label">Active Requests</div>
@@ -338,7 +338,7 @@
           <div class="metric-val" style="color: #00B14F;">₦<span id="metricRate">1,100</span></div>
         </div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card" onclick="setVendorOrderFilter('completed')" style="cursor: pointer; transition: transform 0.2s;" title="Click to view Completed Services">
         <div class="metric-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #B45309;"><i class="fa-solid fa-check-double"></i></div>
         <div>
           <div class="metric-label">Completed Services</div>
@@ -378,7 +378,22 @@
 
     <!-- Gas Refill Requests Stream -->
     <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;" id="liveOrderQueue">
-      <h3 style="margin-bottom: 14px; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Customer Gas Refill Requests</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Customer Gas Refill Requests</h3>
+        
+        <!-- Filter Tabs -->
+        <div style="display: flex; gap: 6px; background: #F3F4F6; padding: 4px; border-radius: 12px;">
+          <button id="vTabAll" onclick="setVendorOrderFilter('all')" style="border:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; background:#00B14F; color:#fff;">
+            All Requests (<span id="vTabAllCount">0</span>)
+          </button>
+          <button id="vTabActive" onclick="setVendorOrderFilter('active')" style="border:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; background:transparent; color:#4B5563;">
+            Active (<span id="vTabActiveCount">0</span>)
+          </button>
+          <button id="vTabCompleted" onclick="setVendorOrderFilter('completed')" style="border:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; background:transparent; color:#4B5563;">
+            Completed Services (<span id="vTabCompletedCount">0</span>)
+          </button>
+        </div>
+      </div>
       
       <!-- Desktop Table -->
       <div class="vendor-desktop-table" style="overflow-x: auto;">
@@ -555,6 +570,8 @@
         return false;
       });
 
+      let currentVendorFilter = window.currentVendorFilter || 'all';
+
       const completedOrders = myVendorOrders.filter(o => o.status === 'COMPLETED');
       const activeOrders = myVendorOrders.filter(o => o.status !== 'COMPLETED' && o.status !== 'REJECTED' && o.status !== 'CANCELLED');
       
@@ -564,11 +581,37 @@
       const metricCompletedEl = document.getElementById('metricCompleted');
       if (metricCompletedEl) metricCompletedEl.innerText = completedOrders.length + ' Done';
 
+      // Update Tab Counts & Active Tab Styles
+      const countAll = document.getElementById('vTabAllCount');
+      const countActive = document.getElementById('vTabActiveCount');
+      const countComp = document.getElementById('vTabCompletedCount');
+      if (countAll) countAll.innerText = myVendorOrders.length;
+      if (countActive) countActive.innerText = activeOrders.length;
+      if (countComp) countComp.innerText = completedOrders.length;
+
+      ['all', 'active', 'completed'].forEach(t => {
+        const btn = document.getElementById(`vTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) {
+          if (currentVendorFilter === t) {
+            btn.style.background = '#00B14F';
+            btn.style.color = '#FFFFFF';
+          } else {
+            btn.style.background = 'transparent';
+            btn.style.color = '#4B5563';
+          }
+        }
+      });
+
+      // Filter displayed list
+      let displayOrders = myVendorOrders;
+      if (currentVendorFilter === 'active') displayOrders = activeOrders;
+      if (currentVendorFilter === 'completed') displayOrders = completedOrders;
+
       const tbody = document.getElementById('vendorOrdersTableBody');
       const mobileList = document.getElementById('vendorMobileOrders');
 
-      if (myVendorOrders.length > 0) {
-        tbody.innerHTML = myVendorOrders.map((o) => {
+      if (displayOrders.length > 0) {
+        tbody.innerHTML = displayOrders.map((o) => {
           const statusBadge = o.status === 'PLACED'
             ? '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">PLACED</span>'
             : o.status === 'ACCEPTED'
@@ -620,10 +663,22 @@
           </div>`;
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #9CA3AF;"><i class="fa-solid fa-gas-pump"></i> No gas refill requests for your station yet. Requests from customers will appear here.</td></tr>';
-        mobileList.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-gas-pump"></i> No refill requests yet. Requests booked with your station will show up here.</div>';
+        const emptyMsg = currentVendorFilter === 'active'
+          ? 'No active refill requests right now.'
+          : currentVendorFilter === 'completed'
+            ? 'No completed refill services yet.'
+            : 'No gas refill requests for your station yet.';
+        tbody.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: #9CA3AF;"><i class="fa-solid fa-gas-pump"></i> ${emptyMsg}</td></tr>`;
+        mobileList.innerHTML = `<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-gas-pump"></i> ${emptyMsg}</div>`;
       }
     }
+
+    function setVendorOrderFilter(filterType) {
+      window.currentVendorFilter = filterType;
+      document.getElementById('liveOrderQueue').scrollIntoView({ behavior: 'smooth' });
+      renderVendorOrders();
+    }
+    window.setVendorOrderFilter = setVendorOrderFilter;
 
     // ── VENDOR DYNAMIC STOCK MANAGEMENT ──
     const defaultStockItems = [

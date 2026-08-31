@@ -821,8 +821,32 @@
     }
     function loadCylinderOrders() {
       const orders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      
+      // Pull any store purchases or new cylinder orders from emberGasOrders
+      const storePurchases = allOrders.filter(o => 
+        o.type === 'new_cylinder' || 
+        o.type === 'STORE_PURCHASE' || 
+        (o.serviceType && (o.serviceType.toLowerCase().includes('purchase') || o.serviceType.toLowerCase().includes('new cylinder')))
+      );
+
+      storePurchases.forEach(sp => {
+        if (!orders.some(o => o.id === sp.id)) {
+          orders.unshift({
+            id: sp.id,
+            cylinderSize: sp.itemsSummary || sp.cylinderSize || sp.serviceType || 'New Cylinder Purchase',
+            customerName: sp.customerName || 'Customer',
+            userEmail: sp.userEmail || '',
+            phone: sp.phone || '—',
+            address: sp.address || '—',
+            total: sp.total || sp.amount || 0,
+            status: sp.status || 'PENDING_ADMIN'
+          });
+        }
+      });
+
       const badge = document.getElementById('cylinderOrderBadge');
-      const pending = orders.filter(o => o.status === 'PENDING_ADMIN');
+      const pending = orders.filter(o => o.status === 'PENDING_ADMIN' || o.status === 'PLACED' || o.status === 'PENDING');
       if (badge) badge.innerText = pending.length;
       const countEl = document.getElementById('pendingCylinderCount');
       if (countEl) countEl.innerText = pending.length;
@@ -832,7 +856,7 @@
       if (orders.length === 0) {
         container.innerHTML = `<div style="padding: 30px; text-align: center; color: #9CA3AF;">
           <i class="fa-solid fa-drum" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
-          No new cylinder orders yet.
+          No item purchase orders yet. Store orders placed by customers will appear here.
         </div>`;
         return;
       }

@@ -773,35 +773,74 @@
         </div>
       </div>
 
-      <!-- ── RECENT ORDERS ─────────────────────────────────────── -->
+      <!-- ── RECENT GAS REFILL BOOKINGS ─────────────────────────────────────── -->
       <div class="glass-card" style="margin-top: 20px;">
-        <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: #111827; display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-clock-rotate-left" style="color: #00B14F;"></i> Recent Orders
+        <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: #111827; display: flex; align-items: center; justify-content: space-between;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-gas-pump" style="color: #00B14F;"></i> Recent Gas Refill Bookings
+          </span>
+          <span style="font-size: 0.76rem; background: #E8F5E9; color: #00B14F; padding: 3px 10px; border-radius: 20px; font-weight: 700;" id="bookingCountBadge">0 Bookings</span>
+        </h3>
+        <div class="table-desktop-view" style="overflow-x: auto;">
+          <table class="orders-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr>
+                <th>Booking ID</th>
+                <th>Cylinder & Depot</th>
+                <th>Delivery Address</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+              <tr><td colspan="6" style="padding: 24px; text-align: center; color: #9CA3AF; font-size: 0.88rem;">
+                <i class="fa-solid fa-gas-pump" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i>
+                No refill bookings yet. Use "Book New Refill Request" above to place your first booking!
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mobile-orders-list" id="mobileBookingsList">
+          <div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;">
+            <i class="fa-solid fa-gas-pump" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i>
+            No refill bookings yet.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── RECENT STORE PURCHASES & ACCESSORIES ────────────────────────── -->
+      <div class="glass-card" style="margin-top: 20px;">
+        <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; color: #111827; display: flex; align-items: center; justify-content: space-between;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-cart-shopping" style="color: #3B82F6;"></i> Recent Store Purchases & Accessories
+          </span>
+          <span style="font-size: 0.76rem; background: #EFF6FF; color: #3B82F6; padding: 3px 10px; border-radius: 20px; font-weight: 700;" id="purchaseCountBadge">0 Purchases</span>
         </h3>
         <div class="table-desktop-view" style="overflow-x: auto;">
           <table class="orders-table" style="width: 100%; border-collapse: collapse; text-align: left;">
             <thead>
               <tr>
                 <th>Order ID</th>
-                <th>Size</th>
-                <th>Address</th>
+                <th>Purchased Item(s)</th>
+                <th>Delivery Address</th>
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody id="ordersTableBody">
-              <tr><td colspan="6" style="padding: 28px; text-align: center; color: #9CA3AF; font-size: 0.88rem;">
-                <i class="fa-solid fa-box-open" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i>
-                No orders yet. Place your first order above!
+            <tbody id="purchasesTableBody">
+              <tr><td colspan="6" style="padding: 24px; text-align: center; color: #9CA3AF; font-size: 0.88rem;">
+                <i class="fa-solid fa-toolbox" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i>
+                No store purchases yet. Visit our Gas Accessories store to buy safety products and new cylinders!
               </td></tr>
             </tbody>
           </table>
         </div>
-        <div class="mobile-orders-list" id="mobileOrdersList">
-          <div style="padding: 24px; text-align: center; color: #9CA3AF; font-size: 0.88rem;">
-            <i class="fa-solid fa-box-open" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i>
-            No orders yet.
+        <div class="mobile-orders-list" id="mobilePurchasesList">
+          <div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;">
+            <i class="fa-solid fa-toolbox" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i>
+            No store purchases yet.
           </div>
         </div>
       </div>
@@ -986,6 +1025,26 @@
       }
     }
 
+    function openOrderDetailsModal(orderId) {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
+
+      let order = allOrders.find(o => String(o.id) === String(orderId)) ||
+                  adminOrders.find(o => String(o.id) === String(orderId)) ||
+                  (activeSingle && String(activeSingle.id) === String(orderId) ? activeSingle : null);
+
+      if (!order) return;
+
+      document.getElementById('modalOrderId').innerText = '#' + order.id;
+      document.getElementById('modalVendor').innerText = order.vendorName || (order.type === 'new_cylinder' ? 'EmberGas Admin Hub' : 'EmberGas Store');
+      document.getElementById('modalPayload').innerText = order.itemsSummary || order.cylinderSize || order.serviceType || 'Refill Booking';
+      document.getElementById('modalAddress').innerText = order.address || '—';
+      document.getElementById('modalAmount').innerText = '₦' + Number(order.total || order.amount || 0).toLocaleString();
+      document.getElementById('orderSuccessModal').style.display = 'flex';
+    }
+    window.openOrderDetailsModal = openOrderDetailsModal;
+
     function renderRecentOrders() {
       const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
       let allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
@@ -1006,12 +1065,29 @@
       const popCount = document.getElementById('popOrderCount');
       if (popCount) popCount.innerText = myOrders.length;
 
-      const tbody = document.getElementById('ordersTableBody');
-      const mobileList = document.getElementById('mobileOrdersList');
+      // ── Separate into Refill Bookings vs Store Purchases ──
+      const myPurchases = myOrders.filter(o => 
+        o.type === 'new_cylinder' || 
+        o.type === 'STORE_PURCHASE' || 
+        (o.serviceType && (o.serviceType.toLowerCase().includes('purchase') || o.serviceType.toLowerCase().includes('new cylinder')))
+      );
 
-      if (myOrders.length > 0) {
-        tbody.innerHTML = myOrders.map(o => {
-          const sizeStr = o.size || o.cylinderSize || '—';
+      const myBookings = myOrders.filter(o => !myPurchases.some(p => p.id === o.id));
+
+      const bBadge = document.getElementById('bookingCountBadge');
+      if (bBadge) bBadge.innerText = `${myBookings.length} Booking${myBookings.length !== 1 ? 's' : ''}`;
+
+      const pBadge = document.getElementById('purchaseCountBadge');
+      if (pBadge) pBadge.innerText = `${myPurchases.length} Purchase${myPurchases.length !== 1 ? 's' : ''}`;
+
+      // ── Render Bookings Table ──
+      const bTbody = document.getElementById('bookingsTableBody');
+      const bMobile = document.getElementById('mobileBookingsList');
+
+      if (myBookings.length > 0) {
+        bTbody.innerHTML = myBookings.map(o => {
+          const sizeStr = o.size || o.cylinderSize || 'Refill Package';
+          const vendorStr = o.vendorName ? `Depot: ${o.vendorName}` : 'LPG Station Depot';
           const amtStr = Number(o.total || o.amount || 0).toLocaleString();
           const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
           const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
@@ -1019,16 +1095,20 @@
           return `
             <tr style="border-bottom: 1px solid #F3F4F6;">
               <td style="padding: 12px 10px; font-weight: 800; color: #111827;">#${o.id}</td>
-              <td style="padding: 12px 10px; color: #374151;">${sizeStr}</td>
+              <td style="padding: 12px 10px; color: #374151;"><strong>${sizeStr}</strong><br><span style="font-size:0.75rem; color:#6B7280;">${vendorStr}</span></td>
               <td style="padding: 12px 10px; color: #4B5563;">${o.address || '—'}</td>
               <td style="padding: 12px 10px; color: #00B14F; font-weight: 900;">₦${amtStr}</td>
               <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}">${o.status || 'PLACED'}</span></td>
-              <td style="padding: 12px 10px;"><a href="track.html" style="color: #00B14F; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-eye"></i> Details</a></td>
+              <td style="padding: 12px 10px;">
+                <button onclick="openOrderDetailsModal('${o.id}')" style="background:#F3F4F6; border:1px solid #E5E7EB; color:#00B14F; padding:6px 12px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                  <i class="fa-solid fa-eye"></i> Details
+                </button>
+              </td>
             </tr>`;
         }).join('');
 
-        mobileList.innerHTML = myOrders.map(o => {
-          const sizeStr = o.size || o.cylinderSize || '—';
+        bMobile.innerHTML = myBookings.map(o => {
+          const sizeStr = o.size || o.cylinderSize || 'Refill Package';
           const amtStr = Number(o.total || o.amount || 0).toLocaleString();
           const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
           const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
@@ -1040,9 +1120,59 @@
                 <div style="font-size: 0.78rem; color: #6B7280; margin: 2px 0 6px;">${o.address || '—'} • ₦${amtStr}</div>
                 <span class="status-badge" style="${statusStyle}">${o.status || 'PLACED'}</span>
               </div>
-              <a href="track.html" style="background: #00B14F; color: #fff; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; text-decoration: none;">Track</a>
+              <button onclick="openOrderDetailsModal('${o.id}')" style="background: #00B14F; color: #fff; border:none; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor:pointer;">Details</button>
             </div>`;
         }).join('');
+      } else {
+        bTbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-gas-pump" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i> No refill bookings placed yet. Use "Book New Refill Request" above to place your first booking!</td></tr>';
+        bMobile.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-gas-pump" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i> No refill bookings placed yet.</div>';
+      }
+
+      // ── Render Purchases Table ──
+      const pTbody = document.getElementById('purchasesTableBody');
+      const pMobile = document.getElementById('mobilePurchasesList');
+
+      if (myPurchases.length > 0) {
+        pTbody.innerHTML = myPurchases.map(o => {
+          const itemTitle = o.itemsSummary || o.cylinderSize || o.serviceType || 'New Cylinder / Accessory';
+          const amtStr = Number(o.total || o.amount || 0).toLocaleString();
+          const isDone = o.status === 'DELIVERED' || o.status === 'COMPLETED';
+          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+
+          return `
+            <tr style="border-bottom: 1px solid #F3F4F6;">
+              <td style="padding: 12px 10px; font-weight: 800; color: #111827;">#${o.id}</td>
+              <td style="padding: 12px 10px; color: #374151;"><strong>${itemTitle}</strong></td>
+              <td style="padding: 12px 10px; color: #4B5563;">${o.address || '—'}</td>
+              <td style="padding: 12px 10px; color: #3B82F6; font-weight: 900;">₦${amtStr}</td>
+              <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}">${o.status || 'PENDING'}</span></td>
+              <td style="padding: 12px 10px;">
+                <button onclick="openOrderDetailsModal('${o.id}')" style="background:#EFF6FF; border:1px solid #DBEAFE; color:#3B82F6; padding:6px 12px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                  <i class="fa-solid fa-eye"></i> Details
+                </button>
+              </td>
+            </tr>`;
+        }).join('');
+
+        pMobile.innerHTML = myPurchases.map(o => {
+          const itemTitle = o.itemsSummary || o.cylinderSize || o.serviceType || 'New Cylinder / Accessory';
+          const amtStr = Number(o.total || o.amount || 0).toLocaleString();
+          const isDone = o.status === 'DELIVERED' || o.status === 'COMPLETED';
+          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+
+          return `
+            <div class="mobile-order-card">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">#${o.id} • ${itemTitle}</div>
+                <div style="font-size: 0.78rem; color: #6B7280; margin: 2px 0 6px;">${o.address || '—'} • ₦${amtStr}</div>
+                <span class="status-badge" style="${statusStyle}">${o.status || 'PENDING'}</span>
+              </div>
+              <button onclick="openOrderDetailsModal('${o.id}')" style="background: #3B82F6; color: #fff; border:none; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor:pointer;">Details</button>
+            </div>`;
+        }).join('');
+      } else {
+        pTbody.innerHTML = '<tr><td colspan="6" style="padding: 24px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-toolbox" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i> No store purchases yet. Visit our Gas Accessories store to buy products!</td></tr>';
+        pMobile.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-toolbox" style="font-size: 1.4rem; display: block; margin-bottom: 6px; color: #D1D5DB;"></i> No store purchases yet.</div>';
       }
     }
 
