@@ -420,7 +420,7 @@
               <th style="padding: 10px;">Cylinder Size</th>
               <th style="padding: 10px;">Delivery Address</th>
               <th style="padding: 10px;">Amount</th>
-              <th style="padding: 10px;">Driver</th>
+              <th style="padding: 10px;">Dispatch Status</th>
               <th style="padding: 10px;">Action</th>
             </tr>
           </thead>
@@ -443,7 +443,7 @@
   <div id="dispatchModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; padding:15px;">
     <div style="background:#161B22; border:1px solid #30363D; border-radius:20px; max-width:480px; width:100%; padding:24px; color:#F0F6FC;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h3 style="margin:0; font-size:1.15rem;"><i class="fa-solid fa-truck-fast" style="color:#10B981;"></i> Order Accepted! Select Delivery Option</h3>
+        <h3 style="margin:0; font-size:1.15rem;"><i class="fa-solid fa-truck-fast" style="color:#10B981;"></i> Order Accepted! Select Delivery Method</h3>
         <button onclick="closeDispatchModal()" style="background:none; border:none; color:#8B949E; font-size:1.3rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <p style="color:#8B949E; font-size:0.88rem; margin-bottom:20px;">Cylinder refilled! Choose how you want to deliver this order to the customer:</p>
@@ -455,22 +455,22 @@
             <i class="fa-solid fa-user-shield"></i>
           </div>
           <div>
-            <div style="font-weight:800; font-size:0.95rem; color:#fff;">Option A: Vendor Self-Delivery</div>
-            <div style="font-size:0.78rem; color:#8B949E;">Deliver directly to customer without using a rider.</div>
+            <div style="font-weight:800; font-size:0.95rem; color:#fff;">Option A: Station Direct Doorstep Delivery</div>
+            <div style="font-size:0.78rem; color:#8B949E;">Deliver directly to customer's address.</div>
           </div>
         </div>
       </div>
 
-      <!-- Option 2: Assign to Rider -->
+      <!-- Option 2: Assign to Delivery Personnel -->
       <div style="background:#0D1117; border:1px solid #30363D; border-radius:14px; padding:16px;">
         <div style="font-weight:800; font-size:0.95rem; color:#fff; margin-bottom:8px;">
-          <i class="fa-solid fa-motorcycle" style="color:#F59E0B;"></i> Option B: Assign Registered Refiller Rider
+          <i class="fa-solid fa-truck-fast" style="color:#F59E0B;"></i> Option B: Assign Registered Delivery Personnel
         </div>
         <select id="dispatchRiderSelect" style="width:100%; padding:10px 12px; border-radius:10px; background:#161B22; border:1px solid #30363D; color:#fff; font-size:0.88rem; margin-bottom:12px;">
-          <option value="">— Select a registered rider —</option>
+          <option value="">— Select delivery personnel —</option>
         </select>
         <button onclick="dispatchToSelectedRider()" style="width:100%; background:#F59E0B; border:none; color:#111827; padding:11px; border-radius:10px; font-weight:800; cursor:pointer;">
-          Assign Order to Selected Rider →
+          Assign Order to Selected Dispatch →
         </button>
       </div>
     </div>

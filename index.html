@@ -316,7 +316,7 @@
     </h1>
     
     <p style="color: var(--text-secondary); max-width: 660px; margin: 0 auto 20px; font-size: 1.05rem; line-height: 1.6;">
-      Compare live LPG prices per KG from DPR-certified filling stations near you, order online with digital scale weight verification, and track your delivery rider live.
+      Compare live LPG prices per KG from DPR-certified filling stations near you, order online with digital scale weight verification, and track your doorstep delivery live.
     </p>
 
     <!-- Quick Order Bar -->
@@ -383,9 +383,9 @@
 
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
         <div class="feature-box">
-          <div class="feature-icon"><i class="fa-solid fa-motorcycle"></i></div>
+          <div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
           <h3 style="font-size: 1.2rem; margin-bottom: 8px;">30-45 Mins Express Delivery</h3>
-          <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">Trained safety riders deliver right to your kitchen door fast.</p>
+          <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">Trained safety personnel deliver right to your kitchen door fast.</p>
         </div>
 
         <div class="feature-box">
@@ -412,7 +412,8 @@
 
     function calcHomeTotal() {
       const size = parseFloat(document.getElementById('homeSize').value);
-      const total = size * 1100;
+      const rate = parseFloat(localStorage.getItem('emberPriceCeiling') || '1100');
+      const total = size * rate;
       document.getElementById('homeTotalDisplay').innerText = '₦' + total.toLocaleString();
     }
 
@@ -431,64 +432,57 @@
         }, 400);
       });
     }
+
     async function renderHomeStations() {
       const grid = document.getElementById('homeDepotGrid');
       if (!grid) return;
 
       let vendors = [];
-      const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const accounts   = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const users      = JSON.parse(localStorage.getItem('users') || '[]');
       const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
-      const allAcc = [...accounts, ...users, ...gasVendors];
+      const gasUsers   = JSON.parse(localStorage.getItem('gasUsers') || '[]');
+      const allAcc     = [...accounts, ...users, ...gasVendors, ...gasUsers];
 
       allAcc.forEach(a => {
-        if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(a.role.toLowerCase())) {
+        if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase())) {
           if (!vendors.some(v => v.email && a.email && v.email.toLowerCase() === a.email.toLowerCase())) {
             vendors.push(a);
           }
         }
       });
 
-      try {
-        if (window.safeFetchApi) {
-          const res = await safeFetchApi('/api/auth/users-by-role/vendor');
-          if (res && res.ok) {
-            const apiV = await res.json();
-            apiV.forEach(v => {
-              if (!vendors.some(x => x.email && v.email && x.email.toLowerCase() === v.email.toLowerCase())) {
-                vendors.push(v);
-              }
-            });
-          }
-        }
-      } catch (e) {}
+      // Filter KYB Verified vendors first
+      const verifiedVendors = vendors.filter(v => v.kybStatus === 'VERIFIED' || v.kybApproved === true);
+      const displayVendors = verifiedVendors.length > 0 ? verifiedVendors : vendors;
 
-      if (vendors.length === 0) {
+      if (displayVendors.length === 0) {
         grid.innerHTML = `
-          <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--text-secondary);">
-            <i class="fa-solid fa-gas-pump" style="font-size: 2rem; color: var(--primary-color); display: block; margin-bottom: 8px;"></i>
-            No registered stations yet. Station owners can register via the Vendor Portal.
+          <div style="grid-column: 1/-1; padding: 40px 20px; text-align: center; color: var(--text-secondary); background: var(--surface-dark); border-radius: 20px; border: 1px dashed var(--glass-border);">
+            <i class="fa-solid fa-store" style="font-size: 2.2rem; color: var(--primary-color); display: block; margin-bottom: 10px;"></i>
+            <h3 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 4px;">No Verified Stations Listed Yet</h3>
+            <p style="font-size: 0.85rem;">Registered filling stations will appear here once verified by EmberGas Admin.</p>
           </div>`;
         return;
       }
 
-      grid.innerHTML = vendors.map(v => {
+      grid.innerHTML = displayVendors.map(v => {
         const vName = v.name || v.businessName || 'LPG Refill Depot';
         const vEmail = v.email || '';
         const vAddress = v.address || 'Lagos, Nigeria';
         const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
-        const rate = localStorage.getItem(rateKey) || '1100';
-        const isVerified = v.kybStatus === 'VERIFIED';
+        const rate = localStorage.getItem(rateKey) || localStorage.getItem('emberPriceCeiling') || '1100';
+        const isVerified = v.kybStatus === 'VERIFIED' || v.kybApproved === true;
         const statusBadge = isVerified
-          ? '<span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● VERIFIED & IN STOCK</span>'
-          : '<span style="background: rgba(245,158,11,0.18); color: #F59E0B; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● ONLINE DEPO</span>';
+          ? '<span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;"><i class="fa-solid fa-shield-check"></i> KYB VERIFIED & ACTIVE</span>'
+          : '<span style="background: rgba(245,158,11,0.18); color: #F59E0B; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;"><i class="fa-solid fa-clock"></i> PENDING VERIFICATION</span>';
 
         return `
           <div class="depot-card">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
               <div>
                 ${statusBadge}
-                <h3 style="font-size: 1.2rem; margin-top: 6px;">${vName}</h3>
+                <h3 style="font-size: 1.2rem; margin-top: 8px;">${vName}</h3>
               </div>
               <span style="color: #F59E0B; font-weight: 800; font-size: 0.9rem;">★ 4.9</span>
             </div>
@@ -497,10 +491,10 @@
             </p>
             <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 12px;">
               <div>
-                <span style="font-size: 0.75rem; color: var(--text-secondary);">PRICE / KG</span>
-                <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">₦${Number(rate).toLocaleString()}</div>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">REFILL RATE / KG</span>
+                <div style="font-weight: 800; font-size: 1.25rem; color: var(--primary-color);">₦${Number(rate).toLocaleString()}</div>
               </div>
-              <a href="dashboard.html" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">Select Depot</a>
+              <a href="dashboard.html?service=refill&vendor=${encodeURIComponent(vName)}&vendorEmail=${encodeURIComponent(vEmail)}" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">Select Depot</a>
             </div>
           </div>
         `;
@@ -508,6 +502,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      calcHomeTotal();
       renderHomeStations();
     });
   </script>
