@@ -535,6 +535,39 @@
       const metricRateEl = document.getElementById('metricRate');
       if (rateInput) rateInput.value = savedRate;
       if (metricRateEl) metricRateEl.innerText = Number(savedRate).toLocaleString();
+
+      // ── KYB VERIFICATION GATE ──────────────────────────────────────────────
+      // Re-read latest KYB status from storage (admin may have verified after login)
+      function getLatestKybStatus() {
+        const keys = ['emberGasAccounts', 'gasVendors', 'users', 'gasUsers'];
+        for (const key of keys) {
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          const match = arr.find(a => a.email && vendorUser.email && a.email.toLowerCase() === vendorUser.email.toLowerCase());
+          if (match && (match.kybStatus === 'VERIFIED' || match.kybApproved === true)) return true;
+        }
+        return false;
+      }
+      window._vendorKybVerified = getLatestKybStatus();
+
+      // Show KYB pending banner if not verified
+      if (!window._vendorKybVerified && vendorRole !== 'admin') {
+        const bannerDiv = document.createElement('div');
+        bannerDiv.id = 'kybPendingBanner';
+        bannerDiv.style.cssText = 'position:fixed;top:70px;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+        bannerDiv.innerHTML = `
+          <div style="display:flex;align-items:center;gap:12px;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;"></i>
+            <div>
+              <div style="font-weight:900;font-size:1rem;">⏳ KYB Verification Pending</div>
+              <div style="font-size:0.82rem;opacity:0.92;">Your vendor license has not been approved yet. Contact the EmberGas Admin to complete your KYB review. You cannot accept booking requests until approved.</div>
+            </div>
+          </div>
+          <a href="admin.html" style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.5);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;text-decoration:none;font-size:0.85rem;"><i class="fa-solid fa-shield-halved"></i> Contact Admin</a>
+        `;
+        document.body.prepend(bannerDiv);
+        // Also add margin to body to avoid content hidden behind banner
+        document.body.style.paddingTop = (parseInt(document.body.style.paddingTop || '0') + 60) + 'px';
+      }
     }
 
     function renderVendorOrders() {
@@ -819,6 +852,11 @@
     }
 
     function acceptOrder(orderId) {
+      // ── KYB GATE: only verified vendors can accept orders ──
+      if (!window._vendorKybVerified && vendorRole !== 'admin') {
+        if (window.NotificationManager) NotificationManager.show('⚠️ Your KYB verification is pending. Admin must approve your license before you can accept booking requests.', 'error');
+        return;
+      }
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
       const orderIdx = allOrders.findIndex(o => o.id === orderId);
       if (orderIdx === -1) return;

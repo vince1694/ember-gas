@@ -1041,17 +1041,23 @@
     }
 
     function verifyVendorByEmail(email, name) {
-      const allAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const idx = allAccounts.findIndex(a => a.email && a.email.toLowerCase() === email.toLowerCase());
-      if (idx !== -1) allAccounts[idx].kybStatus = 'VERIFIED';
-      localStorage.setItem('emberGasAccounts', JSON.stringify(allAccounts));
+      // Update in ALL storage keys so the vendor appears verified everywhere
+      const storageKeys = ['emberGasAccounts', 'gasVendors', 'users', 'gasUsers'];
+      storageKeys.forEach(key => {
+        const arr = JSON.parse(localStorage.getItem(key) || '[]');
+        let changed = false;
+        arr.forEach(a => {
+          if (a.email && a.email.toLowerCase() === email.toLowerCase()) {
+            a.kybStatus = 'VERIFIED';
+            a.kybApproved = true;
+            a.kybApprovedAt = new Date().toISOString();
+            changed = true;
+          }
+        });
+        if (changed) localStorage.setItem(key, JSON.stringify(arr));
+      });
 
-      const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
-      const vi = vendors.findIndex(a => a.email && a.email.toLowerCase() === email.toLowerCase());
-      if (vi !== -1) vendors[vi].kybStatus = 'VERIFIED';
-      localStorage.setItem('gasVendors', JSON.stringify(vendors));
-
-      if (window.NotificationManager) NotificationManager.show(`KYB Verified for "${name}"! License Approved.`, 'success');
+      if (window.NotificationManager) NotificationManager.show(`✅ KYB Verified for "${name}"! Vendor can now accept booking requests.`, 'success');
       loadKybQueue();
       loadOverviewMetrics();
     }

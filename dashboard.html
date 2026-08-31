@@ -143,19 +143,21 @@
       padding: 14px 8px;
       text-align: center;
       cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      /* Smooth: only GPU-accelerated properties in transition to prevent layout reflow/hang */
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
       will-change: transform;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .cylinder-option:hover {
       border-color: #00B14F;
-      background: #F0FDF4;
+      background-color: #F0FDF4;
       transform: translateY(-3px);
       box-shadow: 0 6px 18px rgba(0,177,79,0.2);
     }
     .cylinder-option.selected {
       border-color: #00B14F;
-      background: linear-gradient(135deg, #E8FAF0, #D1FAE5);
+      background-color: #D1FAE5;
       box-shadow: 0 0 0 3px rgba(0,177,79,0.2);
       transform: translateY(-2px);
     }
@@ -973,13 +975,15 @@
 
       try {
         let vendors = [];
-        const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        // Collect from ALL storage keys where vendors can be registered
+        const accounts   = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+        const users      = JSON.parse(localStorage.getItem('users') || '[]');
         const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
-        const allAcc = [...accounts, ...users, ...gasVendors];
+        const gasUsers   = JSON.parse(localStorage.getItem('gasUsers') || '[]');
+        const allAcc = [...accounts, ...users, ...gasVendors, ...gasUsers];
 
         allAcc.forEach(a => {
-          if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(a.role.toLowerCase())) {
+          if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase())) {
             if (!vendors.some(v => v.email && a.email && v.email.toLowerCase() === a.email.toLowerCase())) {
               vendors.push(a);
             }
@@ -987,34 +991,38 @@
         });
 
         if (window.safeFetchApi) {
-          const res = await safeFetchApi('/api/auth/users-by-role/vendor');
-          if (res && res.ok) {
-            const apiV = await res.json();
-            apiV.forEach(v => {
-              if (!vendors.some(x => x.email && v.email && x.email.toLowerCase() === v.email.toLowerCase())) {
-                vendors.push(v);
-              }
-            });
-          }
+          try {
+            const res = await safeFetchApi('/api/auth/users-by-role/vendor');
+            if (res && res.ok) {
+              const apiV = await res.json();
+              apiV.forEach(v => {
+                if (!vendors.some(x => x.email && v.email && x.email.toLowerCase() === v.email.toLowerCase())) {
+                  vendors.push(v);
+                }
+              });
+            }
+          } catch(e) {/* No API — local only */}
         }
 
-        const verifiedVendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
+        // A vendor is verified if admin approved via KYB: kybStatus === 'VERIFIED' or kybApproved === true
+        const verifiedVendors = vendors.filter(v =>
+          v.kybStatus === 'VERIFIED' || v.kybApproved === true
+        );
 
         if (verifiedVendors.length > 0) {
-          vendorSelect.innerHTML = verifiedVendors.map(v => {
-            const vName = v.name || v.businessName || 'Vendor Station';
-            const vEmail = v.email || '';
-            const displayTitle = vName.includes('Hub') || vName.includes('Station') || vName.includes('Depot')
-              ? vName
-              : `${vName} LPG Depot Hub`;
-            
-            const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
-            const rate = localStorage.getItem(rateKey) || '1100';
-
-            return `<option value="${displayTitle}" data-email="${vEmail}" style="color: #111827; background: #FFFFFF;">${displayTitle} (${vEmail}) • ₦${Number(rate).toLocaleString()}/kg [Verified ✅]</option>`;
-          }).join('');
+          vendorSelect.innerHTML = '<option value="" data-email="">— Select a verified LPG station —</option>' +
+            verifiedVendors.map(v => {
+              const vName = v.name || v.businessName || 'Vendor Station';
+              const vEmail = v.email || '';
+              const displayTitle = (vName.includes('Hub') || vName.includes('Station') || vName.includes('Depot'))
+                ? vName
+                : `${vName} LPG Depot Hub`;
+              const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
+              const rate = localStorage.getItem(rateKey) || '1100';
+              return `<option value="${displayTitle}" data-email="${vEmail}" style="color:#111827;background:#FFFFFF;">${displayTitle} — ₦${Number(rate).toLocaleString()}/kg ✅ Verified</option>`;
+            }).join('');
         } else {
-          vendorSelect.innerHTML = `<option value="" data-email="">— No verified stations available yet. Contact admin. —</option>`;
+          vendorSelect.innerHTML = `<option value="" data-email="">— No KYB-approved stations yet. Admin must verify vendors first. —</option>`;
         }
       } catch (err) {
         console.warn('Load verified vendors note:', err);
