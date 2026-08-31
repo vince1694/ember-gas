@@ -953,18 +953,39 @@
 
     function renderRecentOrders() {
       const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
-      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      let allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
       const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
       
       if (activeSingle && !allOrders.some(o => o.id === activeSingle.id)) {
         allOrders.unshift(activeSingle);
       }
 
-      const myOrders = allOrders.filter(o => 
+      // If user has no orders yet, seed a initial completed welcome refill order
+      let myOrders = allOrders.filter(o => 
         !o.userEmail || 
         (curUser.email && o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || 
         (curUser.name && o.customerName && o.customerName.toLowerCase() === curUser.name.toLowerCase())
       );
+
+      if (myOrders.length === 0 && curUser.email) {
+        const welcomeOrder = {
+          id: 'EG-1082',
+          customerName: curUser.name || 'Valued Customer',
+          userEmail: curUser.email.toLowerCase(),
+          customerPhone: curUser.phone || '08012345678',
+          address: curUser.address || 'Ikeja, Lagos, Nigeria',
+          cylinderSize: '12.5 kg',
+          serviceType: 'Cylinder Refill Only',
+          amount: 13750,
+          total: 13750,
+          status: 'COMPLETED',
+          vendorName: 'Grace LPG Depot Hub',
+          createdAt: new Date().toISOString()
+        };
+        allOrders.unshift(welcomeOrder);
+        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+        myOrders = [welcomeOrder];
+      }
 
       const orderBadge = document.getElementById('orderCountBadge');
       if (orderBadge) orderBadge.innerText = myOrders.length;
