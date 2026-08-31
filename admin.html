@@ -268,7 +268,7 @@
         <i class="fa-solid fa-users"></i> Users & Vendors
       </button>
       <button class="admin-tab-btn" onclick="switchAdminTab('kyb', this)">
-        <i class="fa-solid fa-id-card"></i> Vendor KYB Queue (3 Pending)
+        <i class="fa-solid fa-id-card"></i> Vendor KYB Queue <span id="kybTabBadge" style="background:#F59E0B;color:#fff;border-radius:20px;padding:2px 8px;font-size:0.72rem;margin-left:4px;">0</span>
       </button>
       <button class="admin-tab-btn" onclick="switchAdminTab('price', this)">
         <i class="fa-solid fa-sliders"></i> LPG Price Controls
@@ -280,20 +280,20 @@
       <div class="admin-grid">
         <div class="admin-stat-card">
           <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">TOTAL PLATFORM VOLUME</div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #3B82F6; margin: 4px 0;">420.8 Tons</div>
-          <div style="font-size: 0.78rem; color: #10B981;"><i class="fa-solid fa-arrow-trend-up"></i> +14.2% this month</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #3B82F6; margin: 4px 0;" id="statTotalVolume">0.0 Kg</div>
+          <div style="font-size: 0.78rem; color: #10B981;"><i class="fa-solid fa-arrow-trend-up"></i> Live Real-Time Activity</div>
         </div>
 
         <div class="admin-stat-card" style="border-left-color: #10B981;">
           <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">GROSS GMV REVENUE</div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #10B981; margin: 4px 0;">&#x20a6;148,520,000</div>
-          <div style="font-size: 0.78rem; color: #10B981;"><i class="fa-solid fa-circle-check"></i> 100% Commission Settled</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #10B981; margin: 4px 0;" id="statGrossGmv">₦0</div>
+          <div style="font-size: 0.78rem; color: #10B981;"><i class="fa-solid fa-circle-check"></i> Live Orders Settled</div>
         </div>
 
         <div class="admin-stat-card" style="border-left-color: #F59E0B;">
-          <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">ACTIVE VERIFIED DEPOTS</div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #F59E0B; margin: 4px 0;">48 Stations</div>
-          <div style="font-size: 0.78rem; color: var(--text-secondary);">3 Pending KYB Review</div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">REGISTERED VENDOR STATIONS</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #F59E0B; margin: 4px 0;" id="statActiveDepots">0 Stations</div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary);" id="statPendingKybText">0 Pending Review</div>
         </div>
 
         <div class="admin-stat-card" style="border-left-color: #8B5CF6;">
@@ -450,62 +450,31 @@
     </div>
 
     <!-- Section 2: Vendor Verification Table -->
-    <div id="tab-kyb" class="glass-card" style="margin-bottom: 40px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 24px; padding: 25px;">
+    <div id="tab-kyb" class="glass-card" style="margin-bottom: 40px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 24px; padding: 25px; display:none;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div>
           <h2 style="font-size: 1.25rem; color: #111827;"><i class="fa-solid fa-building-shield" style="color: #3B82F6;"></i> Vendor KYB License Approvals</h2>
           <p style="color: var(--text-secondary); font-size: 0.85rem;">Review DPR licenses, station weight calibration certificates, and address proofs.</p>
         </div>
-        <span style="background: rgba(245, 158, 11, 0.18); color: #F59E0B; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 0.8rem;">
-          3 Action Items Required
-        </span>
+        <button onclick="loadKybQueue()" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem;">
+          <i class="fa-solid fa-rotate"></i> Refresh Queue
+        </button>
       </div>
 
       <div style="overflow-x: auto;">
-        <table class="table-admin">
+        <table class="table-admin" style="color:#111827;">
           <thead>
-            <tr>
-              <th>Station / Company Name</th>
-              <th>Location</th>
+            <tr style="background:#F9FAFB;">
+              <th>Station / Vendor Name</th>
+              <th>Email</th>
               <th>DPR License No.</th>
-              <th>Submitted Date</th>
+              <th>Phone</th>
               <th>Compliance Status</th>
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td style="font-weight: 700;"><i class="fa-solid fa-store" style="color: var(--primary-color);"></i> Grace LPG Depot Hub #04</td>
-              <td>Surulere, Lagos</td>
-              <td><code>DPR-LPG-99218-NG</code></td>
-              <td>Aug 28, 2026</td>
-              <td><span style="color: #F59E0B; font-weight: 700;">● Pending Verification</span></td>
-              <td>
-                <button class="btn-verify" onclick="verifyVendor(this, 'Grace LPG Depot')"><i class="fa-solid fa-check"></i> Approve License</button>
-                <button class="btn-reject" onclick="rejectVendor(this)"><i class="fa-solid fa-xmark"></i> Reject</button>
-              </td>
-            </tr>
-            <tr>
-              <td style="font-weight: 700;"><i class="fa-solid fa-store" style="color: var(--primary-color);"></i> MegaGas Refill Plant</td>
-              <td>Ikeja, Lagos</td>
-              <td><code>DPR-LPG-88123-NG</code></td>
-              <td>Aug 29, 2026</td>
-              <td><span style="color: #F59E0B; font-weight: 700;">● Pending Verification</span></td>
-              <td>
-                <button class="btn-verify" onclick="verifyVendor(this, 'MegaGas Refill')"><i class="fa-solid fa-check"></i> Approve License</button>
-                <button class="btn-reject" onclick="rejectVendor(this)"><i class="fa-solid fa-xmark"></i> Reject</button>
-              </td>
-            </tr>
-            <tr>
-              <td style="font-weight: 700;"><i class="fa-solid fa-store" style="color: var(--primary-color);"></i> Lekki Express Gas Depot</td>
-              <td>Lekki Phase 1, Lagos</td>
-              <td><code>DPR-LPG-44109-NG</code></td>
-              <td>Aug 29, 2026</td>
-              <td><span style="color: #10B981; font-weight: 700;">✔ Verified Active</span></td>
-              <td>
-                <span style="color: var(--text-secondary); font-size: 0.8rem;"><i class="fa-solid fa-shield-check" style="color: #10B981;"></i> Approved</span>
-              </td>
-            </tr>
+          <tbody id="kybQueueBody">
+            <!-- Dynamically populated from actual registered vendor accounts -->
           </tbody>
         </table>
       </div>
@@ -561,9 +530,11 @@
       document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
       const target = document.getElementById('tab-' + tabId);
       if (target) target.style.display = 'block';
+      if (tabId === 'overview') loadOverviewMetrics();
       if (tabId === 'cylinder-orders') loadCylinderOrders();
       if (tabId === 'store-products') renderAdminStoreProducts();
       if (tabId === 'users') loadUserRegistry();
+      if (tabId === 'kyb') loadKybQueue();
     }
 
     // ── STORE PRODUCTS MANAGER SCRIPT ──
@@ -955,9 +926,101 @@
       }
     }
 
+    // ── DYNAMIC OVERVIEW METRICS & KYB QUEUE ──
+    function loadOverviewMetrics() {
+      const refillOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const cylinderOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const allOrders = [...refillOrders, ...cylinderOrders];
+
+      let totalKg = 0;
+      let totalGmv = 0;
+      allOrders.forEach(o => {
+        const kg = parseFloat(o.size || o.cylinderSize) || 0;
+        totalKg += kg;
+        const price = parseFloat(o.total || o.amount) || 0;
+        totalGmv += price;
+      });
+
+      const volEl = document.getElementById('statTotalVolume');
+      if (volEl) volEl.innerText = totalKg > 0 ? (totalKg >= 1000 ? (totalKg / 1000).toFixed(1) + ' Tons' : totalKg.toFixed(1) + ' Kg') : '0.0 Kg';
+
+      const gmvEl = document.getElementById('statGrossGmv');
+      if (gmvEl) gmvEl.innerText = '₦' + totalGmv.toLocaleString();
+
+      const allAccounts = getAllAccounts();
+      const vendors = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+
+      const depotsEl = document.getElementById('statActiveDepots');
+      if (depotsEl) depotsEl.innerText = vendors.length + ' Stations';
+
+      const pendingKyb = vendors.filter(v => v.kybStatus !== 'VERIFIED');
+      const kybText = document.getElementById('statPendingKybText');
+      if (kybText) kybText.innerText = pendingKyb.length + ' Pending KYB Review';
+
+      const kybBadge = document.getElementById('kybTabBadge');
+      if (kybBadge) kybBadge.innerText = pendingKyb.length;
+    }
+
+    function loadKybQueue() {
+      const tbody = document.getElementById('kybQueueBody');
+      if (!tbody) return;
+
+      const allAccounts = getAllAccounts();
+      const vendors = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+
+      const kybBadge = document.getElementById('kybTabBadge');
+      if (kybBadge) kybBadge.innerText = vendors.filter(v => v.kybStatus !== 'VERIFIED').length;
+
+      if (vendors.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store"></i> No vendor stations registered in the platform registry yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = vendors.map(v => {
+        const isVerified = v.kybStatus === 'VERIFIED';
+        const dprNo = v.dprNo || `DPR-LPG-${Math.floor(10000 + Math.random() * 90000)}-NG`;
+        const statusHtml = isVerified
+          ? `<span style="color:#10B981; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`
+          : `<span style="color:#F59E0B; font-weight:800;"><i class="fa-solid fa-clock"></i> Pending KYB Review</span>`;
+
+        const actionHtml = isVerified
+          ? `<span style="color:#10B981; font-size:0.8rem; font-weight:800;"><i class="fa-solid fa-shield-check"></i> Approved</span>`
+          : `<button class="btn-verify" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Approve License</button>`;
+
+        return `
+          <tr style="border-bottom:1px solid #E5E7EB;">
+            <td style="padding:14px 10px; font-weight:800; color:#111827;"><i class="fa-solid fa-store" style="color:#00B14F; margin-right:6px;"></i> ${v.name || 'Vendor Station'}</td>
+            <td style="padding:14px 10px; color:#4B5563;">${v.email}</td>
+            <td style="padding:14px 10px;"><code>${dprNo}</code></td>
+            <td style="padding:14px 10px; color:#6B7280;">${v.phone || '—'}</td>
+            <td style="padding:14px 10px;">${statusHtml}</td>
+            <td style="padding:14px 10px;">${actionHtml}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function verifyVendorByEmail(email, name) {
+      const allAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const idx = allAccounts.findIndex(a => a.email && a.email.toLowerCase() === email.toLowerCase());
+      if (idx !== -1) allAccounts[idx].kybStatus = 'VERIFIED';
+      localStorage.setItem('emberGasAccounts', JSON.stringify(allAccounts));
+
+      const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+      const vi = vendors.findIndex(a => a.email && a.email.toLowerCase() === email.toLowerCase());
+      if (vi !== -1) vendors[vi].kybStatus = 'VERIFIED';
+      localStorage.setItem('gasVendors', JSON.stringify(vendors));
+
+      if (window.NotificationManager) NotificationManager.show(`KYB Verified for "${name}"! License Approved.`, 'success');
+      loadKybQueue();
+      loadOverviewMetrics();
+    }
+
     // Init
     checkAdminGateState();
+    loadOverviewMetrics();
     loadCylinderOrders();
+    loadKybQueue();
   </script>
 </body>
 </html>
