@@ -580,29 +580,17 @@
         return;
       }
 
-      // Save user & auto-login
-      const user = {
-        _id: regData._id,
-        name: regData.name,
-        email: regData.email,
-        phone: regData.phone,
-        role: regData.role,
-        businessName: regData.businessName || '',
-        token: regData.token,
-        loginTime: new Date().toISOString()
-      };
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      // Clear previous user session to force fresh login
+      localStorage.removeItem('currentUser');
 
-      toast('Account created successfully! 🎉', 'success');
+      toast('Account created successfully! Redirecting to login... 🎉', 'success');
       closeOtpModal();
 
       setTimeout(() => {
-        if (user.role === 'vendor' || user.role === 'seller') {
-          window.location.href = 'seller_dashboard.html';
-        } else {
-          window.location.href = 'dashboard.html';
-        }
-      }, 800);
+        const userRole = (regData.role || pendingUserData.role || 'customer').toLowerCase();
+        const userEmail = encodeURIComponent(regData.email || pendingUserData.email || '');
+        window.location.href = `login.html?registered=true&email=${userEmail}&portal=${userRole}`;
+      }, 1000);
 
     } catch (err) {
       toast('Network error during registration.', 'error');

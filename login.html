@@ -205,6 +205,22 @@
     }
     .alt-action a { color: var(--green); font-weight: 700; text-decoration: none; }
 
+    /* ── Success Banner ── */
+    .success-banner {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.88rem;
+      color: #166534;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .success-banner.show { display: flex; }
+
     /* ── Error Banner ── */
     .err-banner {
       background: #FEF2F2;
@@ -367,6 +383,12 @@
         <span class="pb-label">Gas Vendor</span>
         <span class="pb-sub">Manage your station</span>
       </button>
+    </div>
+
+    <!-- Success Banner -->
+    <div class="success-banner" id="successBanner">
+      <i class="fa-solid fa-circle-check" style="font-size: 1.25rem; color: #16A34A;"></i>
+      <span id="successMsg">Account created successfully! Please sign in below to access your dashboard.</span>
     </div>
 
     <!-- Error Banner -->
@@ -693,22 +715,36 @@
     }
   }
 
-  // ── Init: pre-fill portal from URL ──
+  // ── Init: pre-fill portal and email from URL ──
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     const portal = params.get('portal');
-    if (portal === 'vendor') selectPortal('vendor');
+    const registered = params.get('registered');
+    const email = params.get('email');
 
-    // If already logged in, redirect
-    const cu = localStorage.getItem('currentUser');
-    if (cu) {
-      try {
-        const u = JSON.parse(cu);
-        if (u.token) {
-          const role = (u.role || 'customer').toLowerCase();
-          window.location.href = (role === 'vendor' || role === 'seller') ? 'seller_dashboard.html' : 'dashboard.html';
-        }
-      } catch(e) {}
+    if (portal === 'vendor' || portal === 'seller') selectPortal('vendor');
+
+    if (registered === 'true') {
+      const sb = document.getElementById('successBanner');
+      if (sb) sb.classList.add('show');
+      if (email) {
+        const decodedEmail = decodeURIComponent(email);
+        document.getElementById('loginEmail').value = decodedEmail;
+        document.getElementById('successMsg').innerText = `Account created successfully for ${decodedEmail}! Please enter your password below to sign in.`;
+        setTimeout(() => document.getElementById('loginPassword').focus(), 300);
+      }
+    } else {
+      // If already logged in and not freshly registering, redirect
+      const cu = localStorage.getItem('currentUser');
+      if (cu) {
+        try {
+          const u = JSON.parse(cu);
+          if (u.token) {
+            const role = (u.role || 'customer').toLowerCase();
+            window.location.href = (role === 'vendor' || role === 'seller') ? 'seller_dashboard.html' : 'dashboard.html';
+          }
+        } catch(e) {}
+      }
     }
   });
 </script>
