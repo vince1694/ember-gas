@@ -1062,8 +1062,11 @@
         const statusLabels = {
           PLACED: '● PLACED — Awaiting Vendor Confirmation',
           ACCEPTED: '● VENDOR ACCEPTED — Cylinder Being Filled',
-          EN_ROUTE: '● EN ROUTE — Delivering to Your Address',
-          DELIVERED: '● DELIVERED — Please Mark as Received Below'
+          EN_ROUTE: '● EN ROUTE — Service Delivery in Progress',
+          DELIVERED: '● DELIVERED — Service Completed',
+          PENDING_ADMIN: '● PENDING ADMIN — Order Received by EmberGas Admin',
+          PROCESSING: '● ADMIN PROCESSING — Preparing New Cylinder Order',
+          DISPATCHED: '● DISPATCHED — New Cylinder En Route to Your Address'
         };
 
         if (badge) badge.innerHTML = `<i class="fa-solid fa-circle-dot fa-spin"></i> ${statusLabels[order.status] || order.status}`;
