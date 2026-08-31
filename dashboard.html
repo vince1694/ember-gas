@@ -652,6 +652,12 @@
             <span class="stat-lbl">Wallet</span>
           </div>
         </div>
+        
+        <div style="margin-top: 18px;">
+          <button onclick="openBookingModal()" style="width: 100%; background: #FFFFFF; color: #00B14F; border: none; border-radius: 14px; padding: 14px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: transform 0.2s;">
+            <i class="fa-solid fa-fire-burner"></i> Book New Refill Request
+          </button>
+        </div>
       </div>
 
       <!-- ── LIVE ORDER BANNER ──────────────────────────────────── -->
@@ -675,12 +681,16 @@
         <div style="color: #4B5563; font-size: 0.84rem; display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px;" id="liveOrderMeta"></div>
       </div>
 
-      <!-- ── GAS REFILL BOOKING REQUEST ───────────────────────────────── -->
-      <div class="order-form-card">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-          <h2><i class="fa-solid fa-gas-pump" style="color: #00B14F;"></i> Gas Refill Booking Request</h2>
-          <span class="status-badge status-active" id="vendorRateBadge">₦1,100 / KG</span>
-        </div>
+      <!-- ── GAS REFILL BOOKING REQUEST MODAL ───────────────────────────────── -->
+      <div id="bookingModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 10000; align-items: center; justify-content: center; padding: 16px;">
+        <div class="order-form-card" style="width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative;">
+          <button type="button" onclick="closeBookingModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.1); color: #EF4444; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-right: 40px;">
+            <h2 style="margin: 0; font-size: 1.2rem;"><i class="fa-solid fa-gas-pump" style="color: #00B14F;"></i> Gas Refill Booking Request</h2>
+          </div>
+          <div style="margin-bottom: 12px;"><span class="status-badge status-active" id="vendorRateBadge">₦1,100 / KG</span></div>
         <p style="color: #6B7280; font-size: 0.85rem; margin: 0 0 16px;">Select your service type, choose a verified LPG station vendor, and submit your refill request.</p>
 
         <!-- Cylinder Size Grid -->
@@ -760,6 +770,7 @@
             <i class="fa-solid fa-paper-plane"></i> Submit Refill Booking Request
           </button>
         </form>
+        </div>
       </div>
 
       <!-- ── RECENT ORDERS ─────────────────────────────────────── -->
@@ -909,7 +920,13 @@
 
       // Real address from profile
       const savedAddr = curUser.address || '';
-      if (savedAddr && document.getElementById('deliveryAddr')) document.getElementById('deliveryAddr').value = savedAddr;
+      if (paramAddress && document.getElementById('deliveryAddr')) {
+        document.getElementById('deliveryAddr').value = paramAddress;
+      }
+
+      if (paramService || paramSize) {
+        openBookingModal();
+      }
       renderRecentOrders();
       loadVerifiedVendors();
     }
@@ -978,14 +995,10 @@
         allOrders.unshift(activeSingle);
       }
 
-      // If user has no orders yet, seed a initial completed welcome refill order
+      // Filter exactly to this logged-in customer's orders
       let myOrders = allOrders.filter(o => 
-        !o.userEmail || 
-        (curUser.email && o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || 
-        (curUser.name && o.customerName && o.customerName.toLowerCase() === curUser.name.toLowerCase())
+        (curUser.email && o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase())
       );
-
-      // No dummy seed orders — show empty state if no real orders
 
       const orderBadge = document.getElementById('orderCountBadge');
       if (orderBadge) orderBadge.innerText = myOrders.length;
@@ -1118,6 +1131,14 @@
       document.getElementById('totalPriceDisplay').innerText = '₦' + price.toLocaleString();
     }
 
+    function openBookingModal() {
+      document.getElementById('bookingModalOverlay').style.display = 'flex';
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModalOverlay').style.display = 'none';
+    }
+
     function handleServiceTypeChange(val) {
       const vendorGroup = document.getElementById('vendorSelectGroup');
       const notice = document.getElementById('newCylinderNotice');
@@ -1230,6 +1251,8 @@
         NotificationManager.show(`Refill Request #${newOrder.id} submitted to ${selectedVendor}! Awaiting vendor acceptance.`, 'success');
       }
 
+      closeBookingModal();
+      
       // Populate & Open Order Details Modal right on Dashboard
       document.getElementById('modalOrderId').innerText = '#' + newOrder.id;
       document.getElementById('modalVendor').innerText = selectedVendor;

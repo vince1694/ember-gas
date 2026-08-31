@@ -376,49 +376,6 @@
       </div>
     </div>
 
-    <!-- Inventory & Stock Status Control -->
-    <div class="stock-toggle-card" id="inventoryStockControl">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <h3 style="font-size: 1.15rem; font-weight: 800; color: #111827; margin: 0 0 2px; display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-boxes-stacked" style="color: #00B14F;"></i> Inventory Stock & Pricing Control
-          </h3>
-          <p style="margin: 0; font-size: 0.8rem; color: #6B7280;">Manage your station's LPG refill rates, available cylinder sizes, and add new stock packages.</p>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button onclick="openAddStockModal()" style="background: #3B82F6; color: #fff; border: none; padding: 9px 16px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-plus-circle"></i> Add Stock Package
-          </button>
-          <button onclick="saveStockPrice()" style="background: #00B14F; color: #fff; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-floppy-disk"></i> Save All Stock & Rates
-          </button>
-        </div>
-      </div>
-
-      <!-- Rate per KG Bar -->
-      <div style="background: linear-gradient(135deg, #F0FDF4, #ECFDF5); border: 2px solid #00B14F; border-radius: 16px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <div style="width: 44px; height: 44px; border-radius: 12px; background: #00B14F; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-            <i class="fa-solid fa-tag"></i>
-          </div>
-          <div>
-            <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">LPG Retail Rate per KG</div>
-            <div style="font-size: 0.78rem; color: #4B5563;">This rate determines default refill pricing shown to customers on the app.</div>
-          </div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 1.2rem; font-weight: 900; color: #00B14F;">₦</span>
-          <input type="number" id="lpgRate" value="1100" style="width: 140px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 2px solid #00B14F; color: #111827; font-size: 1.2rem; font-weight: 900; outline: none; text-align: center;">
-          <span style="font-size: 0.85rem; font-weight: 800; color: #374151;">/ KG</span>
-        </div>
-      </div>
-
-      <!-- Dynamic Stock Items Grid -->
-      <div id="vendorStockGrid" class="stock-grid-mobile" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-        <!-- Dynamically rendered via renderVendorStock() -->
-      </div>
-    </div>
-
     <!-- Gas Refill Requests Stream -->
     <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;" id="liveOrderQueue">
       <h3 style="margin-bottom: 14px; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Customer Gas Refill Requests</h3>
@@ -791,12 +748,19 @@
     setInterval(renderVendorOrders, 5000);
 
     function saveStockPrice() {
-      const rate = document.getElementById('lpgRate').value;
       const vRateKey = vendorUser && vendorUser.email ? `vendorLpgRate_${vendorUser.email}` : 'vendorLpgRate_default';
-      localStorage.setItem(vRateKey, rate);
-      document.getElementById('vendorRate') && (document.getElementById('vendorRate').innerText = Number(rate).toLocaleString());
-      document.getElementById('metricRate') && (document.getElementById('metricRate').innerText = Number(rate).toLocaleString());
-      if (window.NotificationManager) NotificationManager.show(`Gas Price updated to ₦${Number(rate).toLocaleString()} / kg`, 'success');
+      const currentRate = localStorage.getItem(vRateKey) || '1100';
+      const newRate = prompt('Enter your new LPG Retail Rate per KG (₦):', currentRate);
+      
+      if (newRate === null || newRate.trim() === '') return;
+      if (isNaN(newRate) || Number(newRate) <= 0) {
+        if (window.NotificationManager) NotificationManager.show('Please enter a valid amount.', 'error');
+        return;
+      }
+
+      localStorage.setItem(vRateKey, newRate);
+      document.getElementById('metricRate') && (document.getElementById('metricRate').innerText = Number(newRate).toLocaleString());
+      if (window.NotificationManager) NotificationManager.show(`Gas Price updated to ₦${Number(newRate).toLocaleString()} / kg`, 'success');
     }
 
     function acceptOrder(orderId) {
