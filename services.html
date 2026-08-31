@@ -156,6 +156,80 @@
     @media (max-width: 480px) {
       .feature-strip { grid-template-columns: 1fr; }
     }
+
+    /* ── PREMIUM SERVICE BUTTONS ── */
+    .service-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: none;
+      font-size: 0.93rem;
+      font-weight: 800;
+      font-family: var(--font-main);
+      color: #fff;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      letter-spacing: 0.2px;
+    }
+
+    .service-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 60%;
+      height: 100%;
+      background: rgba(255,255,255,0.18);
+      transform: skewX(-20deg);
+      transition: left 0.5s ease;
+    }
+
+    .service-btn:hover::before {
+      left: 160%;
+    }
+
+    .service-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .service-btn:active {
+      transform: translateY(0);
+    }
+
+    .service-btn .btn-arrow {
+      margin-left: auto;
+      font-size: 0.8rem;
+      opacity: 0.85;
+      transition: transform 0.2s ease;
+    }
+
+    .service-btn:hover .btn-arrow {
+      transform: translateX(4px);
+    }
+
+    .service-btn-green  { background: linear-gradient(135deg, #00B14F 0%, #047857 100%); box-shadow: 0 4px 14px rgba(0,177,79,0.3); }
+    .service-btn-green:hover  { box-shadow: 0 8px 24px rgba(0,177,79,0.45); }
+
+    .service-btn-blue   { background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%); box-shadow: 0 4px 14px rgba(59,130,246,0.3); }
+    .service-btn-blue:hover   { box-shadow: 0 8px 24px rgba(59,130,246,0.45); }
+
+    .service-btn-amber  { background: linear-gradient(135deg, #F59E0B 0%, #B45309 100%); box-shadow: 0 4px 14px rgba(245,158,11,0.3); }
+    .service-btn-amber:hover  { box-shadow: 0 8px 24px rgba(245,158,11,0.45); }
+
+    .service-btn-purple { background: linear-gradient(135deg, #9333EA 0%, #6B21A8 100%); box-shadow: 0 4px 14px rgba(147,51,234,0.3); }
+    .service-btn-purple:hover { box-shadow: 0 8px 24px rgba(147,51,234,0.45); }
+
+    .service-btn-teal   { background: linear-gradient(135deg, #059669 0%, #065F46 100%); box-shadow: 0 4px 14px rgba(5,150,105,0.3); }
+    .service-btn-teal:hover   { box-shadow: 0 8px 24px rgba(5,150,105,0.45); }
+
+    .service-btn-outline { background: #FFFFFF; border: 1.5px solid #E5E7EB; color: #374151; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .service-btn-outline:hover { border-color: #00B14F; color: #00B14F; box-shadow: 0 6px 18px rgba(0,177,79,0.12); }
+    .service-btn-outline::before { display: none; }
   </style>
 </head>
 <body class="services-body">
@@ -254,8 +328,10 @@
         </div>
         <div>
           <div style="font-weight: 800; font-size: 1.25rem; color: #00B14F; margin-bottom: 14px;">₦1,100 / KG</div>
-          <button onclick="bookService('refill', '12.5')" class="btn-action" style="background: #00B14F; width: 100%;">
-            <i class="fa-solid fa-arrow-right"></i> Book Refill Now
+          <button onclick="bookService('refill', '12.5')" class="service-btn service-btn-green">
+            <i class="fa-solid fa-rotate"></i>
+            Book Refill Now
+            <i class="fa-solid fa-arrow-right btn-arrow"></i>
           </button>
         </div>
       </div>
@@ -274,8 +350,10 @@
         </div>
         <div>
           <div style="font-weight: 800; font-size: 1.25rem; color: #3B82F6; margin-bottom: 14px;">From ₦28,000</div>
-          <button onclick="bookService('new', '12.5')" class="btn-action" style="background: #3B82F6; width: 100%;">
-            <i class="fa-solid fa-basket-shopping"></i> Buy New Cylinder
+          <button onclick="bookService('new', '12.5')" class="service-btn service-btn-blue">
+            <i class="fa-solid fa-basket-shopping"></i>
+            Buy New Cylinder
+            <i class="fa-solid fa-arrow-right btn-arrow"></i>
           </button>
         </div>
       </div>
@@ -294,8 +372,10 @@
         </div>
         <div>
           <div style="font-weight: 800; font-size: 1.25rem; color: #D97706; margin-bottom: 14px;">Priority Rider Match</div>
-          <button onclick="bookService('express', '12.5')" class="btn-action" style="background: #F59E0B; width: 100%;">
-            <i class="fa-solid fa-truck-fast"></i> Order Express Dispatch
+          <button onclick="bookService('express', '12.5')" class="service-btn service-btn-amber">
+            <i class="fa-solid fa-truck-fast"></i>
+            Order Express Dispatch
+            <i class="fa-solid fa-arrow-right btn-arrow"></i>
           </button>
         </div>
       </div>
@@ -312,8 +392,10 @@
         </div>
         <div>
           <div style="font-weight: 800; font-size: 1.25rem; color: #9333EA; margin-bottom: 14px;">₦14,500 Device Fee</div>
-          <button onclick="window.location.href='accessories.html'" class="btn-action" style="background: #9333EA; width: 100%;">
-            <i class="fa-solid fa-microchip"></i> Explore Smart Devices
+          <button onclick="window.location.href='accessories.html'" class="service-btn service-btn-purple">
+            <i class="fa-solid fa-microchip"></i>
+            Explore Smart Devices
+            <i class="fa-solid fa-arrow-right btn-arrow"></i>
           </button>
         </div>
       </div>
@@ -330,8 +412,10 @@
         </div>
         <div>
           <div style="font-weight: 800; font-size: 1.25rem; color: #059669; margin-bottom: 14px;">Contract Pricing</div>
-          <button onclick="bookService('bulk', '50')" class="btn-action" style="background: #059669; width: 100%;">
-            <i class="fa-solid fa-building"></i> Request B2B Quote
+          <button onclick="bookService('bulk', '50')" class="service-btn service-btn-teal">
+            <i class="fa-solid fa-building"></i>
+            Request B2B Quote
+            <i class="fa-solid fa-arrow-right btn-arrow"></i>
           </button>
         </div>
       </div>
@@ -348,8 +432,10 @@
         </div>
         <div>
           <div style="font-weight: 800; font-size: 1.25rem; color: #00B14F; margin-bottom: 14px;">FREE with Every Refill</div>
-          <button onclick="window.location.href='safety.html'" class="btn-action" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #111827; width: 100%;">
-            <i class="fa-solid fa-shield"></i> Read Safety Standards
+          <button onclick="window.location.href='safety.html'" class="service-btn service-btn-outline">
+            <i class="fa-solid fa-shield"></i>
+            Read Safety Standards
+            <i class="fa-solid fa-arrow-right btn-arrow"></i>
           </button>
         </div>
       </div>
@@ -395,8 +481,10 @@
         </div>
       </div>
 
-      <button onclick="bookFromCalculator()" class="btn-action" style="width: 100%; background: #00B14F; padding: 15px; font-size: 1rem;">
-        <i class="fa-solid fa-bolt"></i> Proceed to Place Order Now
+      <button onclick="bookFromCalculator()" class="service-btn service-btn-green" style="font-size: 1rem; padding: 16px 24px;">
+        <i class="fa-solid fa-bolt"></i>
+        Proceed to Place Order Now
+        <i class="fa-solid fa-arrow-right btn-arrow"></i>
       </button>
     </div>
   </main>
