@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Checkout Cart — New Cylinder Purchase | EmberGas</title>
+  <meta name="description" content="Securely place your new gas cylinder order. Processed and dispatched by the EmberGas Admin team." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body { background: #F0F4F8; color: #111827; }
+
+    .cart-wrapper {
+      max-width: 680px;
+      margin: 32px auto;
+      padding: 0 16px 60px;
+    }
+
+    .cart-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #6B7280;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      margin-bottom: 20px;
+      transition: color 0.2s;
+    }
+    .cart-back-link:hover { color: #00B14F; }
+
+    .cart-card {
+      background: #FFFFFF;
+      border-radius: 22px;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      padding: 28px 24px;
+      margin-bottom: 18px;
+    }
+
+    .cart-section-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #6B7280;
+      margin-bottom: 14px;
+    }
+
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .cart-item-row:last-child { border-bottom: none; }
+
+    .cart-item-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: #F0FDF4;
+      color: #00B14F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .cart-item-name { font-weight: 800; font-size: 0.95rem; color: #111827; }
+    .cart-item-sub  { font-size: 0.78rem; color: #6B7280; margin-top: 2px; }
+    .cart-item-price { font-weight: 900; font-size: 1.1rem; color: #00B14F; }
+
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #F0FDF4;
+      border: 2px solid #00B14F;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin: 6px 0 0;
+    }
+
+    .cart-total-label { font-size: 0.82rem; font-weight: 700; color: #374151; text-transform: uppercase; }
+    .cart-total-amount { font-size: 1.9rem; font-weight: 900; color: #00B14F; }
+
+    .cart-input {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 13px;
+      border: 1.5px solid #E5E7EB;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #111827;
+      outline: none;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: border-color 0.2s;
+    }
+    .cart-input:focus { border-color: #00B14F; box-shadow: 0 0 0 3px rgba(0,177,79,0.1); }
+
+    .cart-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #374151;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .admin-notice {
+      background: #EFF6FF;
+      border: 1.5px solid #BFDBFE;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.84rem;
+      color: #1D4ED8;
+      line-height: 1.5;
+    }
+
+    .btn-place-order {
+      width: 100%;
+      padding: 16px;
+      background: #00B14F;
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 22px rgba(0,177,79,0.32);
+      transition: all 0.25s ease;
+    }
+    .btn-place-order:hover { background: #009643; transform: translateY(-2px); }
+    .btn-place-order:disabled { background: #9CA3AF; cursor: not-allowed; box-shadow: none; transform: none; }
+
+    .success-screen {
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #D1FAE5;
+      color: #00B14F;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 20px;
+    }
+
+    @media (max-width: 480px) {
+      .cart-card { padding: 20px 16px; }
+      .cart-total-amount { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <a href="index.html" class="brand-logo">
+        <i class="fa-solid fa-fire-flame-curved" style="color: #00B14F;"></i> EmberGas
+      </a>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="dashboard.html" style="color: #4B5563; font-weight: 700; text-decoration: none; font-size: 0.88rem; display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: #F3F4F6; border-radius: 10px; border: 1px solid #E5E7EB;">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+      <button onclick="openMobileDrawer()" class="mobile-drawer-btn" title="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+  <div class="header-spacer"></div>
+
+  <div class="cart-wrapper">
+    <a href="dashboard.html" class="cart-back-link">
+      <i class="fa-solid fa-chevron-left"></i> Back to Dashboard
+    </a>
+
+    <div id="cartContent">
+      <!-- Cart Header -->
+      <div style="margin-bottom: 22px;">
+        <div style="font-size: 0.78rem; color: #00B14F; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;">
+          <i class="fa-solid fa-cart-shopping"></i> Secure Checkout
+        </div>
+        <h1 style="font-size: 1.6rem; font-weight: 900; color: #111827; margin: 0;">New Cylinder Purchase</h1>
+        <p style="font-size: 0.88rem; color: #6B7280; margin: 6px 0 0;">Your order will be received and dispatched by the EmberGas Admin team.</p>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="cart-card">
+        <div class="cart-section-title"><i class="fa-solid fa-receipt" style="color:#00B14F;"></i> Order Summary</div>
+
+        <div class="cart-item-row">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="cart-item-icon"><i class="fa-solid fa-drum"></i></div>
+            <div>
+              <div class="cart-item-name" id="cartCylinderName">12.5 kg Gas Cylinder</div>
+              <div class="cart-item-sub">Brand New LPG Cylinder + Full Gas Fill</div>
+            </div>
+          </div>
+          <div class="cart-item-price" id="cartItemPrice">₦13,750</div>
+        </div>
+
+        <div class="cart-item-row">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="cart-item-icon" style="background: #EFF6FF; color: #3B82F6;"><i class="fa-solid fa-truck-fast"></i></div>
+            <div>
+              <div class="cart-item-name">Admin-Managed Dispatch</div>
+              <div class="cart-item-sub">Order reviewed &amp; dispatched by EmberGas Admin</div>
+            </div>
+          </div>
+          <div style="font-weight: 700; color: #10B981; font-size: 0.9rem;">Included</div>
+        </div>
+
+        <div class="cart-total-row">
+          <div>
+            <div class="cart-total-label">Order Total</div>
+            <div class="cart-total-amount" id="cartTotal">₦13,750</div>
+          </div>
+          <div style="text-align: right;">
+            <span style="background: #D1FAE5; color: #065F46; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">
+              <i class="fa-solid fa-shield-check"></i> Secure Order
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery Details -->
+      <div class="cart-card">
+        <div class="cart-section-title"><i class="fa-solid fa-location-dot" style="color:#00B14F;"></i> Delivery Details</div>
+
+        <div style="margin-bottom: 14px;">
+          <label class="cart-label">Full Name</label>
+          <input type="text" id="cartName" class="cart-input" placeholder="Your full name">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label class="cart-label">Phone Number</label>
+          <input type="tel" id="cartPhone" class="cart-input" placeholder="e.g. 0812 345 6789">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label class="cart-label">Delivery Address</label>
+          <input type="text" id="cartAddress" class="cart-input" placeholder="Street address, City, State">
+        </div>
+        <div>
+          <label class="cart-label">Additional Notes (Optional)</label>
+          <input type="text" id="cartNotes" class="cart-input" placeholder="e.g. Landmark, gate colour, etc.">
+        </div>
+      </div>
+
+      <!-- Admin Info Notice -->
+      <div class="admin-notice" style="margin-bottom: 18px;">
+        <i class="fa-solid fa-circle-info" style="margin-top: 2px; flex-shrink: 0;"></i>
+        <div>
+          <strong>Admin Processing:</strong> New cylinder orders are personally reviewed and dispatched by the EmberGas Admin team. You will receive a confirmation notification in your <strong>Customer Dashboard</strong> once the order is accepted and dispatched.
+        </div>
+      </div>
+
+      <!-- Place Order Button -->
+      <button class="btn-place-order" id="placeOrderBtn" onclick="placeNewCylinderOrder()">
+        <i class="fa-solid fa-shield-check"></i> Confirm & Place Order
+      </button>
+    </div>
+
+    <!-- Success Screen (hidden until order placed) -->
+    <div id="successScreen" style="display: none;">
+      <div class="cart-card success-screen">
+        <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <h2 style="font-size: 1.45rem; font-weight: 900; color: #111827; margin: 0 0 10px;">Order Placed Successfully!</h2>
+        <p style="color: #6B7280; font-size: 0.9rem; margin-bottom: 20px;">
+          Your new cylinder order has been received by the EmberGas Admin team. You will be notified in your dashboard once your order is processed and dispatched.
+        </p>
+        <div style="background: #F0FDF4; border: 1.5px solid #00B14F; border-radius: 14px; padding: 14px 18px; margin-bottom: 22px; text-align: left;">
+          <div style="font-size: 0.76rem; color: #374151; font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">Order Reference</div>
+          <div style="font-size: 1.3rem; font-weight: 900; color: #00B14F;" id="orderRefDisplay">—</div>
+        </div>
+        <a href="dashboard.html" style="display: block; text-align: center; background: #00B14F; color: #fff; padding: 15px; border-radius: 14px; font-weight: 800; text-decoration: none; font-size: 1rem;">
+          <i class="fa-solid fa-house"></i> Go to My Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // Load cart data from dashboard
+    const pendingCart = JSON.parse(localStorage.getItem('pendingCartOrder') || 'null');
+    const curUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+    if (!curUser) {
+      window.location.href = 'login.html?auth_required=true';
+    }
+
+    if (pendingCart) {
+      const sizeLabel = pendingCart.cylinderSize + ' kg Gas Cylinder + Full Fill';
+      document.getElementById('cartCylinderName').innerText = sizeLabel;
+      document.getElementById('cartItemPrice').innerText = '₦' + Number(pendingCart.total).toLocaleString();
+      document.getElementById('cartTotal').innerText = '₦' + Number(pendingCart.total).toLocaleString();
+      document.getElementById('cartAddress').value = pendingCart.address || '';
+      document.getElementById('cartName').value = curUser ? (curUser.name || '') : '';
+      document.getElementById('cartPhone').value = curUser ? (curUser.phone || '') : '';
+    }
+
+    function placeNewCylinderOrder() {
+      const name = document.getElementById('cartName').value.trim();
+      const phone = document.getElementById('cartPhone').value.trim();
+      const address = document.getElementById('cartAddress').value.trim();
+
+      if (!name || !address) {
+        if (window.NotificationManager) NotificationManager.show('Please fill in your name and delivery address.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('placeOrderBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Placing Order...';
+
+      const orderId = 'EGC-' + Math.floor(1000 + Math.random() * 9000);
+      const orderData = {
+        id: orderId,
+        type: 'new_cylinder',
+        cylinderSize: (pendingCart ? pendingCart.cylinderSize : 12.5) + ' kg',
+        serviceType: 'Purchase New Cylinder + Gas',
+        customerName: name,
+        userEmail: curUser ? curUser.email : '',
+        phone,
+        address,
+        notes: document.getElementById('cartNotes').value.trim(),
+        amount: pendingCart ? pendingCart.total : 13750,
+        total: pendingCart ? pendingCart.total : 13750,
+        status: 'PENDING_ADMIN',
+        createdAt: new Date().toISOString(),
+        assignedTo: 'admin'
+      };
+
+      // Save to admin orders queue
+      const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      adminOrders.unshift(orderData);
+      localStorage.setItem('adminCylinderOrders', JSON.stringify(adminOrders));
+
+      // Also save to customer order history
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      allOrders.unshift(orderData);
+      localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+
+      // Clear pending cart
+      localStorage.removeItem('pendingCartOrder');
+
+      // Send notification email (non-blocking)
+      if (window.safeFetchApi) {
+        safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: curUser ? curUser.email : 'admin@embergas.ng',
+            toName: name,
+            subject: `New Cylinder Order ${orderId} — EmberGas Admin`,
+            title: `New Cylinder Purchase Order Received`,
+            bodyHtml: `
+              <p>Hello <strong>${name}</strong>,</p>
+              <p>Your new gas cylinder order <strong>${orderId}</strong> (${orderData.cylinderSize}) has been placed and is now being reviewed by the EmberGas Admin team.</p>
+              <p>Delivery Address: <strong>${address}</strong></p>
+              <p>Total: <strong>₦${Number(orderData.total).toLocaleString()}</strong></p>
+              <p>You will receive a status update in your customer dashboard shortly.</p>
+            `
+          })
+        }).catch(() => {});
+      }
+
+      // Show success screen
+      setTimeout(() => {
+        document.getElementById('cartContent').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+        document.getElementById('orderRefDisplay').innerText = orderId;
+      }, 800);
+    }
+  </script>
+</body>
+</html>

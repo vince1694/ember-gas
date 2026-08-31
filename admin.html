@@ -181,6 +181,9 @@
       <button class="admin-tab-btn active" onclick="switchAdminTab('overview', this)">
         <i class="fa-solid fa-chart-line"></i> Overview & Metrics
       </button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('cylinder-orders', this)" id="tabCylinder">
+        <i class="fa-solid fa-drum"></i> New Cylinder Orders <span id="cylinderOrderBadge" style="background:#EF4444;color:#fff;border-radius:20px;padding:2px 8px;font-size:0.72rem;margin-left:4px;">0</span>
+      </button>
       <button class="admin-tab-btn" onclick="switchAdminTab('kyb', this)">
         <i class="fa-solid fa-id-card"></i> Vendor KYB Queue (3 Pending)
       </button>
@@ -206,7 +209,7 @@
 
         <div class="admin-stat-card" style="border-left-color: #10B981;">
           <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">GROSS GMV REVENUE</div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #10B981; margin: 4px 0;">₦148,520,000</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #10B981; margin: 4px 0;">&#x20a6;148,520,000</div>
           <div style="font-size: 0.78rem; color: #10B981;"><i class="fa-solid fa-circle-check"></i> 100% Commission Settled</div>
         </div>
 
@@ -217,9 +220,30 @@
         </div>
 
         <div class="admin-stat-card" style="border-left-color: #8B5CF6;">
-          <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">REGISTERED DISPATCH RIDERS</div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #8B5CF6; margin: 4px 0;">112 Riders</div>
-          <div style="font-size: 0.78rem; color: #10B981;"><i class="fa-solid fa-circle-dot"></i> 89 On Duty Now</div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">PENDING CYLINDER ORDERS</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #8B5CF6; margin: 4px 0;" id="pendingCylinderCount">0</div>
+          <div style="font-size: 0.78rem; color: #F59E0B;"><i class="fa-solid fa-circle-dot fa-spin"></i> Awaiting Admin Action</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: New Cylinder Orders -->
+    <div id="tab-cylinder-orders" style="display:none;">
+      <div class="glass-card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 24px; padding: 25px; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 1.25rem; color: #111827;"><i class="fa-solid fa-drum" style="color: #8B5CF6;"></i> New Cylinder Purchase Orders</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Manage and dispatch new cylinder orders placed by customers via the checkout cart.</p>
+          </div>
+          <button onclick="loadCylinderOrders()" style="background:#F3F4F6; border:1px solid #E5E7EB; padding:8px 16px; border-radius:10px; font-weight:700; cursor:pointer; font-size:0.85rem;">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+        </div>
+        <div id="cylinderOrdersList">
+          <div style="padding: 30px; text-align: center; color: #9CA3AF;">
+            <i class="fa-solid fa-drum" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+            Loading new cylinder orders...
+          </div>
         </div>
       </div>
     </div>
@@ -316,29 +340,95 @@
   <script>
     function verifyVendor(btn, name) {
       btn.parentElement.innerHTML = `<span style="color: #10B981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> Approved</span>`;
-      if (window.NotificationManager) {
-        NotificationManager.show(`KYB Verified for ${name}! Access granted.`, 'success');
-      }
+      if (window.NotificationManager) NotificationManager.show(`KYB Verified for ${name}! Access granted.`, 'success');
     }
 
     function rejectVendor(btn) {
       btn.parentElement.innerHTML = `<span style="color: #EF4444; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>`;
-      if (window.NotificationManager) {
-        NotificationManager.show(`KYB License rejected and vendor notified.`, 'error');
-      }
+      if (window.NotificationManager) NotificationManager.show(`KYB License rejected and vendor notified.`, 'error');
     }
 
     function saveAdminPrice() {
       const price = document.getElementById('adminPriceCeiling').value;
-      if (window.NotificationManager) {
-        NotificationManager.show(`Platform LPG price ceiling updated to ₦${price}/KG!`, 'success');
-      }
+      if (window.NotificationManager) NotificationManager.show(`Platform LPG price ceiling updated to ₦${price}/KG!`, 'success');
     }
 
     function switchAdminTab(tabId, btn) {
       document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
+      // Show/hide all tab sections
+      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+      const target = document.getElementById('tab-' + tabId);
+      if (target) target.style.display = 'block';
+      if (tabId === 'cylinder-orders') loadCylinderOrders();
     }
+
+    function loadCylinderOrders() {
+      const orders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const badge = document.getElementById('cylinderOrderBadge');
+      const pending = orders.filter(o => o.status === 'PENDING_ADMIN');
+      if (badge) badge.innerText = pending.length;
+      const countEl = document.getElementById('pendingCylinderCount');
+      if (countEl) countEl.innerText = pending.length;
+
+      const container = document.getElementById('cylinderOrdersList');
+      if (!container) return;
+      if (orders.length === 0) {
+        container.innerHTML = `<div style="padding: 30px; text-align: center; color: #9CA3AF;">
+          <i class="fa-solid fa-drum" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+          No new cylinder orders yet.
+        </div>`;
+        return;
+      }
+      const statusColor = { PENDING_ADMIN: '#F59E0B', PROCESSING: '#3B82F6', DISPATCHED: '#8B5CF6', DELIVERED: '#10B981', CANCELLED: '#EF4444' };
+      const statusLabel = { PENDING_ADMIN: 'Pending Review', PROCESSING: 'Processing', DISPATCHED: 'Dispatched', DELIVERED: 'Delivered', CANCELLED: 'Cancelled' };
+      container.innerHTML = orders.map(o => `
+        <div style="border: 1px solid #E5E7EB; border-radius: 16px; padding: 18px; margin-bottom: 14px; background: #F9FAFB;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <div style="font-weight: 900; font-size: 1.05rem; color: #111827;">#${o.id} — ${o.cylinderSize}</div>
+              <div style="font-size: 0.82rem; color: #6B7280; margin-top: 3px;">
+                <i class="fa-solid fa-user"></i> ${o.customerName} &nbsp;|&nbsp;
+                <i class="fa-solid fa-envelope"></i> ${o.userEmail} &nbsp;|&nbsp;
+                <i class="fa-solid fa-phone"></i> ${o.phone || '—'}
+              </div>
+              <div style="font-size: 0.82rem; color: #6B7280; margin-top: 3px;"><i class="fa-solid fa-location-dot"></i> ${o.address}</div>
+            </div>
+            <div style="text-align:right;">
+              <span style="background: ${statusColor[o.status] || '#E5E7EB'}22; color: ${statusColor[o.status] || '#6B7280'}; border: 1px solid ${statusColor[o.status] || '#E5E7EB'}; padding: 4px 12px; border-radius: 20px; font-size: 0.76rem; font-weight: 800;">
+                ${statusLabel[o.status] || o.status}
+              </span>
+              <div style="font-size: 1.1rem; font-weight: 900; color: #00B14F; margin-top: 6px;">₦${Number(o.total).toLocaleString()}</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="updateCylinderOrderStatus('${o.id}', 'PROCESSING')" style="background: #3B82F6; color: #fff; border: none; padding: 7px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.82rem;"><i class="fa-solid fa-gears"></i> Mark Processing</button>
+            <button onclick="updateCylinderOrderStatus('${o.id}', 'DISPATCHED')" style="background: #8B5CF6; color: #fff; border: none; padding: 7px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.82rem;"><i class="fa-solid fa-truck-fast"></i> Mark Dispatched</button>
+            <button onclick="updateCylinderOrderStatus('${o.id}', 'DELIVERED')" style="background: #10B981; color: #fff; border: none; padding: 7px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.82rem;"><i class="fa-solid fa-circle-check"></i> Mark Delivered</button>
+            <button onclick="updateCylinderOrderStatus('${o.id}', 'CANCELLED')" style="background: rgba(239,68,68,0.15); color: #EF4444; border: 1px solid rgba(239,68,68,0.3); padding: 7px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.82rem;"><i class="fa-solid fa-xmark"></i> Cancel</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateCylinderOrderStatus(orderId, newStatus) {
+      const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+      const idx = adminOrders.findIndex(o => o.id === orderId);
+      if (idx !== -1) adminOrders[idx].status = newStatus;
+      localStorage.setItem('adminCylinderOrders', JSON.stringify(adminOrders));
+
+      // Also update in emberGasOrders for customer visibility
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const oi = allOrders.findIndex(o => o.id === orderId);
+      if (oi !== -1) allOrders[oi].status = newStatus;
+      localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+
+      if (window.NotificationManager) NotificationManager.show(`Order ${orderId} updated to ${newStatus}`, 'success');
+      loadCylinderOrders();
+    }
+
+    // Init
+    loadCylinderOrders();
   </script>
 </body>
 </html>
