@@ -370,69 +370,8 @@
       </div>
     </div>
 
-    <div class="depot-cards-grid">
-      <!-- Station 1 -->
-      <div class="depot-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-          <div>
-            <span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● OPEN & IN STOCK</span>
-            <h3 style="font-size: 1.2rem; margin-top: 6px;">Grace LPG Depot Hub</h3>
-          </div>
-          <span style="color: #F59E0B; font-weight: 800; font-size: 0.9rem;">★ 4.9 (420)</span>
-        </div>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">
-          <i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> Surulere Depot #04 • 1.2 km away
-        </p>
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 12px;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-secondary);">PRICE / KG</span>
-            <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">₦1,100</div>
-          </div>
-          <a href="dashboard.html" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">Select Depot</a>
-        </div>
-      </div>
-
-      <!-- Station 2 -->
-      <div class="depot-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-          <div>
-            <span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● OPEN & IN STOCK</span>
-            <h3 style="font-size: 1.2rem; margin-top: 6px;">MegaGas Refill Plant</h3>
-          </div>
-          <span style="color: #F59E0B; font-weight: 800; font-size: 0.9rem;">★ 4.8 (312)</span>
-        </div>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">
-          <i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> Ikeja Industrial Estate • 2.4 km away
-        </p>
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 12px;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-secondary);">PRICE / KG</span>
-            <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">₦1,100</div>
-          </div>
-          <a href="dashboard.html" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">Select Depot</a>
-        </div>
-      </div>
-
-      <!-- Station 3 -->
-      <div class="depot-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-          <div>
-            <span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● OPEN & IN STOCK</span>
-            <h3 style="font-size: 1.2rem; margin-top: 6px;">Lekki Express Gas Station</h3>
-          </div>
-          <span style="color: #F59E0B; font-weight: 800; font-size: 0.9rem;">★ 4.9 (580)</span>
-        </div>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">
-          <i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> Lekki Phase 1 Depot • 3.1 km away
-        </p>
-        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 12px;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-secondary);">PRICE / KG</span>
-            <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">₦1,150</div>
-          </div>
-          <a href="dashboard.html" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">Select Depot</a>
-        </div>
-      </div>
+    <div class="depot-cards-grid" id="homeDepotGrid">
+      <!-- Dynamically loaded via renderHomeStations() -->
     </div>
 
     <!-- Why Choose EmberGas Features -->
@@ -492,6 +431,85 @@
         }, 400);
       });
     }
+    async function renderHomeStations() {
+      const grid = document.getElementById('homeDepotGrid');
+      if (!grid) return;
+
+      let vendors = [];
+      const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+      const allAcc = [...accounts, ...users, ...gasVendors];
+
+      allAcc.forEach(a => {
+        if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(a.role.toLowerCase())) {
+          if (!vendors.some(v => v.email && a.email && v.email.toLowerCase() === a.email.toLowerCase())) {
+            vendors.push(a);
+          }
+        }
+      });
+
+      try {
+        if (window.safeFetchApi) {
+          const res = await safeFetchApi('/api/auth/users-by-role/vendor');
+          if (res && res.ok) {
+            const apiV = await res.json();
+            apiV.forEach(v => {
+              if (!vendors.some(x => x.email && v.email && x.email.toLowerCase() === v.email.toLowerCase())) {
+                vendors.push(v);
+              }
+            });
+          }
+        }
+      } catch (e) {}
+
+      if (vendors.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--text-secondary);">
+            <i class="fa-solid fa-gas-pump" style="font-size: 2rem; color: var(--primary-color); display: block; margin-bottom: 8px;"></i>
+            No registered stations yet. Station owners can register via the Vendor Portal.
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = vendors.map(v => {
+        const vName = v.name || v.businessName || 'LPG Refill Depot';
+        const vEmail = v.email || '';
+        const vAddress = v.address || 'Lagos, Nigeria';
+        const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
+        const rate = localStorage.getItem(rateKey) || '1100';
+        const isVerified = v.kybStatus === 'VERIFIED';
+        const statusBadge = isVerified
+          ? '<span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● VERIFIED & IN STOCK</span>'
+          : '<span style="background: rgba(245,158,11,0.18); color: #F59E0B; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;">● ONLINE DEPO</span>';
+
+        return `
+          <div class="depot-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+              <div>
+                ${statusBadge}
+                <h3 style="font-size: 1.2rem; margin-top: 6px;">${vName}</h3>
+              </div>
+              <span style="color: #F59E0B; font-weight: 800; font-size: 0.9rem;">★ 4.9</span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 14px;">
+              <i class="fa-solid fa-location-dot" style="color: var(--primary-color);"></i> ${vAddress}
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--glass-border); padding-top: 12px;">
+              <div>
+                <span style="font-size: 0.75rem; color: var(--text-secondary);">PRICE / KG</span>
+                <div style="font-weight: 800; font-size: 1.2rem; color: var(--primary-color);">₦${Number(rate).toLocaleString()}</div>
+              </div>
+              <a href="dashboard.html" class="btn-action" style="width: auto; padding: 8px 16px; font-size: 0.85rem; min-height: 38px; text-decoration: none;">Select Depot</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderHomeStations();
+    });
   </script>
 </body>
 </html>

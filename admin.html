@@ -520,7 +520,8 @@
 
     function saveAdminPrice() {
       const price = document.getElementById('adminPriceCeiling').value;
-      if (window.NotificationManager) NotificationManager.show(`Platform LPG price ceiling updated to ₦${price}/KG!`, 'success');
+      localStorage.setItem('emberPriceCeiling', price);
+      if (window.NotificationManager) NotificationManager.show(`Platform LPG price ceiling updated to ₦${Number(price).toLocaleString()}/KG!`, 'success');
     }
 
     function switchAdminTab(tabId, btn) {
@@ -662,10 +663,11 @@
 
     function getAllAccounts() {
       const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const users = JSON.parse(localStorage.getItem('gasUsers') || '[]');
-      const vendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const gasUsers = JSON.parse(localStorage.getItem('gasUsers') || '[]');
+      const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
 
-      const all = [...accounts, ...users, ...vendors];
+      const all = [...accounts, ...users, ...gasUsers, ...gasVendors];
       const uniqueMap = new Map();
       all.forEach(a => { if (a && a.email && !uniqueMap.has(a.email.toLowerCase())) uniqueMap.set(a.email.toLowerCase(), a); });
       return Array.from(uniqueMap.values());
@@ -1021,6 +1023,18 @@
     loadOverviewMetrics();
     loadCylinderOrders();
     loadKybQueue();
+
+    // Load saved price ceiling
+    const savedCeiling = localStorage.getItem('emberPriceCeiling');
+    if (savedCeiling && document.getElementById('adminPriceCeiling')) {
+      document.getElementById('adminPriceCeiling').value = savedCeiling;
+    }
+
+    // Auto-sync live stream every 5s
+    setInterval(() => {
+      loadOverviewMetrics();
+      loadCylinderOrders();
+    }, 5000);
   </script>
 </body>
 </html>
