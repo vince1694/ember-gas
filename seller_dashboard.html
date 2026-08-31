@@ -287,21 +287,14 @@
   <header class="master-header">
     <div style="display: flex; align-items: center; gap: 15px;">
       <a href="seller_dashboard.html" class="brand-logo">
-        <i class="fa-solid fa-store" style="color: #00B14F;"></i> <span id="vendorBrandName">Vendor Station Hub</span>
+        <i class="fa-solid fa-store" style="color: #00B14F;"></i> <span id="vendorBrandName">EmberGas Vendor</span>
       </a>
-      <span style="background: rgba(0, 177, 79, 0.12); color: #00B14F; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">
-        <i class="fa-solid fa-circle" style="font-size: 0.45rem; vertical-align: middle;"></i> STATION ONLINE & OPEN
-      </span>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 14px;">
-      <div style="font-size: 0.85rem; font-weight: 800; color: #111827; background: #F3F4F6; padding: 6px 14px; border-radius: 20px; border: 1px solid #E5E7EB;" id="vendorSubName">Vendor Hub</div>
-
-      <!-- Vendor Logout Button -->
-      <button onclick="if(window.auth) auth.logout()" style="background: #FEF2F2; border: 1.5px solid #FCA5A5; color: #DC2626; padding: 7px 14px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-        <i class="fa-solid fa-right-from-bracket"></i> Logout
-      </button>
-
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="index.html" class="nav-desktop-links" style="color: #4B5563; font-weight: 700; text-decoration: none; font-size: 0.88rem; display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: #F3F4F6; border-radius: 10px; border: 1px solid #E5E7EB;">
+        <i class="fa-solid fa-house"></i> Home
+      </a>
       <button onclick="openMobileDrawer()" class="mobile-drawer-btn" title="Open Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
@@ -318,16 +311,26 @@
 
     <!-- ── VENDOR WELCOME BANNER ── -->
     <div class="vendor-welcome">
-      <div>
-        <div style="font-size: 0.74rem; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">
-          <i class="fa-solid fa-store"></i> Vendor Station Hub
+      <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <div style="width: 52px; height: 52px; border-radius: 50%; background: #00B14F; color: #fff; font-weight: 900; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0, 177, 79, 0.4);" id="vendorAvatar">
+          VB
         </div>
-        <h2 id="vendorWelcomeName">Loading...</h2>
-        <p><i class="fa-solid fa-envelope" style="opacity: 0.6;"></i> <span id="vendorWelcomeEmail">—</span></p>
+        <div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px;">
+            <span style="background: rgba(0, 177, 79, 0.2); color: #34D399; border: 1px solid rgba(0, 177, 79, 0.4); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-circle" style="font-size: 0.45rem;"></i> STATION ONLINE & OPEN
+            </span>
+            <span style="background: rgba(255, 255, 255, 0.12); color: #E5E7EB; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; border: 1px solid rgba(255,255,255,0.2);" id="vendorSubName">Vendor Station</span>
+          </div>
+          <h2 id="vendorWelcomeName" style="font-size: 1.45rem; font-weight: 900; margin: 0 0 2px; color: #fff;">Loading Vendor Hub...</h2>
+          <p style="margin: 0; font-size: 0.84rem; color: rgba(255,255,255,0.7);"><i class="fa-solid fa-envelope" style="opacity: 0.65;"></i> <span id="vendorWelcomeEmail">—</span></p>
+        </div>
       </div>
-      <div class="vendor-status-pill">
-        <i class="fa-solid fa-circle" style="font-size: 0.45rem;"></i> STATION OPEN
-      </div>
+
+      <!-- Logout Button inside Welcome Banner -->
+      <button onclick="if(window.auth) auth.logout()" style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid rgba(239, 68, 68, 0.4); color: #F87171; padding: 10px 18px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout Account
+      </button>
     </div>
 
     <!-- Metrics Row -->
@@ -553,13 +556,22 @@
       setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     } else {
       // Populate real vendor identity
-      document.getElementById('vendorBrandName').innerText = vendorUser.name + ' Hub';
-      document.getElementById('vendorSubName').innerText = vendorUser.name;
-      document.getElementById('metricEmail').innerText = vendorUser.email || '—';
-      // Populate welcome banner
+      const initials = (vendorUser.name || 'Vendor Station').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+      const avatarEl = document.getElementById('vendorAvatar');
+      if (avatarEl) avatarEl.innerText = initials;
+
+      const brandEl = document.getElementById('vendorBrandName');
+      if (brandEl) brandEl.innerText = (vendorUser.name || 'Vendor Station') + ' Hub';
+
+      const subEl = document.getElementById('vendorSubName');
+      if (subEl) subEl.innerText = vendorUser.name || 'Vendor Hub';
+
+      const metricEmailEl = document.getElementById('metricEmail');
+      if (metricEmailEl) metricEmailEl.innerText = vendorUser.email || '—';
+
       const welcomeName = document.getElementById('vendorWelcomeName');
       const welcomeEmail = document.getElementById('vendorWelcomeEmail');
-      if (welcomeName) welcomeName.innerText = vendorUser.name || 'Vendor Station';
+      if (welcomeName) welcomeName.innerText = (vendorUser.name || 'Vendor Station') + ' Station Hub';
       if (welcomeEmail) welcomeEmail.innerText = vendorUser.email || '—';
     }
 
@@ -889,31 +901,37 @@
     // --- OPTIMIZED MOBILE SWEEP GESTURE ENGINE FOR VENDOR DASHBOARD ---
     let vendorTouchStartX = 0;
     let vendorTouchStartY = 0;
+
     document.addEventListener('touchstart', (e) => {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || e.target.closest('#riderDispatchModal') || e.target.closest('#addStockModal')) return;
       vendorTouchStartX = e.touches[0].clientX;
       vendorTouchStartY = e.touches[0].clientY;
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' || e.target.closest('#riderDispatchModal') || e.target.closest('#addStockModal')) return;
+
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
       const diffX = touchEndX - vendorTouchStartX;
       const diffY = touchEndY - vendorTouchStartY;
 
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+      if (Math.abs(diffX) > 50 && Math.abs(diffY) < 45) {
         if (diffX < 0) {
-          // Swipe Left ➔ Jump to Live Orders Stream
-          const orderSection = document.getElementById('liveOrderQueue');
+          // Swipe Left ➔ Jump to Live Orders Operations Stream
+          const orderSection = document.getElementById('liveOrderQueue') || document.querySelector('.vendor-orders-card');
           if (orderSection) {
             orderSection.scrollIntoView({ behavior: 'smooth' });
-            if (window.NotificationManager) NotificationManager.show('Swiped Left: Live Orders Queue', 'info');
+            if (window.NotificationManager) NotificationManager.show('👉 Swiped: Live Orders Operations Stream', 'success');
           }
         } else {
           // Swipe Right ➔ Jump to Inventory Stock Control
-          const inventorySection = document.getElementById('inventoryStockControl');
+          const inventorySection = document.getElementById('inventoryStockControl') || document.querySelector('.stock-toggle-card');
           if (inventorySection) {
             inventorySection.scrollIntoView({ behavior: 'smooth' });
-            if (window.NotificationManager) NotificationManager.show('Swiped Right: Inventory Stock Control', 'info');
+            if (window.NotificationManager) NotificationManager.show('👈 Swiped: Station Stock & Inventory Control', 'success');
           }
         }
       }
