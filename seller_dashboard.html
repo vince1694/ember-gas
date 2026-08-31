@@ -334,41 +334,44 @@
 
     <!-- Inventory & Stock Status Control -->
     <div class="stock-toggle-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-        <h3 style="font-size: 1.1rem; font-weight: 800; color: #111827; display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-sliders" style="color: #00B14F;"></i> Stock & Pricing Control
-        </h3>
-        <button onclick="saveStockPrice()" style="background: #00B14F; color: #fff; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: background 0.2s;" onmouseover="this.style.background='#009643'" onmouseout="this.style.background='#00B14F'">
-          <i class="fa-solid fa-floppy-disk"></i> Update Pricing
-        </button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #111827; margin: 0 0 2px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-boxes-stacked" style="color: #00B14F;"></i> Inventory Stock & Pricing Control
+          </h3>
+          <p style="margin: 0; font-size: 0.8rem; color: #6B7280;">Manage your station's LPG refill rates, available cylinder sizes, and add new stock packages.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="openAddStockModal()" style="background: #3B82F6; color: #fff; border: none; padding: 9px 16px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-plus-circle"></i> Add Stock Package
+          </button>
+          <button onclick="saveStockPrice()" style="background: #00B14F; color: #fff; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-floppy-disk"></i> Save All Stock & Rates
+          </button>
+        </div>
       </div>
 
-      <div class="stock-grid-mobile" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-        <div style="background: rgba(255,255,255,0.06); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15);">
-          <div style="font-weight: 800; font-size: 0.88rem; color: #10B981; margin-bottom: 8px;">12.5 kg Stock</div>
-          <div class="status-switch">
-            <button class="switch-btn active">IN STOCK</button>
-            <button class="switch-btn">LOW</button>
-            <button class="switch-btn">EMPTY</button>
+      <!-- Rate per KG Bar -->
+      <div style="background: linear-gradient(135deg, #F0FDF4, #ECFDF5); border: 2px solid #00B14F; border-radius: 16px; padding: 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: #00B14F; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            <i class="fa-solid fa-tag"></i>
+          </div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">LPG Retail Rate per KG</div>
+            <div style="font-size: 0.78rem; color: #4B5563;">This rate determines default refill pricing shown to customers on the app.</div>
           </div>
         </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem; font-weight: 900; color: #00B14F;">₦</span>
+          <input type="number" id="lpgRate" value="1100" style="width: 140px; padding: 10px 14px; border-radius: 12px; background: #FFFFFF; border: 2px solid #00B14F; color: #111827; font-size: 1.2rem; font-weight: 900; outline: none; text-align: center;">
+          <span style="font-size: 0.85rem; font-weight: 800; color: #374151;">/ KG</span>
+        </div>
+      </div>
 
-        <div style="background: rgba(255,255,255,0.06); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15);">
-          <div style="font-weight: 800; font-size: 0.88rem; color: #10B981; margin-bottom: 8px;">6.0 kg Stock</div>
-          <div class="status-switch">
-            <button class="switch-btn active">IN STOCK</button>
-            <button class="switch-btn">LOW</button>
-            <button class="switch-btn">EMPTY</button>
-          </div>
-        </div>
-
-        <!-- High-Contrast LPG Rate / KG Section -->
-        <div style="background: rgba(16, 185, 129, 0.1); padding: 14px; border-radius: 14px; border: 1.5px solid #10B981;">
-          <div style="font-weight: 800; font-size: 0.88rem; color: #10B981; margin-bottom: 8px;">
-            <i class="fa-solid fa-tag"></i> LPG Rate / KG (₦)
-          </div>
-          <input type="number" id="lpgRate" value="1100" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: #FFFFFF; border: 2px solid #10B981; color: #111827; font-size: 1.15rem; font-weight: 800; outline: none; box-sizing: border-box;">
-        </div>
+      <!-- Dynamic Stock Items Grid -->
+      <div id="vendorStockGrid" class="stock-grid-mobile" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+        <!-- Dynamically rendered via renderVendorStock() -->
       </div>
     </div>
 
@@ -438,7 +441,40 @@
         <button onclick="dispatchToSelectedRider()" style="width:100%; background:#F59E0B; border:none; color:#111827; padding:11px; border-radius:10px; font-weight:800; cursor:pointer;">
           Assign Order to Selected Rider →
         </button>
+  <!-- Add New Stock Package Modal -->
+  <div id="addStockModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(17,24,39,0.75); backdrop-filter:blur(6px); z-index:10000; align-items:center; justify-content:center; padding:15px;" onclick="if(event.target===this) closeAddStockModal();">
+    <div style="background:#FFFFFF; border-radius:20px; max-width:440px; width:100%; padding:24px; color:#111827; border:1px solid #E5E7EB; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#111827;">
+          <i class="fa-solid fa-plus-circle" style="color:#00B14F;"></i> Add New Stock Package
+        </h3>
+        <button onclick="closeAddStockModal()" style="background:#F3F4F6; border:none; color:#4B5563; width:30px; height:30px; border-radius:50%; font-size:1.1rem; cursor:pointer;">&times;</button>
       </div>
+
+      <form onsubmit="submitNewStockPackage(event)">
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:0.82rem; font-weight:800; color:#374151; margin-bottom:6px;">Cylinder Size / Package Name</label>
+          <input type="text" id="newStockName" placeholder="e.g. 12.5 kg Cylinder Refill" required style="width:100%; padding:11px 14px; border-radius:12px; border:2px solid #E5E7EB; font-size:0.92rem; font-weight:700; outline:none; box-sizing:border-box;">
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label style="display:block; font-size:0.82rem; font-weight:800; color:#374151; margin-bottom:6px;">Package Price (₦)</label>
+          <input type="number" id="newStockPrice" placeholder="e.g. 13750" required style="width:100%; padding:11px 14px; border-radius:12px; border:2px solid #E5E7EB; font-size:0.92rem; font-weight:700; outline:none; box-sizing:border-box;">
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <label style="display:block; font-size:0.82rem; font-weight:800; color:#374151; margin-bottom:6px;">Stock Availability Status</label>
+          <select id="newStockStatus" style="width:100%; padding:11px 14px; border-radius:12px; border:2px solid #E5E7EB; font-size:0.92rem; font-weight:700; outline:none; box-sizing:border-box;">
+            <option value="IN STOCK">IN STOCK (Available ✅)</option>
+            <option value="LOW">LOW STOCK (Running Low ⚠️)</option>
+            <option value="EMPTY">OUT OF STOCK (Unavailable ❌)</option>
+          </select>
+        </div>
+
+        <button type="submit" style="width:100%; background:#00B14F; color:#fff; border:none; padding:13px; border-radius:14px; font-weight:800; font-size:0.95rem; cursor:pointer;">
+          <i class="fa-solid fa-check"></i> Save Stock Package
+        </button>
+      </form>
     </div>
   </div>
 
@@ -462,20 +498,37 @@
     }
 
     function renderVendorOrders() {
-      // ── Load all platform orders from unified key ──
+      // ── Load all platform orders ──
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const pendingOrders = allOrders.filter(o => o.status === 'PLACED' || o.status === 'ACCEPTED');
+      const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
+      if (activeSingle && !allOrders.some(o => o.id === activeSingle.id)) {
+        allOrders.unshift(activeSingle);
+      }
 
-      const totalRevenue = allOrders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+      const currentVendorName = vendorUser ? (vendorUser.name || '').toLowerCase().trim() : '';
+      const currentVendorEmail = vendorUser ? (vendorUser.email || '').toLowerCase().trim() : '';
+
+      // ── VENDOR ORDER ISOLATION: Show ONLY orders intended for THIS vendor station ──
+      const myVendorOrders = allOrders.filter(o => {
+        if (!o.vendorName && !o.vendorEmail) return true; // Legacy unassigned fallback
+        const oVendorName = (o.vendorName || '').toLowerCase().trim();
+        const oVendorEmail = (o.vendorEmail || '').toLowerCase().trim();
+
+        return (
+          (oVendorName && currentVendorName && (oVendorName.includes(currentVendorName) || currentVendorName.includes(oVendorName))) ||
+          (oVendorEmail && currentVendorEmail && oVendorEmail === currentVendorEmail)
+        );
+      });
+
+      const totalRevenue = myVendorOrders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (Number(o.total || o.amount) || 0), 0);
       document.getElementById('metricRevenue').innerText = totalRevenue.toLocaleString();
-      document.getElementById('metricOrders').innerText = allOrders.length + ' Orders';
+      document.getElementById('metricOrders').innerText = myVendorOrders.length + ' Order' + (myVendorOrders.length !== 1 ? 's' : '');
 
-      // Render orders queue
       const tbody = document.getElementById('vendorOrdersTableBody');
       const mobileList = document.getElementById('vendorMobileOrders');
 
-      if (allOrders.length > 0) {
-        tbody.innerHTML = allOrders.map((o) => {
+      if (myVendorOrders.length > 0) {
+        tbody.innerHTML = myVendorOrders.map((o) => {
           const statusBadge = o.status === 'PLACED'
             ? '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">PLACED</span>'
             : o.status === 'ACCEPTED'
@@ -493,26 +546,26 @@
                 ? `<button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Delivered</button>`
                 : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
 
-          return `<tr id="row-${o.id}" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <td style="padding: 12px 10px; font-weight:700;">#${o.id}</td>
-            <td style="padding: 12px 10px;">${o.customerName || o.userEmail || '—'}</td>
-            <td style="padding: 12px 10px;">${o.size || o.cylinderSize} kg ${o.serviceType || 'Refill'}</td>
+          return `<tr id="row-${o.id}" style="border-bottom: 1px solid #F3F4F6;">
+            <td style="padding: 12px 10px; font-weight:800; color:#111827;">#${o.id}</td>
+            <td style="padding: 12px 10px; font-weight:700;">${o.customerName || o.userEmail || 'Customer'}</td>
+            <td style="padding: 12px 10px;">${o.size || o.cylinderSize || '12.5 kg'} ${o.serviceType || 'Refill'}</td>
             <td style="padding: 12px 10px;">${o.address || '—'}</td>
-            <td style="padding: 12px 10px; color:#00B14F; font-weight:800;">₦${Number(o.total || o.amount).toLocaleString()}</td>
+            <td style="padding: 12px 10px; color:#00B14F; font-weight:900;">₦${Number(o.total || o.amount || 13750).toLocaleString()}</td>
             <td style="padding: 12px 10px;">${statusBadge}</td>
             <td style="padding: 12px 10px;">${actionBtns}</td>
           </tr>`;
         }).join('');
 
-        mobileList.innerHTML = allOrders.map((o) => {
+        mobileList.innerHTML = myVendorOrders.map((o) => {
           const statusColor = o.status === 'PLACED' ? '#F59E0B' : o.status === 'ACCEPTED' ? '#10B981' : '#9CA3AF';
           return `<div class="vendor-order-card-mobile" id="m-row-${o.id}">
             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span style="font-weight: 800;">#${o.id}</span>
+              <span style="font-weight: 800; color:#111827;">#${o.id}</span>
               <span style="color: ${statusColor}; font-weight: 800; font-size:0.8rem;">${o.status}</span>
             </div>
-            <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || '—'} • ${o.size || o.cylinderSize}kg</div>
-            <div style="font-size: 0.78rem; color: var(--text-secondary); margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount).toLocaleString()} • ${o.address || '—'}</div>
+            <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || 'Customer'} • ${o.size || o.cylinderSize || '12.5 kg'}</div>
+            <div style="font-size: 0.78rem; color: #6B7280; margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount || 13750).toLocaleString()} • ${o.address || '—'}</div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:10px;">
               ${o.status === 'PLACED'
                 ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Order</button>
@@ -527,12 +580,125 @@
           </div>`;
         }).join('');
       } else {
-        tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-list-check"></i> No customer orders yet. They will appear here when placed.</td></tr>';
-        mobileList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.88rem;"><i class="fa-solid fa-list-check"></i> No orders yet. Orders from customers will show up here.</div>';
+        tbody.innerHTML = '<tr><td colspan="7" style="padding: 24px; text-align: center; color: #9CA3AF;"><i class="fa-solid fa-list-check"></i> No customer orders for your vendor station yet. They will appear here when customers book with your depot.</td></tr>';
+        mobileList.innerHTML = '<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-list-check"></i> No orders yet. Orders booked with your station will show up here.</div>';
       }
     }
 
+    // ── VENDOR DYNAMIC STOCK MANAGEMENT ──
+    const defaultStockItems = [
+      { name: '12.5 kg Refill Package', price: 13750, status: 'IN STOCK' },
+      { name: '6.0 kg Refill Package', price: 6600, status: 'IN STOCK' },
+      { name: '25.0 kg Commercial Refill', price: 27500, status: 'IN STOCK' }
+    ];
+
+    function getVendorStock() {
+      const vKey = vendorUser ? `vendorStockList_${vendorUser.email}` : 'vendorStockList_default';
+      const saved = localStorage.getItem(vKey);
+      if (saved) return JSON.parse(saved);
+      localStorage.setItem(vKey, JSON.stringify(defaultStockItems));
+      return defaultStockItems;
+    }
+
+    function saveVendorStock(items) {
+      const vKey = vendorUser ? `vendorStockList_${vendorUser.email}` : 'vendorStockList_default';
+      localStorage.setItem(vKey, JSON.stringify(items));
+      renderVendorStock();
+    }
+
+    function renderVendorStock() {
+      const grid = document.getElementById('vendorStockGrid');
+      if (!grid) return;
+      const items = getVendorStock();
+
+      grid.innerHTML = items.map((item, idx) => {
+        const inActive = item.status === 'IN STOCK' ? 'active' : '';
+        const lowActive = item.status === 'LOW' ? 'active' : '';
+        const emptyActive = item.status === 'EMPTY' ? 'active' : '';
+
+        return `
+          <div style="background: #F9FAFB; padding: 14px; border-radius: 14px; border: 1.5px solid #E5E7EB; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div style="font-weight: 800; font-size: 0.9rem; color: #111827;">${item.name}</div>
+              <button onclick="deleteStockItem(${idx})" title="Remove item" style="background: #FEE2E2; border: none; color: #DC2626; width: 26px; height: 26px; border-radius: 50%; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label style="font-size: 0.72rem; color: #6B7280; font-weight: 700; text-transform: uppercase;">Package Price (₦)</label>
+              <input type="number" value="${item.price}" onchange="updateStockPrice(${idx}, this.value)" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: 1.5px solid #D1D5DB; font-weight: 800; color: #00B14F; font-size: 0.95rem; outline: none; margin-top: 3px; box-sizing: border-box;">
+            </div>
+
+            <div class="status-switch">
+              <button class="switch-btn ${inActive}" onclick="updateStockStatus(${idx}, 'IN STOCK')">IN STOCK</button>
+              <button class="switch-btn ${lowActive}" onclick="updateStockStatus(${idx}, 'LOW')">LOW</button>
+              <button class="switch-btn ${emptyActive}" onclick="updateStockStatus(${idx}, 'EMPTY')">EMPTY</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function updateStockPrice(idx, newPrice) {
+      const items = getVendorStock();
+      if (items[idx]) {
+        items[idx].price = Number(newPrice);
+        saveVendorStock(items);
+      }
+    }
+
+    function updateStockStatus(idx, status) {
+      const items = getVendorStock();
+      if (items[idx]) {
+        items[idx].status = status;
+        saveVendorStock(items);
+        if (window.NotificationManager) NotificationManager.show(`${items[idx].name} set to ${status}`, 'success');
+      }
+    }
+
+    function deleteStockItem(idx) {
+      const items = getVendorStock();
+      if (items[idx]) {
+        const deletedName = items[idx].name;
+        items.splice(idx, 1);
+        saveVendorStock(items);
+        if (window.NotificationManager) NotificationManager.show(`Removed ${deletedName} from stock`, 'info');
+      }
+    }
+
+    function openAddStockModal() {
+      document.getElementById('addStockModal').style.display = 'flex';
+    }
+
+    function closeAddStockModal() {
+      document.getElementById('addStockModal').style.display = 'none';
+    }
+
+    function submitNewStockPackage(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const name = document.getElementById('newStockName').value.trim();
+      const price = Number(document.getElementById('newStockPrice').value);
+      const status = document.getElementById('newStockStatus').value;
+
+      if (!name || !price) {
+        if (window.NotificationManager) NotificationManager.show('Please enter package name and price', 'error');
+        return false;
+      }
+
+      const items = getVendorStock();
+      items.push({ name, price, status });
+      saveVendorStock(items);
+
+      document.getElementById('newStockName').value = '';
+      document.getElementById('newStockPrice').value = '';
+      closeAddStockModal();
+
+      if (window.NotificationManager) NotificationManager.show(`Added ${name} (₦${price.toLocaleString()}) to inventory!`, 'success');
+      return false;
+    }
+
     renderVendorOrders();
+    renderVendorStock();
 
     // Auto-refresh every 5 seconds to pick up new orders from customer
     setInterval(renderVendorOrders, 5000);

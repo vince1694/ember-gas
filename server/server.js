@@ -23,8 +23,8 @@ connectDB();
 
 const app = express();
 
-// Enable trust proxy for Vercel / reverse proxy deployment
-app.set('trust proxy', 1);
+// Enable trust proxy for Vercel / Cloudflare / Serverless proxy deployment
+app.set('trust proxy', true);
 
 // Middleware
 app.use(express.json());
@@ -39,18 +39,19 @@ app.use(helmet({ contentSecurityPolicy: false }));
 // Rate Limiting — Vercel / Serverless Proxy Compatible
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // Limit each IP to 500 requests per 15 minutes
+    max: 1000,
     standardHeaders: true,
     legacyHeaders: false,
-    validate: false, // Disables express-rate-limit validation checks on Vercel serverless
+    validate: false, // Disables all express-rate-limit validation checks on Vercel
     keyGenerator: (req) => {
-        const forwarded = req.headers['x-forwarded-for'];
-        if (forwarded) {
-            return forwarded.split(',')[0].trim();
-        }
-        return req.ip || '127.0.0.1';
+        return (
+            req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+            req.headers['x-real-ip'] ||
+            req.ip ||
+            '127.0.0.1'
+        );
     },
-    message: { message: 'Too many requests from this IP, please try again after 15 minutes' }
+    message: { message: 'Too many requests, please try again later.' }
 });
 app.use('/api', limiter);
 
