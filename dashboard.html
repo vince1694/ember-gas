@@ -1106,7 +1106,8 @@
         });
       } catch (e) {}
 
-      setTimeout(() => { window.location.reload(); }, 1200);
+      loadLiveOrder();
+      renderRecentOrders();
     }
 
     let selectedSize = 12.5;

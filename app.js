@@ -1,16 +1,72 @@
+// --- ULTRA-FAST NON-BLOCKING API HELPER WITH 2.5s TIMEOUT ---
+async function safeFetchApi(path, options = {}) {
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const hosts = isLocal ? [
+        '',
+        `http://${window.location.hostname}:5000`,
+        'http://127.0.0.1:5000',
+        'http://localhost:5000'
+    ] : [
+        '',
+        `http://${window.location.hostname || '127.0.0.1'}:5000`
+    ];
+
+    let lastError;
+    for (const host of hosts) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+            const fetchOpts = {
+                ...options,
+                signal: options.signal || controller.signal
+            };
+
+            const targetUrl = (host ? host : '') + path;
+            const res = await fetch(targetUrl, fetchOpts);
+            clearTimeout(timeoutId);
+            if (res.status < 500) return res;
+        } catch (err) {
+            lastError = err;
+        }
+    }
+    throw lastError || new Error('Server unreachable');
+}
+window.safeFetchApi = safeFetchApi;
+
+// --- IN-MEMORY STATE CACHE FOR ULTRA-SMOOTH RENDER LOOPS ---
+const AppCache = {
+    _data: {},
+    get(key, fallback = null) {
+        if (this._data[key] !== undefined) return this._data[key];
+        try {
+            const stored = localStorage.getItem(key);
+            const val = stored ? JSON.parse(stored) : fallback;
+            this._data[key] = val;
+            return val;
+        } catch (e) {
+            return fallback;
+        }
+    },
+    set(key, val) {
+        this._data[key] = val;
+        try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+    },
+    invalidate(key) {
+        delete this._data[key];
+    }
+};
+window.AppCache = AppCache;
+
 // --- EMAILJS CONFIGURATION ---
-// 1. Sign up at https://www.emailjs.com/
-// 2. Create an Email Service (e.g., Gmail)
-// 3. Create an Email Template
-// 4. Copy your Public Key, Service ID, and Template ID here:
 const EMAILJS_CONFIG = {
-    PUBLIC_KEY: 'e256tO1Gj8TchS_kU', // Found in Account > Public Key
-    SERVICE_ID: 'service_fkkz3xn', // Found in Email Services
-    TEMPLATE_ID: 'template_20moi3' // Found in Email Templates
+    PUBLIC_KEY: 'e256tO1Gj8TchS_kU',
+    SERVICE_ID: 'service_fkkz3xn',
+    TEMPLATE_ID: 'template_20moi3'
 };
 
 // --- PAYSTACK CONFIGURATION ---
-const PAYSTACK_PUBLIC_KEY = 'pk_test_2bb26297bc62eac90fce93b6b024958e4e909cae'; // Your Paystack Public Key
+const PAYSTACK_PUBLIC_KEY = 'pk_test_2bb26297bc62eac90fce93b6b024958e4e909cae';
 
 // --- NOTIFICATION SYSTEM ---
 class NotificationManager {

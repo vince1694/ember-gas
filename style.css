@@ -38,6 +38,14 @@ body {
     overflow-x: hidden;
 }
 
+/* ── HARDWARE-ACCELERATED SMOOTH PERFORMANCE ── */
+.btn-action, .product-card, .depot-card, .order-form-card, .glass-card, .otp-modal, .mobile-order-card {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
 h1, h2, h3, h4, h5, h6, .logo {
     font-family: var(--font-heading);
 }
