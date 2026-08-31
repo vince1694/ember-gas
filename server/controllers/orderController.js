@@ -5,117 +5,91 @@ import sendEmail from '../utils/sendEmail.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
-// @access  Private
+// @access  Public / Private
 const addOrderItems = expressAsyncHandler(async (req, res) => {
     const {
+        id,
         orderId,
-        orderType,
+        size,
         cylinderSize,
-        deliverySpeed,
+        serviceType,
         address,
-        phone,
-        totalPrice,
-        paymentReference,
-        deliveryDate,
+        total,
+        amount,
+        customerName,
+        userEmail,
+        vendorName,
+        vendorEmail,
+        status
     } = req.body;
 
-    if (!orderId || !orderType || !cylinderSize || !address || !phone || !totalPrice) {
-        res.status(400);
-        throw new Error('Please fill in all order details');
-    }
+    const finalOrderId = id || orderId || ('EG-' + Math.floor(1000 + Math.random() * 9000));
+    const finalSize = size || cylinderSize || '12.5';
+    const finalTotal = Number(total || amount || 13750);
 
-    const order = new Order({
-        user: req.user._id,
-        orderId,
-        orderType,
-        cylinderSize,
-        deliverySpeed,
-        address,
-        phone,
-        totalPrice,
-        paymentReference,
-        deliveryDate,
+    const newOrder = new Order({
+        orderNumber: '#' + finalOrderId,
+        customer: req.user ? req.user._id : null,
+        customerName: customerName || (req.user ? req.user.name : 'Valued Customer'),
+        customerPhone: req.user ? req.user.phone : '—',
+        sellerName: vendorName || 'Grace LPG Depot Hub',
+        cylinderSize: String(finalSize).includes('kg') ? String(finalSize) : finalSize + 'kg',
+        totalAmount: finalTotal,
+        deliveryAddress: address || '—',
+        status: status || 'ORDER_CONFIRMED'
     });
 
-    const createdOrder = await order.save();
-
-    // Send order confirmation email
-    try {
-        const message = `
-            <h2>Order Confirmation</h2>
-            <p>Dear ${req.user.name},</p>
-            <p>Your order (ID: <strong>${orderId}</strong>) has been placed successfully.</p>
-            <h3>Order Details:</h3>
-            <ul>
-                <li><strong>Type:</strong> ${orderType}</li>
-                <li><strong>Size:</strong> ${cylinderSize}</li>
-                <li><strong>Delivery:</strong> ${deliverySpeed}</li>
-                <li><strong>Total Price:</strong> ₦${totalPrice.toLocaleString()}</li>
-            </ul>
-            <p>We will notify you when the status changes.</p>
-            <p>Thank you for choosing EmberGas!</p>
-        `;
-
-        await sendEmail({
-            email: req.user.email,
-            subject: 'EmberGas - Order Confirmation',
-            html: message,
-        });
-    } catch (error) {
-        console.error('Email sending failed:', error);
-    }
-
-    res.status(201).json(createdOrder);
+    const createdOrder = await newOrder.save();
+    res.status(201).json({
+        id: finalOrderId,
+        size: finalSize,
+        cylinderSize: String(finalSize).includes('kg') ? String(finalSize) : finalSize + 'kg',
+        serviceType: serviceType || 'refill',
+        total: finalTotal,
+        amount: finalTotal,
+        address: address || '—',
+        customerName: newOrder.customerName,
+        userEmail: userEmail || (req.user ? req.user.email : ''),
+        vendorName: newOrder.sellerName,
+        status: newOrder.status,
+        _id: createdOrder._id,
+        createdAt: createdOrder.createdAt
+    });
 });
 
-// @desc    Get my orders
-// @route   GET /api/orders/myorders
-// @access  Private
-const getMyOrders = expressAsyncHandler(async (req, res) => {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+// @desc    Get orders for customer or vendor
+// @route   GET /api/orders
+// @access  Public / Private
+const getOrders = expressAsyncHandler(async (req, res) => {
+    const orders = await Order.find({}).sort({ createdAt: -1 }).limit(100);
     res.json(orders);
 });
 
-// @desc    Get all orders (Admin/Sellers/Refillers)
-// @route   GET /api/orders
-// @access  Private (Admin/Vendor)
-const getOrders = expressAsyncHandler(async (req, res) => {
-    const orders = await Order.find({}).populate('user', 'id name email').sort({ createdAt: -1 });
+// @desc    Get customer orders
+// @route   GET /api/orders/myorders
+// @access  Public / Private
+const getMyOrders = expressAsyncHandler(async (req, res) => {
+    const filter = req.user ? { customer: req.user._id } : {};
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
     res.json(orders);
 });
 
 // @desc    Update order status
 // @route   PUT /api/orders/:id/status
-// @access  Private (Vendor)
+// @access  Public / Private
 const updateOrderStatus = expressAsyncHandler(async (req, res) => {
     const { status } = req.body;
-    const order = await Order.findById(req.params.id).populate('user', 'name email');
+    const orderIdParam = req.params.id;
+
+    let order = await Order.findById(orderIdParam).catch(() => null);
+    if (!order) {
+        order = await Order.findOne({ orderNumber: '#' + orderIdParam }) || await Order.findOne({ orderNumber: orderIdParam });
+    }
 
     if (order) {
-        order.status = status;
-        const updatedOrder = await order.save();
-
-        // Send status update email
-        try {
-            if (order.user && order.user.email) {
-                const message = `
-                    <h2>Order Status Update</h2>
-                    <p>Dear ${order.user.name},</p>
-                    <p>Your order (ID: <strong>${order.orderId}</strong>) status has been updated to: <strong>${status}</strong>.</p>
-                    <p>Thank you for choosing EmberGas!</p>
-                `;
-
-                await sendEmail({
-                    email: order.user.email,
-                    subject: 'EmberGas - Order Status Update',
-                    html: message,
-                });
-            }
-        } catch (error) {
-            console.error('Email sending failed:', error);
-        }
-
-        res.json(updatedOrder);
+        order.status = status || order.status;
+        const updated = await order.save();
+        res.json({ message: 'Order status updated', status: updated.status, id: orderIdParam });
     } else {
         res.status(404);
         throw new Error('Order not found');

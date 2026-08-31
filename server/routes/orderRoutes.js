@@ -10,10 +10,10 @@ import { protect, admin, vendor } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.route('/')
-    .post(protect, addOrderItems)
-    .get(protect, vendor, getOrders);
+    .post(addOrderItems)
+    .get(getOrders);
 
-router.get('/myorders', protect, getMyOrders);
-router.put('/:id/status', protect, vendor, updateOrderStatus);
+router.get('/myorders', getMyOrders);
+router.put('/:id/status', updateOrderStatus);
 
 export default router;
