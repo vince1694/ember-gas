@@ -352,13 +352,13 @@
       <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 14px; display: flex; align-items: center; gap: 8px;">
         <i class="fa-solid fa-bolt" style="color: #00B14F;"></i> Station Quick Services & Actions
       </h3>
-      <div class="quick-links-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+      <div class="quick-links-grid">
         <a href="index.html" class="quick-link-card" style="text-decoration: none;">
           <i class="fa-solid fa-house" style="color: #3B82F6; font-size: 1.3rem;"></i>
           <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Home</div>
           <div style="font-size: 0.72rem; color: #6B7280;">EmberGas Main</div>
         </a>
-        <div onclick="if(typeof openProfileModal==='function') openProfileModal()" class="quick-link-card">
+        <div onclick="window.openGlobalProfileModal && window.openGlobalProfileModal()" class="quick-link-card">
           <i class="fa-solid fa-user" style="color: #F59E0B; font-size: 1.3rem;"></i>
           <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">My Profile</div>
           <div style="font-size: 0.72rem; color: #6B7280;">Manage Account</div>

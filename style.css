@@ -2821,15 +2821,12 @@ body.drawer-open .mobile-bottom-nav {
         display: none !important;
     }
 
-    /* Show floating bottom nav only on mobile */
-    .mobile-bottom-nav {
-        display: flex !important;
+    /* Responsive Grid for Quick Links */
+    .quick-links-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
     }
 
-    /* Add body padding to prevent content hiding behind bottom nav */
-    body {
-        padding-bottom: 76px;
-    }
 
     .master-header {
         padding: 12px 18px !important;
@@ -2838,4 +2835,9 @@ body.drawer-open .mobile-bottom-nav {
     .brand-logo {
         font-size: 1.25rem !important;
     }
+}.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
 }
