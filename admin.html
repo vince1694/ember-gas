@@ -237,7 +237,7 @@
         <div style="margin-bottom: 16px; text-align: left;">
           <label style="font-size: 0.8rem; font-weight: 800; color: #374151; display: block; margin-bottom: 6px;">Admin Access Key / PIN</label>
           <input type="password" id="adminGatePasscode" placeholder="Enter PIN (e.g. 1234)" style="width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid #D1D5DB; font-size: 1rem; font-weight: 700; outline: none; box-sizing: border-box;" autofocus>
-          <div style="font-size: 0.75rem; color: #9CA3AF; margin-top: 4px;">Default PIN: <code>1234</code> or admin password</div>
+          <div style="font-size: 0.75rem; color: #9CA3AF; margin-top: 4px;">Contact your platform administrator if you forgot your PIN.</div>
         </div>
 
         <button type="submit" style="width: 100%; padding: 15px; background: #3B82F6; color: #fff; border: none; border-radius: 14px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);">
@@ -978,7 +978,7 @@
 
       tbody.innerHTML = vendors.map(v => {
         const isVerified = v.kybStatus === 'VERIFIED';
-        const dprNo = v.dprNo || `DPR-LPG-${Math.floor(10000 + Math.random() * 90000)}-NG`;
+        const dprNo = v.dprNo || '— Not provided';
         const statusHtml = isVerified
           ? `<span style="color:#10B981; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`
           : `<span style="color:#F59E0B; font-weight:800;"><i class="fa-solid fa-clock"></i> Pending KYB Review</span>`;

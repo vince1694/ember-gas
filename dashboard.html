@@ -937,7 +937,7 @@
         if (vendors && vendors.length > 0) {
           vendorSelect.innerHTML = vendors.map(v => {
             const vName = v.name || 'Vendor Station';
-            const vEmail = v.email || 'vendor@embergas.ng';
+            const vEmail = v.email || '';
             const displayTitle = vName.includes('Hub') || vName.includes('Station') || vName.includes('Depot')
               ? vName
               : `${vName} LPG Depot Hub`;
@@ -945,12 +945,12 @@
             return `<option value="${displayTitle}" data-email="${vEmail}">${displayTitle} (${vEmail}) • ₦1,100/kg [Verified ✅]</option>`;
           }).join('');
         } else {
-          // Default fallback verified station
-          vendorSelect.innerHTML = `<option value="Grace LPG Depot Hub" data-email="vendor@embergas.ng">Grace LPG Depot Hub (vendor@embergas.ng) • ₦1,100/kg [Verified ✅]</option>`;
+          // No registered vendors found — show placeholder
+          vendorSelect.innerHTML = `<option value="" data-email="">— No verified stations available yet. Contact admin. —</option>`;
         }
       } catch (err) {
         console.warn('Load verified vendors note:', err);
-        vendorSelect.innerHTML = `<option value="Grace LPG Depot Hub" data-email="vendor@embergas.ng">Grace LPG Depot Hub (vendor@embergas.ng) • ₦1,100/kg [Verified ✅]</option>`;
+        vendorSelect.innerHTML = `<option value="" data-email="">— Unable to load stations. Please try again. —</option>`;
       }
     }
 
@@ -970,25 +970,7 @@
         (curUser.name && o.customerName && o.customerName.toLowerCase() === curUser.name.toLowerCase())
       );
 
-      if (myOrders.length === 0 && curUser.email) {
-        const welcomeOrder = {
-          id: 'EG-1082',
-          customerName: curUser.name || 'Valued Customer',
-          userEmail: curUser.email.toLowerCase(),
-          customerPhone: curUser.phone || '08012345678',
-          address: curUser.address || 'Ikeja, Lagos, Nigeria',
-          cylinderSize: '12.5 kg',
-          serviceType: 'Cylinder Refill Only',
-          amount: 13750,
-          total: 13750,
-          status: 'COMPLETED',
-          vendorName: 'Grace LPG Depot Hub',
-          createdAt: new Date().toISOString()
-        };
-        allOrders.unshift(welcomeOrder);
-        localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
-        myOrders = [welcomeOrder];
-      }
+      // No dummy seed orders — show empty state if no real orders
 
       const orderBadge = document.getElementById('orderCountBadge');
       if (orderBadge) orderBadge.innerText = myOrders.length;
@@ -1001,8 +983,8 @@
 
       if (myOrders.length > 0) {
         tbody.innerHTML = myOrders.map(o => {
-          const sizeStr = o.size || o.cylinderSize || '12.5 kg';
-          const amtStr = Number(o.total || o.amount || 13750).toLocaleString();
+          const sizeStr = o.size || o.cylinderSize || '—';
+          const amtStr = Number(o.total || o.amount || 0).toLocaleString();
           const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
           const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
 
@@ -1018,8 +1000,8 @@
         }).join('');
 
         mobileList.innerHTML = myOrders.map(o => {
-          const sizeStr = o.size || o.cylinderSize || '12.5 kg';
-          const amtStr = Number(o.total || o.amount || 13750).toLocaleString();
+          const sizeStr = o.size || o.cylinderSize || '—';
+          const amtStr = Number(o.total || o.amount || 0).toLocaleString();
           const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
           const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
 
@@ -1053,9 +1035,9 @@
         if (title) title.innerText = `Order #${order.id} • ${order.cylinderSize} ${order.serviceType || 'Refill'}`;
         if (meta) {
           meta.innerHTML = `
-            <span><i class="fa-solid fa-store" style="color:#10B981;"></i> Depot: <strong>${order.vendorName || 'Grace LPG Depot'}</strong></span>
+            <span><i class="fa-solid fa-store" style="color:#10B981;"></i> Depot: <strong>${order.vendorName || 'EmberGas Station'}</strong></span>
             <span><i class="fa-solid fa-location-dot" style="color:#10B981;"></i> ${order.address || '—'}</span>
-            <span><i class="fa-solid fa-wallet" style="color:#10B981;"></i> Total: ₦${(order.amount || 13750).toLocaleString()}</span>
+            <span><i class="fa-solid fa-wallet" style="color:#10B981;"></i> Total: ₦${(order.amount || 0).toLocaleString()}</span>
           `;
         }
 
@@ -1143,7 +1125,14 @@
       const addr = addrEl ? addrEl.value.trim() : '';
       const sType = document.getElementById('serviceType') ? document.getElementById('serviceType').value : 'refill';
       const vendorSelect = document.getElementById('vendorSelect');
-      const selectedVendor = vendorSelect ? vendorSelect.value : 'Grace LPG Depot Hub';
+      const selectedVendorOption = vendorSelect ? vendorSelect.options[vendorSelect.selectedIndex] : null;
+      const selectedVendor = selectedVendorOption ? selectedVendorOption.value : '';
+      const selectedVendorEmail = selectedVendorOption ? (selectedVendorOption.getAttribute('data-email') || '') : '';
+
+      if (sType === 'refill' && !selectedVendor) {
+        if (window.NotificationManager) NotificationManager.show('Please select a vendor station', 'error');
+        return false;
+      }
 
       if (!addr) {
         if (window.NotificationManager) NotificationManager.show('Please enter your delivery address', 'error');
@@ -1184,31 +1173,41 @@
       if (window.OrderStateManager) {
         newOrder = OrderStateManager.createOrder(selectedSize, sType, addr, selectedTotal);
         newOrder.vendorName = selectedVendor;
+        newOrder.vendorEmail = selectedVendorEmail;
         newOrder.customerName = curUser.name || 'Valued Customer';
-        newOrder.userEmail = curUser.email || 'customer@embergas.ng';
+        newOrder.userEmail = curUser.email || '';
         newOrder.size = selectedSize;
         newOrder.total = selectedTotal;
+        newOrder.type = 'BOOKING_REQUEST'; // Mark as booking request (refill)
         OrderStateManager.saveActiveOrder(newOrder);
       } else {
         newOrder = { 
           id: 'EG-' + Math.floor(1000 + Math.random() * 9000), 
           cylinderSize: selectedSize + 'kg', 
           size: selectedSize,
-          vendorName: selectedVendor, 
+          vendorName: selectedVendor,
+          vendorEmail: selectedVendorEmail,
           total: selectedTotal, 
           amount: selectedTotal,
           address: addr, 
           status: 'PLACED',
           customerName: curUser.name || 'Valued Customer',
-          userEmail: curUser.email || 'customer@embergas.ng'
+          userEmail: curUser.email || '',
+          type: 'BOOKING_REQUEST'
         };
         localStorage.setItem('activeEmberGasOrder', JSON.stringify(newOrder));
       }
 
-      // Also persist to unified emberGasOrders array for order history table
-      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      if (!allOrders.some(o => o.id === newOrder.id)) {
-        allOrders.unshift(newOrder);
+      // Sync updated order (with vendorEmail, vendorName, type) back to emberGasOrders
+      {
+        const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+        const existingIdx = allOrders.findIndex(o => o.id === newOrder.id);
+        if (existingIdx !== -1) {
+          // Update the existing entry with correct vendor info
+          allOrders[existingIdx] = { ...allOrders[existingIdx], ...newOrder };
+        } else {
+          allOrders.unshift(newOrder);
+        }
         localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
       }
 

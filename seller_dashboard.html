@@ -327,7 +327,7 @@
       <div class="metric-card">
         <div class="metric-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
         <div>
-          <div class="metric-label">Orders Received</div>
+          <div class="metric-label">Booking Requests</div>
           <div class="metric-val" id="metricOrders">0</div>
         </div>
       </div>
@@ -480,7 +480,7 @@
           <i class="fa-solid fa-motorcycle" style="color:#F59E0B;"></i> Option B: Assign Registered Refiller Rider
         </div>
         <select id="dispatchRiderSelect" style="width:100%; padding:10px 12px; border-radius:10px; background:#161B22; border:1px solid #30363D; color:#fff; font-size:0.88rem; margin-bottom:12px;">
-          <option value="Musa K. (Rider #02)">Musa K. (08031122334) • Available [Verified ✅]</option>
+          <option value="">— Select a registered rider —</option>
         </select>
         <button onclick="dispatchToSelectedRider()" style="width:100%; background:#F59E0B; border:none; color:#111827; padding:11px; border-radius:10px; font-weight:800; cursor:pointer;">
           Assign Order to Selected Rider →
@@ -555,6 +555,14 @@
       const welcomeEmail = document.getElementById('vendorWelcomeEmail');
       if (welcomeName) welcomeName.innerText = (vendorUser.name || 'Vendor Station') + ' Station Hub';
       if (welcomeEmail) welcomeEmail.innerText = vendorUser.email || '—';
+
+      // Load saved vendor rate
+      const vRateKey = vendorUser.email ? `vendorLpgRate_${vendorUser.email}` : 'vendorLpgRate_default';
+      const savedRate = localStorage.getItem(vRateKey) || '1100';
+      const rateInput = document.getElementById('lpgRate');
+      const metricRateEl = document.getElementById('metricRate');
+      if (rateInput) rateInput.value = savedRate;
+      if (metricRateEl) metricRateEl.innerText = Number(savedRate).toLocaleString();
     }
 
     function renderVendorOrders() {
@@ -568,21 +576,31 @@
       const currentVendorName = vendorUser ? (vendorUser.name || '').toLowerCase().trim() : '';
       const currentVendorEmail = vendorUser ? (vendorUser.email || '').toLowerCase().trim() : '';
 
-      // ── VENDOR ORDER ISOLATION: Show ONLY orders intended for THIS vendor station ──
+      // ── VENDOR BOOKING REQUEST ISOLATION ──
+      // Show ONLY booking requests (refill type) assigned to THIS vendor
       const myVendorOrders = allOrders.filter(o => {
-        if (!o.vendorName && !o.vendorEmail) return true; // Legacy unassigned fallback
-        const oVendorName = (o.vendorName || '').toLowerCase().trim();
-        const oVendorEmail = (o.vendorEmail || '').toLowerCase().trim();
+        // Exclude new cylinder purchases — those go to admin, not vendor
+        if (o.type === 'new_cylinder' || o.serviceType === 'Purchase New Cylinder + Gas') return false;
 
-        return (
-          (oVendorName && currentVendorName && (oVendorName.includes(currentVendorName) || currentVendorName.includes(oVendorName))) ||
-          (oVendorEmail && currentVendorEmail && oVendorEmail === currentVendorEmail)
-        );
+        // Must have a vendor assignment to show up
+        if (!o.vendorName && !o.vendorEmail) return false;
+
+        const oVendorEmail = (o.vendorEmail || '').toLowerCase().trim();
+        const oVendorName  = (o.vendorName  || '').toLowerCase().trim();
+
+        // Prefer exact email match
+        if (oVendorEmail && currentVendorEmail && oVendorEmail === currentVendorEmail) return true;
+
+        // Fallback: name fuzzy match
+        if (oVendorName && currentVendorName &&
+            (oVendorName.includes(currentVendorName) || currentVendorName.includes(oVendorName))) return true;
+
+        return false;
       });
 
       const totalRevenue = myVendorOrders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (Number(o.total || o.amount) || 0), 0);
       document.getElementById('metricRevenue').innerText = totalRevenue.toLocaleString();
-      document.getElementById('metricOrders').innerText = myVendorOrders.length + ' Order' + (myVendorOrders.length !== 1 ? 's' : '');
+      document.getElementById('metricOrders').innerText = myVendorOrders.length + ' Request' + (myVendorOrders.length !== 1 ? 's' : '');
 
       const tbody = document.getElementById('vendorOrdersTableBody');
       const mobileList = document.getElementById('vendorMobileOrders');
@@ -609,9 +627,9 @@
           return `<tr id="row-${o.id}" style="border-bottom: 1px solid #F3F4F6;">
             <td style="padding: 12px 10px; font-weight:800; color:#111827;">#${o.id}</td>
             <td style="padding: 12px 10px; font-weight:700;">${o.customerName || o.userEmail || 'Customer'}</td>
-            <td style="padding: 12px 10px;">${o.size || o.cylinderSize || '12.5 kg'} ${o.serviceType || 'Refill'}</td>
+            <td style="padding: 12px 10px;">${o.size || o.cylinderSize || '—'} ${o.serviceType || 'Refill'}</td>
             <td style="padding: 12px 10px;">${o.address || '—'}</td>
-            <td style="padding: 12px 10px; color:#00B14F; font-weight:900;">₦${Number(o.total || o.amount || 13750).toLocaleString()}</td>
+            <td style="padding: 12px 10px; color:#00B14F; font-weight:900;">₦${Number(o.total || o.amount || 0).toLocaleString()}</td>
             <td style="padding: 12px 10px;">${statusBadge}</td>
             <td style="padding: 12px 10px;">${actionBtns}</td>
           </tr>`;
@@ -624,8 +642,8 @@
               <span style="font-weight: 800; color:#111827;">#${o.id}</span>
               <span style="color: ${statusColor}; font-weight: 800; font-size:0.8rem;">${o.status}</span>
             </div>
-            <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || 'Customer'} • ${o.size || o.cylinderSize || '12.5 kg'}</div>
-            <div style="font-size: 0.78rem; color: #6B7280; margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount || 13750).toLocaleString()} • ${o.address || '—'}</div>
+            <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || 'Customer'} • ${o.size || o.cylinderSize || '—'}</div>
+            <div style="font-size: 0.78rem; color: #6B7280; margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount || 0).toLocaleString()} • ${o.address || '—'}</div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:10px;">
               ${o.status === 'PLACED'
                 ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
@@ -769,9 +787,11 @@
 
     function saveStockPrice() {
       const rate = document.getElementById('lpgRate').value;
+      const vRateKey = vendorUser && vendorUser.email ? `vendorLpgRate_${vendorUser.email}` : 'vendorLpgRate_default';
+      localStorage.setItem(vRateKey, rate);
       document.getElementById('vendorRate') && (document.getElementById('vendorRate').innerText = Number(rate).toLocaleString());
       document.getElementById('metricRate') && (document.getElementById('metricRate').innerText = Number(rate).toLocaleString());
-      if (window.NotificationManager) NotificationManager.show(`Gas Price updated to ₦${rate} / kg`, 'success');
+      if (window.NotificationManager) NotificationManager.show(`Gas Price updated to ₦${Number(rate).toLocaleString()} / kg`, 'success');
     }
 
     function acceptOrder(orderId) {

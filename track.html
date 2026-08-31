@@ -154,10 +154,10 @@
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #E5E7EB; padding-bottom: 16px; margin-bottom: 18px;">
         <div>
           <span style="font-size: 0.76rem; color: #6B7280; font-weight: 800; text-transform: uppercase;">LPG Gas Order Summary</span>
-          <h2 style="font-size: 1.5rem; margin: 4px 0 0; color: #111827; font-weight: 900;" id="detailsOrderId">Order #EG-9482</h2>
+          <h2 style="font-size: 1.5rem; margin: 4px 0 0; color: #111827; font-weight: 900;" id="detailsOrderId">Loading Order...</h2>
         </div>
         <span id="detailsStatusBadge" style="background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 8px 16px; border-radius: 20px; font-weight: 800; font-size: 0.85rem;">
-          <i class="fa-solid fa-circle-dot fa-spin"></i> PLACED
+          <i class="fa-solid fa-circle-dot fa-spin"></i> Loading...
         </span>
       </div>
 
@@ -165,19 +165,19 @@
       <div class="info-grid">
         <div class="info-item">
           <span class="info-label"><i class="fa-solid fa-store" style="color:#10B981;"></i> Refiller Vendor Station</span>
-          <span class="info-value" id="detailsVendor">Grace LPG Depot Hub</span>
+          <span class="info-value" id="detailsVendor">—</span>
         </div>
         <div class="info-item">
           <span class="info-label"><i class="fa-solid fa-gas-pump" style="color:#10B981;"></i> Cylinder Payload & Service</span>
-          <span class="info-value" id="detailsPayload">12.5 kg • Cylinder Refill Only</span>
+          <span class="info-value" id="detailsPayload">—</span>
         </div>
         <div class="info-item">
           <span class="info-label"><i class="fa-solid fa-location-dot" style="color:#10B981;"></i> Delivery Address</span>
-          <span class="info-value" id="detailsAddress">14 Bode Thomas St, Surulere, Lagos</span>
+          <span class="info-value" id="detailsAddress">—</span>
         </div>
         <div class="info-item">
           <span class="info-label"><i class="fa-solid fa-credit-card" style="color:#10B981;"></i> Total Paid</span>
-          <span class="info-value" style="color:#00B14F; font-size: 1.2rem;" id="detailsTotal">₦13,750</span>
+          <span class="info-value" style="color:#00B14F; font-size: 1.2rem;" id="detailsTotal">—</span>
         </div>
       </div>
 
@@ -238,10 +238,10 @@
 
         if (order && (order.userEmail === curUser.email || order.customerName === curUser.name || !order.userEmail)) {
           if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = `Order #${order.id}`;
-          if (document.getElementById('detailsVendor')) document.getElementById('detailsVendor').innerText = order.vendorName || 'Grace LPG Depot';
+          if (document.getElementById('detailsVendor')) document.getElementById('detailsVendor').innerText = order.vendorName || 'EmberGas Station';
           if (document.getElementById('detailsPayload')) document.getElementById('detailsPayload').innerText = `${order.cylinderSize} • ${order.serviceType || 'Refill'}`;
           if (document.getElementById('detailsAddress')) document.getElementById('detailsAddress').innerText = order.address || '—';
-          if (document.getElementById('detailsTotal')) document.getElementById('detailsTotal').innerText = `₦${(order.amount || order.total || 13750).toLocaleString()}`;
+          if (document.getElementById('detailsTotal')) document.getElementById('detailsTotal').innerText = `₦${(order.amount || order.total || 0).toLocaleString()}`;
 
           const statusBadge = document.getElementById('detailsStatusBadge');
           if (statusBadge) statusBadge.innerText = order.status;
@@ -274,7 +274,10 @@
           }
         } else {
           if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = 'No Active Order';
+          if (document.getElementById('detailsVendor')) document.getElementById('detailsVendor').innerText = '—';
           if (document.getElementById('detailsPayload')) document.getElementById('detailsPayload').innerText = 'Place a gas refill request from your customer dashboard';
+          if (document.getElementById('detailsAddress')) document.getElementById('detailsAddress').innerText = '—';
+          if (document.getElementById('detailsTotal')) document.getElementById('detailsTotal').innerText = '—';
         }
       }
     });

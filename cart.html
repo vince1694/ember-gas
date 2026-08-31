@@ -213,11 +213,11 @@
           <div style="display: flex; align-items: center; gap: 14px;">
             <div class="cart-item-icon"><i class="fa-solid fa-drum"></i></div>
             <div>
-              <div class="cart-item-name" id="cartCylinderName">12.5 kg Gas Cylinder</div>
+              <div class="cart-item-name" id="cartCylinderName">Loading Cylinder Item...</div>
               <div class="cart-item-sub">Brand New LPG Cylinder + Full Gas Fill</div>
             </div>
           </div>
-          <div class="cart-item-price" id="cartItemPrice">₦13,750</div>
+          <div class="cart-item-price" id="cartItemPrice">—</div>
         </div>
 
         <div class="cart-item-row">
@@ -234,7 +234,7 @@
         <div class="cart-total-row">
           <div>
             <div class="cart-total-label">Order Total</div>
-            <div class="cart-total-amount" id="cartTotal">₦13,750</div>
+            <div class="cart-total-amount" id="cartTotal">—</div>
           </div>
           <div style="text-align: right;">
             <span style="background: #D1FAE5; color: #065F46; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;">
@@ -344,8 +344,8 @@
         phone,
         address,
         notes: document.getElementById('cartNotes').value.trim(),
-        amount: pendingCart ? pendingCart.total : 13750,
-        total: pendingCart ? pendingCart.total : 13750,
+        amount: pendingCart ? pendingCart.total : 0,
+        total: pendingCart ? pendingCart.total : 0,
         status: 'PENDING_ADMIN',
         createdAt: new Date().toISOString(),
         assignedTo: 'admin'

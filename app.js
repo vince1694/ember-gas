@@ -543,18 +543,20 @@ class OrderStateManager {
         const newOrder = {
             id: 'EG-' + Math.floor(1000 + Math.random() * 9000),
             customerName: user.name || 'Valued Customer',
-            userEmail: user.email || 'customer@embergas.ng',
-            customerPhone: user.phone || '08031122334',
-            address: address || '14 Bode Thomas St, Surulere, Lagos',
+            userEmail: user.email || '',
+            customerPhone: user.phone || '',
+            address: address || '',
             cylinderSize: cylinderSize + (String(cylinderSize).includes('kg') ? '' : ' kg'),
             size: parseFloat(cylinderSize) || 12.5,
             serviceType: serviceType || 'Cylinder Refill Only',
             amount: calculatedAmount,
             total: calculatedAmount,
             status: 'PLACED',
-            vendorName: 'Grace LPG Depot Hub',
+            vendorName: '',   // Set by caller after vendor selection
+            vendorEmail: '',  // Set by caller after vendor selection
             riderName: null,
             etaMins: 25,
+            type: 'BOOKING_REQUEST',
             createdAt: new Date().toISOString()
         };
         this.saveActiveOrder(newOrder);
