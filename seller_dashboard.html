@@ -327,7 +327,7 @@
       <div class="metric-card">
         <div class="metric-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
         <div>
-          <div class="metric-label">Booking Requests</div>
+          <div class="metric-label">Active Requests</div>
           <div class="metric-val" id="metricOrders">0</div>
         </div>
       </div>
@@ -339,10 +339,10 @@
         </div>
       </div>
       <div class="metric-card">
-        <div class="metric-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #B45309;"><i class="fa-solid fa-user-check"></i></div>
+        <div class="metric-icon" style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); color: #B45309;"><i class="fa-solid fa-check-double"></i></div>
         <div>
-          <div class="metric-label">Vendor Email</div>
-          <div style="font-size: 0.82rem; font-weight: 700; color: #B45309;" id="metricEmail">—</div>
+          <div class="metric-label">Completed Services</div>
+          <div class="metric-val" style="color: #B45309;" id="metricCompleted">0</div>
         </div>
       </div>
     </div>
@@ -598,9 +598,14 @@
         return false;
       });
 
-      const totalRevenue = myVendorOrders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (Number(o.total || o.amount) || 0), 0);
+      const completedOrders = myVendorOrders.filter(o => o.status === 'COMPLETED');
+      const activeOrders = myVendorOrders.filter(o => o.status !== 'COMPLETED' && o.status !== 'REJECTED' && o.status !== 'CANCELLED');
+      
+      const totalRevenue = completedOrders.reduce((sum, o) => sum + (Number(o.total || o.amount) || 0), 0);
       document.getElementById('metricRevenue').innerText = totalRevenue.toLocaleString();
-      document.getElementById('metricOrders').innerText = myVendorOrders.length + ' Request' + (myVendorOrders.length !== 1 ? 's' : '');
+      document.getElementById('metricOrders').innerText = activeOrders.length + ' Active';
+      const metricCompletedEl = document.getElementById('metricCompleted');
+      if (metricCompletedEl) metricCompletedEl.innerText = completedOrders.length + ' Done';
 
       const tbody = document.getElementById('vendorOrdersTableBody');
       const mobileList = document.getElementById('vendorMobileOrders');
