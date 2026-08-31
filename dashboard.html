@@ -720,9 +720,7 @@
             <i class="fa-solid fa-store" style="color: #00B14F;"></i> Verified Refiller Vendor
           </label>
           <select id="vendorSelect" class="dash-input" style="border-color: #00B14F;">
-            <option value="Grace LPG Depot Hub" data-email="vendor@embergas.ng">Grace LPG Depot Hub (Surulere) • ₦1,100/kg [Verified ✅]</option>
-            <option value="MegaGas Refill Plant" data-email="megagas@embergas.ng">MegaGas Refill Plant (Ikeja) • ₦1,100/kg [Verified ✅]</option>
-            <option value="Lekki Express Gas Station" data-email="lekkigas@embergas.ng">Lekki Express Gas Station • ₦1,150/kg [Verified ✅]</option>
+            <option value="">Loading verified vendor stations...</option>
           </select>
         </div>
 
@@ -909,9 +907,48 @@
       // Real address from profile
       const savedAddr = curUser.address || '';
       if (savedAddr && document.getElementById('deliveryAddr')) document.getElementById('deliveryAddr').value = savedAddr;
-      document.getElementById('userLocation').innerText = savedAddr || 'Lagos, Nigeria';
-
       renderRecentOrders();
+      loadVerifiedVendors();
+    }
+
+    async function loadVerifiedVendors() {
+      const vendorSelect = document.getElementById('vendorSelect');
+      if (!vendorSelect) return;
+
+      try {
+        let vendors = [];
+        const res = await safeFetchApi('/api/auth/users-by-role/vendor');
+        if (res && res.ok) {
+          vendors = await res.json();
+        }
+
+        // Merge local registered vendor accounts
+        const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+        const localVendors = localUsers.filter(u => u.role === 'vendor');
+        localVendors.forEach(lv => {
+          if (!vendors.some(v => v.email && lv.email && v.email.toLowerCase() === lv.email.toLowerCase())) {
+            vendors.push(lv);
+          }
+        });
+
+        if (vendors && vendors.length > 0) {
+          vendorSelect.innerHTML = vendors.map(v => {
+            const vName = v.name || 'Vendor Station';
+            const vEmail = v.email || 'vendor@embergas.ng';
+            const displayTitle = vName.includes('Hub') || vName.includes('Station') || vName.includes('Depot')
+              ? vName
+              : `${vName} LPG Depot Hub`;
+
+            return `<option value="${displayTitle}" data-email="${vEmail}">${displayTitle} (${vEmail}) • ₦1,100/kg [Verified ✅]</option>`;
+          }).join('');
+        } else {
+          // Default fallback verified station
+          vendorSelect.innerHTML = `<option value="Grace LPG Depot Hub" data-email="vendor@embergas.ng">Grace LPG Depot Hub (vendor@embergas.ng) • ₦1,100/kg [Verified ✅]</option>`;
+        }
+      } catch (err) {
+        console.warn('Load verified vendors note:', err);
+        vendorSelect.innerHTML = `<option value="Grace LPG Depot Hub" data-email="vendor@embergas.ng">Grace LPG Depot Hub (vendor@embergas.ng) • ₦1,100/kg [Verified ✅]</option>`;
+      }
     }
 
     function renderRecentOrders() {
