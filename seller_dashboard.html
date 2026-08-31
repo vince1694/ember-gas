@@ -545,7 +545,10 @@
   <script>
     // ── Redirect vendor if not logged in ──────────────────────────────────
     const vendorUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!vendorUser || (vendorUser.role !== 'vendor' && vendorUser.role !== 'admin')) {
+    const vendorRole = (vendorUser?.role || '').toLowerCase();
+    const isVendor = ['vendor', 'seller', 'filling_station', 'independent_seller', 'admin'].includes(vendorRole);
+
+    if (!vendorUser || !isVendor) {
       if (window.NotificationManager) NotificationManager.show('Vendor access only. Please log in as a vendor.', 'error');
       setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     } else {
