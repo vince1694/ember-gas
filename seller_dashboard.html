@@ -222,11 +222,48 @@
       margin-bottom: 10px;
     }
 
+    /* ── SWIPE HINT PILL ── */
+    .swipe-hint-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: #00B14F;
+      background: rgba(0, 177, 79, 0.08);
+      border: 1px dashed rgba(0, 177, 79, 0.35);
+      padding: 7px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .quick-link-card {
+      background: #F9FAFB;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .quick-link-card:hover {
+      border-color: #00B14F;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 177, 79, 0.12);
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       main { padding: 0 12px; margin: 14px auto; }
 
       .metrics-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+      }
+
+      .quick-links-grid {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 10px !important;
       }
@@ -273,6 +310,12 @@
   <div class="header-spacer"></div>
 
   <main>
+    <!-- Swipe Hint Pill -->
+    <div class="swipe-hint-pill">
+      <i class="fa-solid fa-hand-pointer"></i>
+      <span>Swipe left for Live Orders • Swipe right for Inventory Control</span> ↔
+    </div>
+
     <!-- ── VENDOR WELCOME BANNER ── -->
     <div class="vendor-welcome">
       <div>
@@ -319,8 +362,37 @@
       </div>
     </div>
 
+    <!-- Quick Services & Action Grid -->
+    <div style="margin-bottom: 20px; padding: 20px; background: #FFFFFF; border-radius: 18px; border: 1px solid #E5E7EB; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+      <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 14px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-bolt" style="color: #00B14F;"></i> Station Quick Services & Actions
+      </h3>
+      <div class="quick-links-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+        <div onclick="openAddStockModal()" class="quick-link-card">
+          <i class="fa-solid fa-plus-circle" style="color: #3B82F6; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Add Stock Package</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">New cylinder sizes</div>
+        </div>
+        <div onclick="saveStockPrice()" class="quick-link-card">
+          <i class="fa-solid fa-tag" style="color: #00B14F; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Update Gas Rates</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">Save LPG rate / kg</div>
+        </div>
+        <div onclick="document.getElementById('liveOrderQueue').scrollIntoView({behavior:'smooth'})" class="quick-link-card">
+          <i class="fa-solid fa-truck-ramp-box" style="color: #F59E0B; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Station Orders</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">Manage queue</div>
+        </div>
+        <div onclick="window.location.reload()" class="quick-link-card">
+          <i class="fa-solid fa-rotate" style="color: #8B5CF6; font-size: 1.3rem;"></i>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #111827; margin-top: 6px;">Refresh Stream</div>
+          <div style="font-size: 0.72rem; color: #6B7280;">Live sync</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Inventory & Stock Status Control -->
-    <div class="stock-toggle-card">
+    <div class="stock-toggle-card" id="inventoryStockControl">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
         <div>
           <h3 style="font-size: 1.15rem; font-weight: 800; color: #111827; margin: 0 0 2px; display: flex; align-items: center; gap: 8px;">
@@ -363,7 +435,7 @@
     </div>
 
     <!-- Live Incoming Orders Stream -->
-    <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;">
+    <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;" id="liveOrderQueue">
       <h3 style="margin-bottom: 14px; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Live Order Queue</h3>
       
       <!-- Desktop Table -->
@@ -810,6 +882,39 @@
       if (window.NotificationManager) NotificationManager.show('Order Declined', 'error');
       renderVendorOrders();
     }
+
+    // --- OPTIMIZED MOBILE SWEEP GESTURE ENGINE FOR VENDOR DASHBOARD ---
+    let vendorTouchStartX = 0;
+    let vendorTouchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+      vendorTouchStartX = e.touches[0].clientX;
+      vendorTouchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffX = touchEndX - vendorTouchStartX;
+      const diffY = touchEndY - vendorTouchStartY;
+
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+        if (diffX < 0) {
+          // Swipe Left ➔ Jump to Live Orders Stream
+          const orderSection = document.getElementById('liveOrderQueue');
+          if (orderSection) {
+            orderSection.scrollIntoView({ behavior: 'smooth' });
+            if (window.NotificationManager) NotificationManager.show('Swiped Left: Live Orders Queue', 'info');
+          }
+        } else {
+          // Swipe Right ➔ Jump to Inventory Stock Control
+          const inventorySection = document.getElementById('inventoryStockControl');
+          if (inventorySection) {
+            inventorySection.scrollIntoView({ behavior: 'smooth' });
+            if (window.NotificationManager) NotificationManager.show('Swiped Right: Inventory Stock Control', 'info');
+          }
+        }
+      }
+    }, { passive: true });
   </script>
 </body>
 </html>
