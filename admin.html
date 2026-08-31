@@ -1166,7 +1166,7 @@
         if (changed) localStorage.setItem(key, JSON.stringify(arr));
       });
 
-      // Clear from emberGasKybRequests
+      // Update status in emberGasKybRequests
       const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
       const updatedReqs = kybReqs.map(r => {
         if (r.email && r.email.toLowerCase() === email.toLowerCase()) {
@@ -1175,6 +1175,14 @@
         return r;
       });
       localStorage.setItem('emberGasKybRequests', JSON.stringify(updatedReqs));
+
+      // Also update currentUser if it matches the approved vendor
+      const curUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+      if (curUser && curUser.email && curUser.email.toLowerCase() === email.toLowerCase()) {
+        curUser.kybStatus = 'VERIFIED';
+        curUser.kybApproved = true;
+        localStorage.setItem('currentUser', JSON.stringify(curUser));
+      }
 
       if (window.NotificationManager) NotificationManager.show(`✅ KYB Verified for "${name}"! Vendor can now accept booking requests.`, 'success');
       loadKybQueue();

@@ -551,47 +551,87 @@
       if (rateInput) rateInput.value = savedRate;
       if (metricRateEl) metricRateEl.innerText = Number(savedRate).toLocaleString();
 
-      // ── KYB VERIFICATION GATE ──────────────────────────────────────────────
-      // Re-read latest KYB status from storage (admin may have verified after login)
+      // ── KYB VERIFICATION GATE & REAL-TIME AUTO-DISMISS ──
       function getLatestKybStatus() {
+        if (!vendorUser || !vendorUser.email) return false;
         const keys = ['emberGasAccounts', 'gasVendors', 'users', 'gasUsers'];
         for (const key of keys) {
           const arr = JSON.parse(localStorage.getItem(key) || '[]');
-          const match = arr.find(a => a.email && vendorUser.email && a.email.toLowerCase() === vendorUser.email.toLowerCase());
+          const match = arr.find(a => a.email && a.email.toLowerCase() === vendorUser.email.toLowerCase());
           if (match && (match.kybStatus === 'VERIFIED' || match.kybApproved === true)) return true;
+        }
+        const cur = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (cur && cur.email && cur.email.toLowerCase() === vendorUser.email.toLowerCase() && (cur.kybStatus === 'VERIFIED' || cur.kybApproved === true)) {
+          return true;
         }
         return false;
       }
-      window._vendorKybVerified = getLatestKybStatus();
 
-      // Show KYB pending banner if not verified
-      if (!window._vendorKybVerified && vendorRole !== 'admin') {
+      function checkKybBannerState() {
+        const isVerified = getLatestKybStatus();
+        window._vendorKybVerified = isVerified;
+        const pendingBanner = document.getElementById('kybPendingBanner');
         const vEmail = vendorUser ? (vendorUser.email || '').toLowerCase() : '';
-        const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
-        const isAlreadyRequested = kybReqs.some(r => r.email && r.email.toLowerCase() === vEmail && r.status === 'PENDING');
+        const justApprovedKey = 'kybApprovedNotified_' + vEmail;
 
-        const bannerDiv = document.createElement('div');
-        bannerDiv.id = 'kybPendingBanner';
-        bannerDiv.style.cssText = 'position:fixed;top:70px;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
-        
-        const btnHtml = isAlreadyRequested
-          ? `<button id="btnRequestKyb" disabled style="background:rgba(255,255,255,0.4);border:1.5px solid rgba(255,255,255,0.6);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:default;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-check"></i> Approval Requested (Pending Admin Review)</button>`
-          : `<button id="btnRequestKyb" onclick="sendKybApprovalRequest(this)" style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.5);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s ease;"><i class="fa-solid fa-paper-plane"></i> Notify Admin for KYB Approval</button>`;
+        if (isVerified) {
+          // If pending banner is currently showing, remove it!
+          if (pendingBanner) {
+            pendingBanner.remove();
+          }
 
-        bannerDiv.innerHTML = `
-          <div style="display:flex;align-items:center;gap:12px;">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;"></i>
-            <div>
-              <div style="font-weight:900;font-size:1rem;">⏳ KYB Verification Pending</div>
-              <div style="font-size:0.82rem;opacity:0.92;">Your vendor license has not been approved yet. Send a request to EmberGas Admin to review your KYB license. You cannot accept booking requests until approved.</div>
+          // Show "KYB Verification Successful!" banner/toast if not shown yet
+          if (!document.getElementById('kybSuccessBanner') && !localStorage.getItem(justApprovedKey)) {
+            localStorage.setItem(justApprovedKey, 'true');
+
+            const successBanner = document.createElement('div');
+            successBanner.id = 'kybSuccessBanner';
+            successBanner.style.cssText = 'position:fixed;top:70px;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#10B981,#047857);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(16,185,129,0.3);';
+            successBanner.innerHTML = `
+              <div style="display:flex;align-items:center;gap:12px;">
+                <i class="fa-solid fa-circle-check" style="font-size:1.6rem;"></i>
+                <div>
+                  <div style="font-weight:900;font-size:1.02rem;">🎉 KYB Verification Successful!</div>
+                  <div style="font-size:0.84rem;opacity:0.95;">Your station access license has been approved by EmberGas Super Admin. You are now verified to accept customer refill requests.</div>
+                </div>
+              </div>
+              <button onclick="document.getElementById('kybSuccessBanner').remove()" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.5);color:#fff;padding:6px 14px;border-radius:8px;font-weight:800;cursor:pointer;font-size:0.8rem;">Dismiss</button>
+            `;
+            document.body.prepend(successBanner);
+
+            if (window.NotificationManager) {
+              NotificationManager.show(`🎉 KYB Verification Successful! EmberGas Admin approved your station license.`, 'success');
+            }
+          }
+        } else if (!pendingBanner && vendorRole !== 'admin') {
+          // Show KYB pending banner if not verified
+          const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+          const isAlreadyRequested = kybReqs.some(r => r.email && r.email.toLowerCase() === vEmail && r.status === 'PENDING');
+
+          const bannerDiv = document.createElement('div');
+          bannerDiv.id = 'kybPendingBanner';
+          bannerDiv.style.cssText = 'position:fixed;top:70px;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,0.2);';
+          
+          const btnHtml = isAlreadyRequested
+            ? `<button id="btnRequestKyb" disabled style="background:rgba(255,255,255,0.4);border:1.5px solid rgba(255,255,255,0.6);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:default;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-check"></i> Approval Requested (Pending Admin Review)</button>`
+            : `<button id="btnRequestKyb" onclick="sendKybApprovalRequest(this)" style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.5);color:#fff;padding:8px 16px;border-radius:10px;font-weight:800;font-size:0.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s ease;"><i class="fa-solid fa-paper-plane"></i> Notify Admin for KYB Approval</button>`;
+
+          bannerDiv.innerHTML = `
+            <div style="display:flex;align-items:center;gap:12px;">
+              <i class="fa-solid fa-triangle-exclamation" style="font-size:1.4rem;"></i>
+              <div>
+                <div style="font-weight:900;font-size:1rem;">⏳ KYB Verification Pending</div>
+                <div style="font-size:0.82rem;opacity:0.92;">Your vendor license has not been approved yet. Send a request to EmberGas Admin to review your KYB license. You cannot accept booking requests until approved.</div>
+              </div>
             </div>
-          </div>
-          ${btnHtml}
-        `;
-        document.body.prepend(bannerDiv);
-        // Also add margin to body to avoid content hidden behind banner
-        document.body.style.paddingTop = (parseInt(document.body.style.paddingTop || '0') + 60) + 'px';
+            ${btnHtml}
+          `;
+          document.body.prepend(bannerDiv);
+        }
       }
+
+      checkKybBannerState();
+      setInterval(checkKybBannerState, 3000);
     }
 
     function sendKybApprovalRequest(btn) {
