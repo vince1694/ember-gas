@@ -30,6 +30,16 @@ app.set('trust proxy', true);
 app.use(express.json());
 app.use(cors());
 
+// Ensure DB is connected for Vercel Serverless requests
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+    } catch (err) {
+        console.error('DB connect error:', err);
+    }
+    next();
+});
+
 // Serve frontend static files
 app.use(express.static(ROOT));
 
