@@ -324,6 +324,61 @@
 
   <script src="app.js"></script>
   <script>
+    const defaultProducts = [
+      { id: 'p1', name: 'Double Safety Low-Pressure Regulator', cat: 'regulator', price: 8500, desc: 'Features an automatic leak shut-off valve and double diaphragm protection mechanism. Fits all 12.5kg & 25kg cylinders.', icon: 'fa-gauge-high', badge: 'Top Seller', inStock: true },
+      { id: 'p2', name: 'Steel Braided Safety Hose (2M)', cat: 'hose', price: 5500, desc: 'High-pressure reinforced rubber hose with inner stainless steel wire mesh. Heat resistant up to 300°C.', icon: 'fa-disease', badge: 'Fire Resistant', inStock: true },
+      { id: 'p3', name: 'Smart WiFi Gas Leak & Level Monitor', cat: 'smart', price: 14500, desc: 'Ultrasonic cylinder weight sensor & WiFi gas leak alarm. Sends instant push alert to your phone when gas is low.', icon: 'fa-wifi', badge: 'Smart Tech', inStock: true },
+      { id: 'p4', name: 'Stainless Steel Double Table Stove', cat: 'stove', price: 38000, desc: 'Heavy-duty cast iron double burners with automatic piezo ignition. High thermal efficiency blue flame.', icon: 'fa-fire-burner', badge: '', inStock: true },
+      { id: 'p5', name: 'Heavy Duty Cylinder Roller Stand', cat: 'regulator', price: 9200, desc: 'Multi-directional caster wheel base made of stainless steel. Effortlessly roll 12.5kg and 25kg cylinders across kitchen floors.', icon: 'fa-truck-monster', badge: '', inStock: true },
+      { id: 'p6', name: 'Brass High-Pressure Hose Clamps (Pack of 4)', cat: 'hose', price: 2500, desc: 'Heavy-duty rust-proof brass screw clamps to firmly secure gas hoses to regulator and stove nozzles.', icon: 'fa-ring', badge: '', inStock: true }
+    ];
+
+    function getStoreProducts() {
+      const saved = localStorage.getItem('emberStoreProducts');
+      if (!saved) {
+        localStorage.setItem('emberStoreProducts', JSON.stringify(defaultProducts));
+        return defaultProducts;
+      }
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) && parsed.length > 0 ? parsed : defaultProducts;
+      } catch (e) {
+        return defaultProducts;
+      }
+    }
+
+    let activeCategory = 'all';
+
+    function renderProducts() {
+      const grid = document.getElementById('productsGrid');
+      if (!grid) return;
+      const products = getStoreProducts();
+
+      grid.innerHTML = products.map(p => {
+        const badgeHtml = p.badge ? `<span class="product-badge">${p.badge}</span>` : '';
+        const iconClass = p.icon || 'fa-box';
+        const outOfStockTag = !p.inStock ? '<span style="color:#EF4444; font-size:0.75rem; font-weight:800; margin-left:6px;">(OUT OF STOCK)</span>' : '';
+        const displayStyle = (activeCategory === 'all' || p.cat === activeCategory) ? 'flex' : 'none';
+
+        return `
+          <div class="product-card" data-cat="${p.cat}" style="display: ${displayStyle};">
+            ${badgeHtml}
+            <div>
+              <div class="product-icon-box"><i class="fa-solid ${iconClass}"></i></div>
+              <h3 style="font-size: 1.15rem; margin-bottom: 6px;">${p.name} ${outOfStockTag}</h3>
+              <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 15px;">${p.desc}</p>
+            </div>
+            <div>
+              <div style="font-size: 1.3rem; font-weight: 800; color: #10B981; margin-bottom: 12px;">₦${Number(p.price).toLocaleString()}</div>
+              <button onclick="addToCart('${p.name.replace(/'/g, "\\'")}', ${p.price})" class="btn-action" style="padding: 10px; font-size: 0.88rem; min-height: 42px;" ${!p.inStock ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                <i class="fa-solid fa-cart-plus"></i> ${p.inStock ? 'Add to Cart' : 'Out of Stock'}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     let cart = [];
 
     function addToCart(name, price) {
@@ -337,9 +392,12 @@
     function updateCartDisplay() {
       const count = cart.length;
       const total = cart.reduce((sum, item) => sum + item.price, 0);
-      document.getElementById('cartCountHeader').innerText = count;
-      document.getElementById('cartCountFloat').innerText = count;
-      document.getElementById('cartTotalFloat').innerText = '₦' + total.toLocaleString();
+      const countHeader = document.getElementById('cartCountHeader');
+      if (countHeader) countHeader.innerText = count;
+      const countFloat = document.getElementById('cartCountFloat');
+      if (countFloat) countFloat.innerText = count;
+      const totalFloat = document.getElementById('cartTotalFloat');
+      if (totalFloat) totalFloat.innerText = '₦' + total.toLocaleString();
     }
 
     function toggleCartModal() {
@@ -357,16 +415,14 @@
     }
 
     function filterCat(cat, btn) {
+      activeCategory = cat;
       document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.product-card').forEach(card => {
-        if (cat === 'all' || card.getAttribute('data-cat') === cat) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
-        }
-      });
+      if (btn) btn.classList.add('active');
+      renderProducts();
     }
+
+    // Initial load
+    renderProducts();
   </script>
 </body>
 </html>
