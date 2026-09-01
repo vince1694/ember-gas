@@ -233,8 +233,15 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       if (window.OrderStateManager) {
-        const order = OrderStateManager.getActiveOrder();
+        let order = OrderStateManager.getActiveOrder();
         const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+
+        if (!order && curUser.email) {
+          const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+          const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+          const combined = [...allOrders, ...adminOrders];
+          order = combined.find(o => o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || combined[0] || null;
+        }
 
         if (order && (order.userEmail === curUser.email || order.customerName === curUser.name || !order.userEmail)) {
           if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = `Order #${order.id}`;

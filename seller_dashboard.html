@@ -1123,6 +1123,7 @@
       if (orderIdx !== -1) {
         allOrders[orderIdx].status = 'CANCELLED';
         localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
+        if (window.OrderStateManager) OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
       }
       if (window.NotificationManager) NotificationManager.show('Order Declined', 'error');
       renderVendorOrders();
