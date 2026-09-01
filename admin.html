@@ -938,35 +938,59 @@
     // ── ACCOUNTS MASTER REGISTRY SCRIPT ──
     let currentUserRegistryFilter = 'all';
 
+    // ── ROLE NORMALIZATION HELPER ──
+    function normalizeRole(role) {
+      if (!role) return 'customer';
+      const r = role.toLowerCase();
+      if (['vendor', 'seller', 'filling_station', 'independent_seller', 'refiller'].includes(r)) return 'vendor';
+      if (['admin', 'superadmin', 'super_admin'].includes(r)) return 'admin';
+      return 'customer'; // customer / user / guest / any unknown = customer
+    }
+
     function getAllAccounts() {
+      // Read ALL storage keys where accounts can be saved
       const accounts   = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const users      = JSON.parse(localStorage.getItem('users') || '[]');
+      const usersArr   = JSON.parse(localStorage.getItem('users') || '[]');
       const gasUsers   = JSON.parse(localStorage.getItem('gasUsers') || '[]');
       const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
       const curUser    = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
-      const all = [...accounts, ...users, ...gasUsers, ...gasVendors];
-      if (curUser && curUser.email) all.push(curUser);
-
       const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
 
+      // Combine all sources
+      const allRaw = [...accounts, ...usersArr, ...gasUsers, ...gasVendors];
+      // Add currentUser only if it's NOT the admin gate placeholder account
+      if (curUser && curUser.email && curUser.id !== 'admin_master' && normalizeRole(curUser.role) !== 'admin') {
+        allRaw.push(curUser);
+      }
+
+      // Deduplicate by email — always prefer the entry with the most data
       const uniqueMap = new Map();
-      all.forEach(a => {
-        if (a && a.email) {
-          const lowerEmail = a.email.toLowerCase();
-          const existing = uniqueMap.get(lowerEmail) || {};
-          const isKybApproved = a.kybStatus === 'VERIFIED' || a.kybApproved === true || existing.kybStatus === 'VERIFIED' || kybReqs.some(r => r.email && r.email.toLowerCase() === lowerEmail && r.status === 'VERIFIED');
-          
-          const merged = {
-            ...existing,
-            ...a,
-            kybStatus: isKybApproved ? 'VERIFIED' : (a.kybStatus || existing.kybStatus || 'PENDING'),
-            kybApproved: isKybApproved
-          };
-          uniqueMap.set(lowerEmail, merged);
+      allRaw.forEach(a => {
+        if (!a || !a.email) return;
+        const key = a.email.toLowerCase();
+        const existing = uniqueMap.get(key);
+        if (!existing) {
+          uniqueMap.set(key, { ...a, role: normalizeRole(a.role) });
+        } else {
+          // Merge: prefer the entry with the most populated fields
+          const merged = { ...existing, ...a };
+          // Always keep the best role (vendor > customer)
+          const existingNorm = normalizeRole(existing.role);
+          const incomingNorm = normalizeRole(a.role);
+          merged.role = (existingNorm === 'vendor' || incomingNorm === 'vendor') ? 'vendor' : 'customer';
+          // Merge KYB status
+          const isKybApproved = a.kybStatus === 'VERIFIED' || a.kybApproved === true ||
+            existing.kybStatus === 'VERIFIED' || existing.kybApproved === true ||
+            kybReqs.some(r => r.email && r.email.toLowerCase() === key && r.status === 'VERIFIED');
+          merged.kybStatus = isKybApproved ? 'VERIFIED' : (a.kybStatus || existing.kybStatus || 'PENDING');
+          merged.kybApproved = isKybApproved;
+          uniqueMap.set(key, merged);
         }
       });
-      return Array.from(uniqueMap.values());
+
+      // Return all accounts EXCLUDING system admin placeholder
+      return Array.from(uniqueMap.values()).filter(a => normalizeRole(a.role) !== 'admin');
     }
 
     function filterUserRegistry(type, btn) {
@@ -982,8 +1006,9 @@
       if (!tbody) return;
 
       const allAccounts = getAllAccounts();
-      const customerCount = allAccounts.filter(a => (a.role || 'customer').toLowerCase() === 'customer' || (a.role || '').toLowerCase() === 'user').length;
-      const vendorCount = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase())).length;
+      // After normalizeRole() runs inside getAllAccounts, roles are either 'vendor' or 'customer'
+      const customerCount = allAccounts.filter(a => a.role === 'customer').length;
+      const vendorCount   = allAccounts.filter(a => a.role === 'vendor').length;
 
       const totalEl = document.getElementById('regTotalCount');
       if (totalEl) totalEl.innerText = allAccounts.length;
@@ -996,9 +1021,9 @@
 
       let filtered = allAccounts;
       if (currentUserRegistryFilter === 'customer') {
-        filtered = allAccounts.filter(a => (a.role || 'customer').toLowerCase() === 'customer' || (a.role || '').toLowerCase() === 'user');
+        filtered = allAccounts.filter(a => a.role === 'customer');
       } else if (currentUserRegistryFilter === 'vendor') {
-        filtered = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+        filtered = allAccounts.filter(a => a.role === 'vendor');
       }
 
       if (filtered.length === 0) {
@@ -1008,16 +1033,13 @@
       }
 
       tbody.innerHTML = filtered.map(a => {
-        const role = (a.role || 'customer').toLowerCase();
-        const isVendor = ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(role);
-        const isAdmin = role === 'admin';
-        const roleBadge = isAdmin
-          ? '<span style="background:rgba(59,130,246,0.2); color:#60A5FA; border:1px solid rgba(59,130,246,0.4); padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.75rem;">ADMIN</span>'
-          : isVendor
-            ? '<span style="background:rgba(245,158,11,0.2); color:#FBBF24; border:1px solid rgba(245,158,11,0.4); padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.75rem;">VENDOR STATION</span>'
-            : '<span style="background:rgba(16,185,129,0.2); color:#34D399; border:1px solid rgba(16,185,129,0.4); padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.75rem;">CUSTOMER</span>';
+        const role = a.role || 'customer'; // already normalized
+        const isVendor = role === 'vendor';
+        const roleBadge = isVendor
+          ? '<span style="background:rgba(245,158,11,0.2); color:#FBBF24; border:1px solid rgba(245,158,11,0.4); padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.75rem;">VENDOR STATION</span>'
+          : '<span style="background:rgba(16,185,129,0.2); color:#34D399; border:1px solid rgba(16,185,129,0.4); padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.75rem;">CUSTOMER</span>';
 
-        const actionBtns = isAdmin ? '<span style="color:#6B7280; font-size:0.78rem;">Protected</span>' : `
+        const actionBtns = `
           <div style="display: flex; gap: 6px;">
             <button class="btn-action-sm btn-blue" onclick="editAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${(a.name || '').replace(/'/g, "\\'")}', '${(a.phone || '').replace(/'/g, "\\'")}')">
               <i class="fa-solid fa-pen-to-square"></i> Edit
@@ -1041,16 +1063,12 @@
 
       if (mobileList) {
         mobileList.innerHTML = filtered.map(a => {
-          const role = (a.role || 'customer').toLowerCase();
-          const isVendor = ['vendor', 'seller', 'filling_station', 'independent_seller'].includes(role);
-          const isAdmin = role === 'admin';
-          const roleBadge = isAdmin
-            ? '<span style="background:rgba(59,130,246,0.2); color:#60A5FA; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">ADMIN</span>'
-            : isVendor
-              ? '<span style="background:rgba(245,158,11,0.2); color:#FBBF24; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">VENDOR STATION</span>'
-              : '<span style="background:rgba(16,185,129,0.2); color:#34D399; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">CUSTOMER</span>';
+          const isVendor = a.role === 'vendor'; // already normalized by getAllAccounts
+          const roleBadge = isVendor
+            ? '<span style="background:rgba(245,158,11,0.2); color:#FBBF24; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">VENDOR STATION</span>'
+            : '<span style="background:rgba(16,185,129,0.2); color:#34D399; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;">CUSTOMER</span>';
 
-          const actionBtns = isAdmin ? '' : `
+          const actionBtns = `
             <div style="display: flex; gap: 8px; margin-top: 8px;">
               <button class="btn-action-sm btn-blue" style="flex:1;" onclick="editAccountByAdmin('${a.email.replace(/'/g, "\\'")}', '${(a.name || '').replace(/'/g, "\\'")}', '${(a.phone || '').replace(/'/g, "\\'")}')">
                 <i class="fa-solid fa-pen-to-square"></i> Edit
@@ -1154,7 +1172,8 @@
       if (!tbody) return;
 
       const allAccounts = getAllAccounts();
-      let vendors = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+      // getAllAccounts already normalizes roles: 'vendor' or 'customer'
+      let vendors = allAccounts.filter(a => a.role === 'vendor');
 
       const kybRequests = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
       const pendingReqEmails = kybRequests.filter(r => r.status === 'PENDING').map(r => (r.email || '').toLowerCase());
@@ -1554,7 +1573,7 @@
       if (gmvEl) gmvEl.innerText = '₦' + totalGmv.toLocaleString();
 
       const allAccounts = getAllAccounts();
-      const vendors = allAccounts.filter(a => ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase()));
+      const vendors = allAccounts.filter(a => a.role === 'vendor'); // already normalized
 
       const depotsEl = document.getElementById('statActiveDepots');
       if (depotsEl) depotsEl.innerText = vendors.length + ' Stations';
@@ -1587,8 +1606,8 @@
 
     function showPlatformAuditSummary() {
       const accounts = getAllAccounts();
-      const customers = accounts.filter(a => (a.role || 'customer').toLowerCase() === 'customer');
-      const vendors = accounts.filter(a => ['vendor', 'seller', 'filling_station'].includes((a.role || '').toLowerCase()));
+      const customers = accounts.filter(a => a.role === 'customer'); // roles already normalized
+      const vendors = accounts.filter(a => a.role === 'vendor');
       const verifiedVendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
       
       const refillOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
