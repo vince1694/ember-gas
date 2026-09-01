@@ -692,7 +692,7 @@
         console.warn('Verify OTP backend error:', err.message);
       }
 
-      // Save user account permanently to MongoDB Atlas cloud database
+      // Save user account to backend API if available
       let dbUserToken = '';
       try {
         const regRes = await safeFetchApi('/api/auth/register', {
@@ -706,26 +706,30 @@
             role: pendingSignupUser.role || 'vendor'
           })
         });
-        const regData = await regRes.json();
-        if (!regRes.ok) {
-          if (window.NotificationManager) NotificationManager.show(regData.message || 'Registration failed in database.', 'error');
-          return;
+        if (regRes && regRes.ok) {
+          const regData = await regRes.json();
+          dbUserToken = regData.token;
+          console.log('[MONGODB REGISTRATION SUCCESS]: Saved to Cloud DB:', regData.email);
         }
-        dbUserToken = regData.token;
-        console.log('[MONGODB REGISTRATION SUCCESS]: Vendor/Customer saved to Cloud DB:', regData.email);
       } catch (err) {
-        console.error('MongoDB Atlas cloud register error:', err.message);
-        if (window.NotificationManager) NotificationManager.show('Cannot connect to database server.', 'error');
-        return;
+        console.warn('Backend cloud register connection note:', err.message);
       }
 
-      const existingAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const duplicate = existingAccounts.find(a => a.email.toLowerCase() === pendingSignupUser.email.toLowerCase());
+      // ALWAYS save new account to local registries so user is NEVER lost
+      const isVendorRole = ['vendor', 'seller', 'filling_station'].includes((pendingSignupUser.role || '').toLowerCase());
+      const targetKeys = ['emberGasAccounts', isVendorRole ? 'gasVendors' : 'gasUsers', 'users'];
       
-      if (!duplicate) {
-        existingAccounts.push(pendingSignupUser);
-        localStorage.setItem('emberGasAccounts', JSON.stringify(existingAccounts));
-      }
+      targetKeys.forEach(key => {
+        const arr = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!arr.some(a => a.email && a.email.toLowerCase() === pendingSignupUser.email.toLowerCase())) {
+          arr.push({
+            ...pendingSignupUser,
+            role: isVendorRole ? 'vendor' : 'customer',
+            createdAt: new Date().toISOString()
+          });
+          localStorage.setItem(key, JSON.stringify(arr));
+        }
+      });
 
       // Close modal
       closeOtpModal();

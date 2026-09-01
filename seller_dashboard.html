@@ -554,14 +554,36 @@
       // ── KYB VERIFICATION GATE & REAL-TIME AUTO-DISMISS ──
       function getLatestKybStatus() {
         if (!vendorUser || !vendorUser.email) return false;
+        const vEmail = (vendorUser.email || '').toLowerCase();
+
+        // 1. Check emberGasKybRequests
+        const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+        const reqMatch = kybReqs.find(r => r.email && r.email.toLowerCase() === vEmail);
+        if (reqMatch && (reqMatch.status === 'VERIFIED' || reqMatch.kybStatus === 'VERIFIED')) {
+          if (vendorUser && !vendorUser.kybApproved) {
+            vendorUser.kybStatus = 'VERIFIED';
+            vendorUser.kybApproved = true;
+            localStorage.setItem('currentUser', JSON.stringify(vendorUser));
+          }
+          return true;
+        }
+
+        // 2. Check all account keys
         const keys = ['emberGasAccounts', 'gasVendors', 'users', 'gasUsers'];
         for (const key of keys) {
           const arr = JSON.parse(localStorage.getItem(key) || '[]');
-          const match = arr.find(a => a.email && a.email.toLowerCase() === vendorUser.email.toLowerCase());
-          if (match && (match.kybStatus === 'VERIFIED' || match.kybApproved === true)) return true;
+          const match = arr.find(a => a.email && a.email.toLowerCase() === vEmail);
+          if (match && (match.kybStatus === 'VERIFIED' || match.kybApproved === true)) {
+            if (vendorUser && !vendorUser.kybApproved) {
+              vendorUser.kybStatus = 'VERIFIED';
+              vendorUser.kybApproved = true;
+              localStorage.setItem('currentUser', JSON.stringify(vendorUser));
+            }
+            return true;
+          }
         }
         const cur = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        if (cur && cur.email && cur.email.toLowerCase() === vendorUser.email.toLowerCase() && (cur.kybStatus === 'VERIFIED' || cur.kybApproved === true)) {
+        if (cur && cur.email && cur.email.toLowerCase() === vEmail && (cur.kybStatus === 'VERIFIED' || cur.kybApproved === true)) {
           return true;
         }
         return false;
