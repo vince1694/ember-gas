@@ -344,11 +344,22 @@
       border-color: #3B82F6;
     }
 
-    /* ── MOBILE ADAPTATION ── */
+    /* ── MOBILE ADAPTATION SWEEP ── */
     @media (max-width: 900px) {
+      .admin-standalone-header {
+        padding: 12px 16px;
+      }
+      .brand-title {
+        font-size: 1.05rem;
+      }
+      .brand-tag {
+        font-size: 0.6rem;
+        padding: 1px 6px;
+      }
       .admin-container {
         flex-direction: column;
-        padding: 14px;
+        padding: 12px;
+        gap: 16px;
       }
       .admin-sidebar {
         width: 100%;
@@ -356,14 +367,50 @@
         overflow-x: auto;
         padding-bottom: 10px;
         border-bottom: 1px solid var(--border-color);
+        scrollbar-width: none;
+      }
+      .admin-sidebar::-webkit-scrollbar {
+        display: none;
       }
       .sidebar-section-title { display: none; }
       .sidebar-nav-btn {
         white-space: nowrap;
-        padding: 10px 14px;
+        padding: 8px 14px;
+        font-size: 0.82rem;
+        border-radius: 20px;
+        flex-shrink: 0;
       }
-      .table-desktop-view { display: none; }
+      .table-desktop-view { display: none !important; }
       .mobile-orders-list { display: flex !important; }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .stat-card-luxury {
+        padding: 16px;
+      }
+      .stat-value {
+        font-size: 1.45rem;
+      }
+      .glass-card {
+        padding: 18px 14px;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .header-actions {
+        gap: 6px;
+      }
+      .header-btn {
+        padding: 6px 10px;
+        font-size: 0.78rem;
+      }
+      .btn-action-sm {
+        min-height: 38px;
+      }
     }
 
     /* Hide any global mobile bottom bar on admin portal */
@@ -640,7 +687,7 @@
             </select>
           </div>
 
-          <div class="table-responsive">
+          <div class="table-responsive table-desktop-view">
             <table class="table-admin">
               <thead>
                 <tr>
@@ -656,6 +703,11 @@
                 <!-- Dynamically populated -->
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Cards List -->
+          <div class="mobile-orders-list" id="kybQueueMobileList" style="display:none; flex-direction:column; gap:12px;">
+            <!-- Dynamically populated for mobile -->
           </div>
         </div>
       </div>
@@ -692,7 +744,7 @@
             </button>
           </div>
 
-          <div class="table-responsive">
+          <div class="table-responsive table-desktop-view">
             <table class="table-admin">
               <thead>
                 <tr>
@@ -709,6 +761,11 @@
                 <!-- Dynamically populated -->
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Cards List -->
+          <div class="mobile-orders-list" id="refillStreamMobileList" style="display:none; flex-direction:column; gap:12px;">
+            <!-- Dynamically populated for mobile -->
           </div>
         </div>
       </div>
@@ -1123,8 +1180,11 @@
         vendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
       }
 
+      const mobileList = document.getElementById('kybQueueMobileList');
+
       if (vendors.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="padding:28px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i> No vendor stations match the selected search or filter criteria.</td></tr>`;
+        if (mobileList) mobileList.innerHTML = `<div style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store"></i> No vendor stations match the selected criteria.</div>`;
         return;
       }
 
@@ -1157,6 +1217,37 @@
           </tr>
         `;
       }).join('');
+
+      if (mobileList) {
+        mobileList.innerHTML = vendors.map(v => {
+          const isVerified = v.kybStatus === 'VERIFIED';
+          const isRequested = pendingReqEmails.includes((v.email || '').toLowerCase());
+          const dprNo = v.dprNo || 'DPR-LPG-8849-NG';
+
+          let statusHtml = isVerified
+            ? `<span style="color:#34D399; font-weight:800; font-size:0.78rem;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`
+            : isRequested
+              ? `<span style="background:rgba(245,158,11,0.2); color:#FBBF24; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;"><i class="fa-solid fa-bolt"></i> REQUESTED</span>`
+              : `<span style="color:#FBBF24; font-weight:800; font-size:0.78rem;"><i class="fa-solid fa-clock"></i> Pending KYB</span>`;
+
+          const actionBtn = isVerified
+            ? `<span style="color:#34D399; font-size:0.8rem; font-weight:800; display:block; margin-top:8px;"><i class="fa-solid fa-shield-check"></i> Approved</span>`
+            : `<button class="btn-action-sm btn-green" style="width:100%; min-height:40px; justify-content:center; margin-top:10px;" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Approve License</button>`;
+
+          return `
+            <div style="background:#111827; border:1px solid ${isRequested ? '#F59E0B' : 'var(--border-color)'}; border-radius:16px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <div style="font-weight:800; font-size:0.95rem; color:#FFFFFF;"><i class="fa-solid fa-store" style="color:#60A5FA; margin-right:4px;"></i> ${v.name || 'Vendor Station'}</div>
+                ${statusHtml}
+              </div>
+              <div style="font-size:0.82rem; color:#9CA3AF; margin-bottom:3px;"><i class="fa-solid fa-envelope" style="color:#6B7280;"></i> ${v.email}</div>
+              <div style="font-size:0.82rem; color:#9CA3AF; margin-bottom:3px;"><i class="fa-solid fa-certificate" style="color:#6B7280;"></i> DPR License: <code>${dprNo}</code></div>
+              <div style="font-size:0.82rem; color:#9CA3AF;"><i class="fa-solid fa-phone" style="color:#6B7280;"></i> ${v.phone || '—'}</div>
+              ${actionBtn}
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     function verifyVendorByEmail(email, name) {
@@ -1291,12 +1382,14 @@
     // ── LIVE REFILL STREAM ──
     function loadRefillStream() {
       const tbody = document.getElementById('refillStreamBody');
+      const mobileList = document.getElementById('refillStreamMobileList');
       if (!tbody) return;
 
       const refillOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
 
       if (refillOrders.length === 0) {
         tbody.innerHTML = `<tr><td colspan="7" style="padding:28px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-fire-burner" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i> No live refill requests placed yet.</td></tr>`;
+        if (mobileList) mobileList.innerHTML = `<div style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-fire-burner"></i> No live refill requests placed yet.</div>`;
         return;
       }
 
@@ -1311,6 +1404,21 @@
           <td><span class="btn-action-sm btn-amber">${o.status}</span></td>
         </tr>
       `).join('');
+
+      if (mobileList) {
+        mobileList.innerHTML = refillOrders.map(o => `
+          <div style="background:#111827; border:1px solid var(--border-color); border-radius:16px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span style="font-weight:900; color:#FFFFFF; font-size:0.95rem;">#${o.id}</span>
+              <span class="btn-action-sm btn-amber" style="padding:2px 8px; font-size:0.75rem;">${o.status}</span>
+            </div>
+            <div style="font-weight:800; color:#F3F4F6; font-size:0.88rem;">${o.customerName || o.userEmail || 'Customer'}</div>
+            <div style="font-size:0.82rem; color:#60A5FA; font-weight:700; margin-top:2px;"><i class="fa-solid fa-store"></i> ${o.vendorName || 'Depot Station'}</div>
+            <div style="font-size:0.82rem; color:#9CA3AF; margin-top:4px;">${o.cylinderSize || o.size || '12.5 kg'} • <span style="color:#34D399; font-weight:900;">₦${Number(o.total || o.amount || 0).toLocaleString()}</span></div>
+            <div style="font-size:0.78rem; color:#6B7280; margin-top:4px;"><i class="fa-solid fa-location-dot"></i> ${o.address || '—'}</div>
+          </div>
+        `).join('');
+      }
     }
 
     // ── STORE CATALOG MANAGER ──
