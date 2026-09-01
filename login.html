@@ -939,8 +939,7 @@
         const sizeParam = urlParams.get('size');
 
         let target = 'dashboard.html';
-        if (canonicalRole === 'vendor') target = 'seller_dashboard.html';
-        else if (canonicalRole === 'refiller') target = 'refiller_dashboard.html';
+        if (canonicalRole === 'vendor' || canonicalRole === 'seller' || canonicalRole === 'refiller') target = 'seller_dashboard.html';
         else if (canonicalRole === 'admin') target = 'admin.html';
         else if (redirectUrl) {
           target = redirectUrl;

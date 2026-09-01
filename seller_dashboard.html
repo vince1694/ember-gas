@@ -770,7 +770,7 @@
             ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
                <button class="btn-sm btn-reject" style="margin-left:4px;" onclick="rejectOrder('${o.id}')">✕ Decline</button>`
             : (o.status === 'ACCEPTED')
-              ? `<button class="btn-sm btn-approve" style="background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🔄 Refilling Cylinder</button>`
+              ? `<button class="btn-sm btn-approve" style="background:#F59E0B;" onclick="openDispatchModal('${o.id}')">🚚 Dispatch Delivery</button>`
               : (o.status === 'EN_ROUTE')
                 ? `<button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>`
                 : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
@@ -800,7 +800,7 @@
                 ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
                    <button class="btn-sm btn-reject" style="flex: 1;" onclick="rejectOrder('${o.id}')">✕ Decline</button>`
                 : o.status === 'ACCEPTED'
-                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="startVendorDelivery('${o.id}')">🔄 Refilling Cylinder</button>`
+                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="openDispatchModal('${o.id}')">🚚 Dispatch Delivery</button>`
                   : o.status === 'EN_ROUTE'
                     ? `<button class="btn-sm btn-approve" style="flex:1;background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>`
                     : `<span style="color:#9CA3AF;font-size:0.8rem;padding:6px 0;">${o.status}</span>`
@@ -1033,6 +1033,37 @@
       renderVendorOrders();
     }
 
+    let currentDispatchOrderId = null;
+
+    function openDispatchModal(orderId) {
+      currentDispatchOrderId = orderId;
+      const modal = document.getElementById('dispatchModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeDispatchModal() {
+      const modal = document.getElementById('dispatchModal');
+      if (modal) modal.style.display = 'none';
+      currentDispatchOrderId = null;
+    }
+
+    function dispatchSelfDelivery() {
+      if (!currentDispatchOrderId) return;
+      startVendorDelivery(currentDispatchOrderId);
+      closeDispatchModal();
+    }
+
+    function dispatchToSelectedRider() {
+      if (!currentDispatchOrderId) return;
+      startVendorDelivery(currentDispatchOrderId);
+      closeDispatchModal();
+    }
+
+    window.openDispatchModal = openDispatchModal;
+    window.closeDispatchModal = closeDispatchModal;
+    window.dispatchSelfDelivery = dispatchSelfDelivery;
+    window.dispatchToSelectedRider = dispatchToSelectedRider;
+
     function markVendorDelivered(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
       const orderIdx = allOrders.findIndex(o => o.id === orderId);
@@ -1074,8 +1105,6 @@
       if (window.NotificationManager) NotificationManager.show('Order Declined', 'error');
       renderVendorOrders();
     }
-
-
   </script>
 </body>
 </html>

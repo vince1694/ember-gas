@@ -642,7 +642,7 @@
         </div>
         <div class="hero-stats">
           <!-- Profile Avatar Trigger -->
-          <div class="profile-avatar-trigger" onclick="openProfileModal()">
+          <div class="profile-avatar-trigger" onclick="window.openGlobalProfileModal && window.openGlobalProfileModal()">
             <div class="profile-avatar-sm" id="heroUserInitials">--</div>
             <span style="font-size: 0.8rem; font-weight: 800; color: #fff;">My Account</span>
           </div>
@@ -1356,7 +1356,7 @@
       if (!window.OrderStateManager) return;
       const activeOrder = OrderStateManager.updateOrderStatus('COMPLETED');
       if (window.NotificationManager) {
-        NotificationManager.show('🎉 Order marked as Received & Completed! Vendor and Rider notified.', 'success');
+        NotificationManager.show('🎉 Order marked as Received & Completed! Vendor and Delivery Dispatch notified.', 'success');
       }
 
       // Dispatch Brevo email notification to Customer

@@ -877,8 +877,8 @@
       setTimeout(() => {
         switch (targetRole) {
           case 'customer': window.location.href = 'dashboard.html'; break;
-          case 'vendor': window.location.href = 'seller_dashboard.html'; break;
-          case 'refiller': window.location.href = 'refiller_dashboard.html'; break;
+          case 'vendor':
+          case 'refiller': window.location.href = 'seller_dashboard.html'; break;
           default: window.location.href = 'dashboard.html';
         }
       }, 600);
