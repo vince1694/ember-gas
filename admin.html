@@ -726,14 +726,33 @@
     }
 
     function getAllAccounts() {
-      const accounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const gasUsers = JSON.parse(localStorage.getItem('gasUsers') || '[]');
+      const accounts   = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+      const users      = JSON.parse(localStorage.getItem('users') || '[]');
+      const gasUsers   = JSON.parse(localStorage.getItem('gasUsers') || '[]');
       const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+      const curUser    = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
       const all = [...accounts, ...users, ...gasUsers, ...gasVendors];
+      if (curUser && curUser.email) all.push(curUser);
+
+      const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+
       const uniqueMap = new Map();
-      all.forEach(a => { if (a && a.email && !uniqueMap.has(a.email.toLowerCase())) uniqueMap.set(a.email.toLowerCase(), a); });
+      all.forEach(a => {
+        if (a && a.email) {
+          const lowerEmail = a.email.toLowerCase();
+          const existing = uniqueMap.get(lowerEmail) || {};
+          const isKybApproved = a.kybStatus === 'VERIFIED' || a.kybApproved === true || existing.kybStatus === 'VERIFIED' || kybReqs.some(r => r.email && r.email.toLowerCase() === lowerEmail && r.status === 'VERIFIED');
+          
+          const merged = {
+            ...existing,
+            ...a,
+            kybStatus: isKybApproved ? 'VERIFIED' : (a.kybStatus || existing.kybStatus || 'PENDING'),
+            kybApproved: isKybApproved
+          };
+          uniqueMap.set(lowerEmail, merged);
+        }
+      });
       return Array.from(uniqueMap.values());
     }
 

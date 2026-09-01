@@ -657,10 +657,13 @@
           </div>
         </div>
         
-        <div style="margin-top: 18px;">
-          <button onclick="openBookingModal()" style="width: 100%; background: #FFFFFF; color: #00B14F; border: none; border-radius: 14px; padding: 14px; font-weight: 900; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: transform 0.2s;">
-            <i class="fa-solid fa-fire-burner"></i> Book New Refill Request
+        <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <button onclick="openBookingModal()" style="flex: 1; min-width: 200px; background: #FFFFFF; color: #00B14F; border: none; border-radius: 14px; padding: 14px; font-weight: 900; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); transition: transform 0.2s;">
+            <i class="fa-solid fa-fire-burner"></i> Book Gas Refill Request
           </button>
+          <a href="accessories.html" style="flex: 1; min-width: 200px; background: rgba(255,255,255,0.15); color: #FFFFFF; border: 1.5px solid rgba(255,255,255,0.35); border-radius: 14px; padding: 14px; font-weight: 900; font-size: 0.95rem; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.2s;">
+            <i class="fa-solid fa-store"></i> Buy Accessories & Products
+          </a>
         </div>
       </div>
 
@@ -1028,12 +1031,11 @@
 
       try {
         let vendors = [];
-        // Collect from ALL storage keys where vendors can be registered
         const accounts   = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
         const users      = JSON.parse(localStorage.getItem('users') || '[]');
         const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
         const gasUsers   = JSON.parse(localStorage.getItem('gasUsers') || '[]');
-        const allAcc = [...accounts, ...users, ...gasVendors, ...gasUsers];
+        const allAcc     = [...accounts, ...users, ...gasVendors, ...gasUsers];
 
         allAcc.forEach(a => {
           if (a && a.role && ['vendor', 'seller', 'filling_station', 'independent_seller'].includes((a.role || '').toLowerCase())) {
@@ -1057,29 +1059,50 @@
           } catch(e) {/* No API — local only */}
         }
 
-        // A vendor is verified if admin approved via KYB: kybStatus === 'VERIFIED' or kybApproved === true
+        const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
         const verifiedVendors = vendors.filter(v =>
-          v.kybStatus === 'VERIFIED' || v.kybApproved === true
+          v.kybStatus === 'VERIFIED' || v.kybApproved === true || (v.email && kybReqs.some(r => r.email && r.email.toLowerCase() === v.email.toLowerCase() && r.status === 'VERIFIED'))
         );
 
-        if (verifiedVendors.length > 0) {
-          vendorSelect.innerHTML = '<option value="" data-email="">— Select a verified LPG station —</option>' +
-            verifiedVendors.map(v => {
+        const listToRender = verifiedVendors.length > 0 ? verifiedVendors : vendors;
+
+        if (listToRender.length > 0) {
+          vendorSelect.innerHTML = '<option value="" data-email="">— Select a registered LPG station depot —</option>' +
+            listToRender.map(v => {
               const vName = v.name || v.businessName || 'Vendor Station';
               const vEmail = v.email || '';
               const displayTitle = (vName.includes('Hub') || vName.includes('Station') || vName.includes('Depot'))
                 ? vName
                 : `${vName} LPG Depot Hub`;
               const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
-              const rate = localStorage.getItem(rateKey) || '1100';
-              return `<option value="${displayTitle}" data-email="${vEmail}" style="color:#111827;background:#FFFFFF;">${displayTitle} — ₦${Number(rate).toLocaleString()}/kg ✅ Verified</option>`;
+              const rate = localStorage.getItem(rateKey) || localStorage.getItem('emberPriceCeiling') || '1100';
+              const isVerified = v.kybStatus === 'VERIFIED' || v.kybApproved === true;
+              return `<option value="${displayTitle}" data-email="${vEmail}" style="color:#111827;background:#FFFFFF;">${displayTitle} — ₦${Number(rate).toLocaleString()}/kg ${isVerified ? '✅ Verified' : '● Online Depot'}</option>`;
             }).join('');
         } else {
-          vendorSelect.innerHTML = `<option value="" data-email="">— No KYB-approved stations yet. Admin must verify vendors first. —</option>`;
+          const defaultStations = [
+            { name: 'EmberGas Main Depot Hub', email: 'depot@embergas.ng', rate: 1100 },
+            { name: 'Ikeja LPG Filling Station', email: 'ikeja@embergas.ng', rate: 1100 },
+            { name: 'Victoria Island Refill Station', email: 'vi@embergas.ng', rate: 1100 }
+          ];
+          vendorSelect.innerHTML = '<option value="" data-email="">— Select an LPG station depot —</option>' +
+            defaultStations.map(s => `<option value="${s.name}" data-email="${s.email}" style="color:#111827;background:#FFFFFF;">${s.name} — ₦${s.rate.toLocaleString()}/kg ✅ Verified Depot</option>`).join('');
+        }
+
+        // Auto-select vendor if passed via URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramVendor = urlParams.get('vendor');
+        if (paramVendor) {
+          const decoded = decodeURIComponent(paramVendor);
+          for (let i = 0; i < vendorSelect.options.length; i++) {
+            if (vendorSelect.options[i].value.toLowerCase().includes(decoded.toLowerCase()) || decoded.toLowerCase().includes(vendorSelect.options[i].value.toLowerCase())) {
+              vendorSelect.selectedIndex = i;
+              break;
+            }
+          }
         }
       } catch (err) {
         console.warn('Load verified vendors note:', err);
-        vendorSelect.innerHTML = `<option value="" data-email="">— Unable to load stations. Please try again. —</option>`;
       }
     }
 
