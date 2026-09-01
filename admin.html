@@ -1169,139 +1169,228 @@
     // ── VENDOR KYB QUEUE LOGIC ──
     function loadKybQueue() {
       const tbody = document.getElementById('kybQueueBody');
+      const mobileList = document.getElementById('kybQueueMobileList');
       if (!tbody) return;
 
-      const allAccounts = getAllAccounts();
-      // getAllAccounts already normalizes roles: 'vendor' or 'customer'
-      let vendors = allAccounts.filter(a => a.role === 'vendor');
-
+      // PRIMARY SOURCE: All submitted KYB requests (PENDING or VERIFIED)
       const kybRequests = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
-      const pendingReqEmails = kybRequests.filter(r => r.status === 'PENDING').map(r => (r.email || '').toLowerCase());
 
+      // SECONDARY SOURCE: All registered vendor accounts (may have not submitted a KYB request yet)
+      const allAccounts = getAllAccounts();
+      const registeredVendors = allAccounts.filter(a => a.role === 'vendor');
+
+      // Merge: Start with KYB requests as primary, supplement with account data
+      const kybMap = new Map();
+
+      // Add all KYB request submissions first
+      kybRequests.forEach(r => {
+        if (!r.email) return;
+        const key = r.email.toLowerCase();
+        kybMap.set(key, {
+          name: r.name || 'Vendor Station',
+          email: key,
+          phone: r.phone || '—',
+          dprNo: r.dprNo || 'DPR-LPG-8849-NG',
+          kybStatus: r.status === 'VERIFIED' ? 'VERIFIED' : 'PENDING',
+          kybApproved: r.status === 'VERIFIED',
+          requestedAt: r.requestedAt || '',
+          hasRequest: true
+        });
+      });
+
+      // Merge registered vendor accounts (supplement missing fields)
+      registeredVendors.forEach(v => {
+        const key = (v.email || '').toLowerCase();
+        if (!key) return;
+        const existing = kybMap.get(key);
+        if (existing) {
+          // Merge account data into existing KYB entry (account data has more fields)
+          kybMap.set(key, {
+            ...existing,
+            name: v.name || existing.name,
+            phone: v.phone || existing.phone,
+            dprNo: v.dprNo || existing.dprNo,
+            kybStatus: (v.kybStatus === 'VERIFIED' || existing.kybStatus === 'VERIFIED') ? 'VERIFIED' : existing.kybStatus,
+            kybApproved: v.kybApproved || existing.kybApproved
+          });
+        } else {
+          // Vendor account exists but hasn't submitted KYB request yet — still show them
+          kybMap.set(key, {
+            name: v.name || 'Vendor Station',
+            email: key,
+            phone: v.phone || '—',
+            dprNo: v.dprNo || 'DPR-LPG-8849-NG',
+            kybStatus: v.kybStatus || 'PENDING',
+            kybApproved: v.kybApproved || false,
+            hasRequest: false
+          });
+        }
+      });
+
+      let vendors = Array.from(kybMap.values());
+
+      // Update badge: show count of unverified vendors who have made a request
       const kybBadge = document.getElementById('kybTabBadge');
-      if (kybBadge) kybBadge.innerText = vendors.filter(v => v.kybStatus !== 'VERIFIED').length;
+      const pendingCount = vendors.filter(v => v.kybStatus !== 'VERIFIED' && v.hasRequest).length;
+      if (kybBadge) kybBadge.innerText = pendingCount;
 
+      // Apply search filter
       const searchVal = (document.getElementById('kybSearchInput') ? document.getElementById('kybSearchInput').value : '').toLowerCase().trim();
       if (searchVal) {
-        vendors = vendors.filter(v => 
+        vendors = vendors.filter(v =>
           (v.name || '').toLowerCase().includes(searchVal) ||
           (v.email || '').toLowerCase().includes(searchVal) ||
           (v.phone || '').toLowerCase().includes(searchVal)
         );
       }
 
+      // Apply status filter
       const statusFilter = document.getElementById('kybFilterStatus') ? document.getElementById('kybFilterStatus').value : 'all';
       if (statusFilter === 'requested') {
-        vendors = vendors.filter(v => pendingReqEmails.includes((v.email || '').toLowerCase()));
+        vendors = vendors.filter(v => v.hasRequest && v.kybStatus !== 'VERIFIED');
       } else if (statusFilter === 'pending') {
         vendors = vendors.filter(v => v.kybStatus !== 'VERIFIED');
       } else if (statusFilter === 'verified') {
         vendors = vendors.filter(v => v.kybStatus === 'VERIFIED');
       }
 
-      const mobileList = document.getElementById('kybQueueMobileList');
-
       if (vendors.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="padding:28px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i> No vendor stations match the selected search or filter criteria.</td></tr>`;
-        if (mobileList) mobileList.innerHTML = `<div style="padding:24px; text-align:center; color:#9CA3AF;"><i class="fa-solid fa-store"></i> No vendor stations match the selected criteria.</div>`;
+        const emptyHtml = `<div style="padding:32px; text-align:center; color:#9CA3AF;">
+          <i class="fa-solid fa-store" style="font-size:2rem; margin-bottom:10px; display:block; color:#4B5563;"></i>
+          <div style="font-weight:800; margin-bottom:6px;">No KYB requests found</div>
+          <div style="font-size:0.85rem;">Vendors will appear here once they register or submit a KYB approval request from their dashboard.</div>
+        </div>`;
+        tbody.innerHTML = `<tr><td colspan="6">${emptyHtml}</td></tr>`;
+        if (mobileList) mobileList.innerHTML = emptyHtml;
         return;
       }
 
-      tbody.innerHTML = vendors.map(v => {
-        const isVerified = v.kybStatus === 'VERIFIED';
-        const isRequested = pendingReqEmails.includes((v.email || '').toLowerCase());
-        const dprNo = v.dprNo || 'DPR-LPG-8849-NG';
-
-        let statusHtml = '';
-        if (isVerified) {
-          statusHtml = `<span style="color:#34D399; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`;
-        } else if (isRequested) {
-          statusHtml = `<span style="background:rgba(245,158,11,0.2); color:#FBBF24; border:1px solid #F59E0B; padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.76rem;"><i class="fa-solid fa-bolt"></i> APPROVAL REQUESTED</span>`;
+      function getStatusHtml(v) {
+        if (v.kybStatus === 'VERIFIED') {
+          return `<span style="color:#34D399; font-weight:800;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`;
+        } else if (v.hasRequest) {
+          return `<span style="background:rgba(245,158,11,0.2); color:#FBBF24; border:1px solid #F59E0B; padding:3px 10px; border-radius:12px; font-weight:800; font-size:0.76rem;"><i class="fa-solid fa-bolt"></i> ⚡ APPROVAL REQUESTED</span>`;
         } else {
-          statusHtml = `<span style="color:#FBBF24; font-weight:800;"><i class="fa-solid fa-clock"></i> Pending KYB Review</span>`;
+          return `<span style="color:#9CA3AF; font-weight:700;"><i class="fa-solid fa-clock"></i> Registered — No KYB Request Yet</span>`;
         }
+      }
 
-        const actionHtml = isVerified
-          ? `<span style="color:#34D399; font-size:0.8rem; font-weight:800;"><i class="fa-solid fa-shield-check"></i> Approved</span>`
-          : `<button class="btn-action-sm btn-green" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Approve License</button>`;
+      function getActionHtml(v, mobile = false) {
+        if (v.kybStatus === 'VERIFIED') {
+          return `<span style="color:#34D399; font-size:0.82rem; font-weight:800;"><i class="fa-solid fa-shield-check"></i> Approved</span>`;
+        }
+        const style = mobile ? 'width:100%; min-height:40px; justify-content:center; margin-top:10px;' : '';
+        return `<button class="btn-action-sm btn-green" style="${style}" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Approve License</button>`;
+      }
 
-        return `
-          <tr style="${isRequested ? 'background:rgba(245,158,11,0.06);' : ''}">
-            <td style="font-weight:800; color:#FFFFFF;"><i class="fa-solid fa-store" style="color:#60A5FA; margin-right:6px;"></i> ${v.name || 'Vendor Station'}</td>
-            <td style="color:#9CA3AF;">${v.email}</td>
-            <td><code>${dprNo}</code></td>
-            <td style="color:#9CA3AF;">${v.phone || '—'}</td>
-            <td>${statusHtml}</td>
-            <td>${actionHtml}</td>
-          </tr>
-        `;
-      }).join('');
+      tbody.innerHTML = vendors.map(v => `
+        <tr style="${v.hasRequest && v.kybStatus !== 'VERIFIED' ? 'background:rgba(245,158,11,0.04);' : ''}">
+          <td style="font-weight:800; color:#FFFFFF;"><i class="fa-solid fa-store" style="color:#60A5FA; margin-right:6px;"></i> ${v.name || 'Vendor Station'}</td>
+          <td style="color:#9CA3AF;">${v.email}</td>
+          <td><code style="font-size:0.78rem; color:#A78BFA;">${v.dprNo}</code></td>
+          <td style="color:#9CA3AF;">${v.phone}</td>
+          <td>${getStatusHtml(v)}</td>
+          <td>${getActionHtml(v, false)}</td>
+        </tr>
+      `).join('');
 
       if (mobileList) {
-        mobileList.innerHTML = vendors.map(v => {
-          const isVerified = v.kybStatus === 'VERIFIED';
-          const isRequested = pendingReqEmails.includes((v.email || '').toLowerCase());
-          const dprNo = v.dprNo || 'DPR-LPG-8849-NG';
-
-          let statusHtml = isVerified
-            ? `<span style="color:#34D399; font-weight:800; font-size:0.78rem;"><i class="fa-solid fa-circle-check"></i> Verified Active</span>`
-            : isRequested
-              ? `<span style="background:rgba(245,158,11,0.2); color:#FBBF24; padding:2px 8px; border-radius:12px; font-weight:800; font-size:0.72rem;"><i class="fa-solid fa-bolt"></i> REQUESTED</span>`
-              : `<span style="color:#FBBF24; font-weight:800; font-size:0.78rem;"><i class="fa-solid fa-clock"></i> Pending KYB</span>`;
-
-          const actionBtn = isVerified
-            ? `<span style="color:#34D399; font-size:0.8rem; font-weight:800; display:block; margin-top:8px;"><i class="fa-solid fa-shield-check"></i> Approved</span>`
-            : `<button class="btn-action-sm btn-green" style="width:100%; min-height:40px; justify-content:center; margin-top:10px;" onclick="verifyVendorByEmail('${v.email.replace(/'/g, "\\'")}', '${(v.name || 'Vendor').replace(/'/g, "\\'")}')"><i class="fa-solid fa-check"></i> Approve License</button>`;
-
-          return `
-            <div style="background:#111827; border:1px solid ${isRequested ? '#F59E0B' : 'var(--border-color)'}; border-radius:16px; padding:14px;">
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
-                <div style="font-weight:800; font-size:0.95rem; color:#FFFFFF;"><i class="fa-solid fa-store" style="color:#60A5FA; margin-right:4px;"></i> ${v.name || 'Vendor Station'}</div>
-                ${statusHtml}
-              </div>
-              <div style="font-size:0.82rem; color:#9CA3AF; margin-bottom:3px;"><i class="fa-solid fa-envelope" style="color:#6B7280;"></i> ${v.email}</div>
-              <div style="font-size:0.82rem; color:#9CA3AF; margin-bottom:3px;"><i class="fa-solid fa-certificate" style="color:#6B7280;"></i> DPR License: <code>${dprNo}</code></div>
-              <div style="font-size:0.82rem; color:#9CA3AF;"><i class="fa-solid fa-phone" style="color:#6B7280;"></i> ${v.phone || '—'}</div>
-              ${actionBtn}
+        mobileList.innerHTML = vendors.map(v => `
+          <div style="background:#111827; border:1.5px solid ${v.hasRequest && v.kybStatus !== 'VERIFIED' ? '#F59E0B' : 'var(--border-color)'}; border-radius:16px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+              <div style="font-weight:800; font-size:0.95rem; color:#FFFFFF;"><i class="fa-solid fa-store" style="color:#60A5FA; margin-right:4px;"></i> ${v.name || 'Vendor Station'}</div>
+              ${getStatusHtml(v)}
             </div>
-          `;
-        }).join('');
+            <div style="font-size:0.82rem; color:#9CA3AF; margin-bottom:3px;"><i class="fa-solid fa-envelope" style="color:#6B7280;"></i> ${v.email}</div>
+            <div style="font-size:0.82rem; color:#9CA3AF; margin-bottom:3px;"><i class="fa-solid fa-certificate" style="color:#6B7280;"></i> DPR: <code>${v.dprNo}</code></div>
+            <div style="font-size:0.82rem; color:#9CA3AF;"><i class="fa-solid fa-phone" style="color:#6B7280;"></i> ${v.phone}</div>
+            ${getActionHtml(v, true)}
+          </div>
+        `).join('');
       }
     }
 
     function verifyVendorByEmail(email, name) {
+      const lowerEmail = email.toLowerCase();
+      const approvedAt = new Date().toISOString();
+
+      // 1. Update all account storage keys (find and update, or create if missing)
       const storageKeys = ['emberGasAccounts', 'gasVendors', 'users', 'gasUsers'];
+      let foundInAny = false;
+
       storageKeys.forEach(key => {
         const arr = JSON.parse(localStorage.getItem(key) || '[]');
         let changed = false;
         arr.forEach(a => {
-          if (a.email && a.email.toLowerCase() === email.toLowerCase()) {
+          if (a.email && a.email.toLowerCase() === lowerEmail) {
             a.kybStatus = 'VERIFIED';
             a.kybApproved = true;
-            a.kybApprovedAt = new Date().toISOString();
+            a.kybApprovedAt = approvedAt;
             changed = true;
+            foundInAny = true;
           }
         });
         if (changed) localStorage.setItem(key, JSON.stringify(arr));
       });
 
+      // 2. If vendor account not found in any key, create it from KYB request data
+      if (!foundInAny) {
+        const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+        const reqEntry = kybReqs.find(r => r.email && r.email.toLowerCase() === lowerEmail);
+        const newVendorEntry = {
+          id: 'v_' + Math.random().toString(36).substr(2, 9),
+          name: name || (reqEntry && reqEntry.name) || 'Vendor Station',
+          email: lowerEmail,
+          phone: (reqEntry && reqEntry.phone) || '',
+          role: 'vendor',
+          kybStatus: 'VERIFIED',
+          kybApproved: true,
+          kybApprovedAt: approvedAt,
+          createdAt: approvedAt
+        };
+        const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
+        gasVendors.push(newVendorEntry);
+        localStorage.setItem('gasVendors', JSON.stringify(gasVendors));
+
+        const emberAccounts = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
+        emberAccounts.push(newVendorEntry);
+        localStorage.setItem('emberGasAccounts', JSON.stringify(emberAccounts));
+      }
+
+      // 3. Update emberGasKybRequests — mark as VERIFIED
       const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
       const updatedReqs = kybReqs.map(r => {
-        if (r.email && r.email.toLowerCase() === email.toLowerCase()) {
+        if (r.email && r.email.toLowerCase() === lowerEmail) {
           r.status = 'VERIFIED';
+          r.approvedAt = approvedAt;
         }
         return r;
       });
       localStorage.setItem('emberGasKybRequests', JSON.stringify(updatedReqs));
 
+      // 4. Update currentUser if it's this vendor (they may be logged in on another tab)
       const curUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-      if (curUser && curUser.email && curUser.email.toLowerCase() === email.toLowerCase()) {
+      if (curUser && curUser.email && curUser.email.toLowerCase() === lowerEmail) {
         curUser.kybStatus = 'VERIFIED';
         curUser.kybApproved = true;
+        curUser.kybApprovedAt = approvedAt;
         localStorage.setItem('currentUser', JSON.stringify(curUser));
       }
 
-      if (window.NotificationManager) NotificationManager.show(`✅ KYB Verified for "${name}"! Vendor can now accept booking requests.`, 'success');
+      // 5. Add to admin notifications feed
+      const adminNotifs = JSON.parse(localStorage.getItem('emberGasAdminNotifications') || '[]');
+      adminNotifs.unshift({
+        id: 'kyb_approved_' + Date.now(),
+        type: 'KYB_APPROVED',
+        title: '✅ KYB License Approved',
+        message: `Station "${name}" (${lowerEmail}) has been granted verified vendor access.`,
+        timestamp: approvedAt,
+        vendorEmail: lowerEmail,
+        read: true
+      });
+      localStorage.setItem('emberGasAdminNotifications', JSON.stringify(adminNotifs));
+
+      if (window.NotificationManager) NotificationManager.show(`✅ KYB License Approved for "${name}"! They can now accept customer bookings.`, 'success');
       loadKybQueue();
       loadOverviewMetrics();
     }
