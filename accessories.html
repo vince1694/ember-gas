@@ -244,6 +244,39 @@
       }
     }
 
+    async function syncStoreProductsWithBackend() {
+      const hosts = Array.from(new Set([
+        '',
+        `http://${window.location.hostname || '127.0.0.1'}:5000`,
+        'http://127.0.0.1:5000',
+        'http://localhost:5000'
+      ]));
+
+      for (const host of hosts) {
+        try {
+          const res = await fetch(host + '/api/admin/settings');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && Array.isArray(data.storeProducts) && data.storeProducts.length > 0) {
+              const mapped = data.storeProducts.map((p, idx) => ({
+                id: p._id || 'p_' + idx,
+                name: p.name,
+                cat: (p.category || 'accessories').toLowerCase(),
+                price: p.price,
+                desc: p.desc || 'Certified gas safety accessory',
+                icon: p.category === 'Cylinders' ? 'fa-gas-pump' : p.category === 'Regulators' ? 'fa-gauge-high' : 'fa-toolbox',
+                badge: p.category === 'Safety' ? 'Top Safety' : '',
+                inStock: p.isAvailable !== false
+              }));
+              localStorage.setItem('emberStoreProducts', JSON.stringify(mapped));
+              renderProducts();
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
     let activeCategory = 'all';
 
     function renderProducts() {
@@ -331,6 +364,7 @@
 
     // Initial load & real-time sync listeners
     renderProducts();
+    syncStoreProductsWithBackend();
 
     window.addEventListener('storage', (e) => {
       if (e.key === 'emberStoreProducts') {
@@ -338,7 +372,8 @@
       }
     });
 
-    setInterval(renderProducts, 2000);
+    setInterval(renderProducts, 3000);
+    setInterval(syncStoreProductsWithBackend, 15000);
   </script>
 </body>
 </html>
