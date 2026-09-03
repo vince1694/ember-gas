@@ -231,7 +231,7 @@
 
   <script src="app.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       if (window.OrderStateManager) {
         let order = OrderStateManager.getActiveOrder();
         const curUser = JSON.parse(localStorage.getItem('currentUser')) || {};
@@ -243,12 +243,47 @@
           order = combined.find(o => o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || combined[0] || null;
         }
 
-        if (order && (order.userEmail === curUser.email || order.customerName === curUser.name || !order.userEmail)) {
-          if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = `Order #${order.id}`;
-          if (document.getElementById('detailsVendor')) document.getElementById('detailsVendor').innerText = order.vendorName || 'EmberGas Station';
-          if (document.getElementById('detailsPayload')) document.getElementById('detailsPayload').innerText = `${order.cylinderSize} • ${order.serviceType || 'Refill'}`;
-          if (document.getElementById('detailsAddress')) document.getElementById('detailsAddress').innerText = order.address || '—';
-          if (document.getElementById('detailsTotal')) document.getElementById('detailsTotal').innerText = `₦${(order.amount || order.total || 0).toLocaleString()}`;
+        // Asynchronous fallback: Query MongoDB Atlas directly
+        if (!order && curUser.email) {
+          try {
+            const hosts = Array.from(new Set([
+              '',
+              `http://${window.location.hostname || '127.0.0.1'}:5000`,
+              'http://127.0.0.1:5000',
+              'http://localhost:5000'
+            ]));
+            for (const host of hosts) {
+              const res = await fetch(host + '/api/orders');
+              if (res.ok) {
+                const dbOrders = await res.json();
+                const matched = dbOrders.find(o => 
+                  (o.userEmail && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) ||
+                  (o.customerName && curUser.name && o.customerName.toLowerCase() === curUser.name.toLowerCase())
+                );
+                if (matched) {
+                  order = {
+                    id: matched.orderNumber || matched._id,
+                    customerName: matched.customerName,
+                    vendorName: matched.sellerName,
+                    cylinderSize: matched.cylinderSize,
+                    address: matched.deliveryAddress,
+                    amount: matched.totalAmount,
+                    status: matched.status,
+                    createdAt: matched.createdAt
+                  };
+                  break;
+                }
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (order) {
+          if (document.getElementById('detailsOrderId')) document.getElementById('detailsOrderId').innerText = `Order #${order.id || order.orderNumber || 'EG-1024'}`;
+          if (document.getElementById('detailsVendor')) document.getElementById('detailsVendor').innerText = order.vendorName || order.sellerName || 'EmberGas Station';
+          if (document.getElementById('detailsPayload')) document.getElementById('detailsPayload').innerText = `${order.cylinderSize || '12.5kg'} • ${order.serviceType || 'Refill'}`;
+          if (document.getElementById('detailsAddress')) document.getElementById('detailsAddress').innerText = order.address || order.deliveryAddress || '—';
+          if (document.getElementById('detailsTotal')) document.getElementById('detailsTotal').innerText = `₦${(order.amount || order.total || order.totalAmount || 0).toLocaleString()}`;
 
           const statusBadge = document.getElementById('detailsStatusBadge');
           if (statusBadge) statusBadge.innerText = order.status;
@@ -259,16 +294,17 @@
           const step3 = document.getElementById('step3');
           const step4 = document.getElementById('step4');
 
-          if (order.status === 'PLACED') {
+          const st = (order.status || '').toUpperCase();
+          if (st === 'PLACED' || st === 'ORDER_CONFIRMED') {
             if (step1) step1.className = 'track-step active';
-          } else if (order.status === 'ACCEPTED') {
+          } else if (st === 'ACCEPTED' || st === 'SELLER_PREPARING' || st === 'READY_FOR_PICKUP') {
             if (step1) step1.className = 'track-step done';
             if (step2) step2.className = 'track-step active';
-          } else if (order.status === 'EN_ROUTE') {
+          } else if (st === 'EN_ROUTE' || st === 'ON_THE_WAY' || st === 'RIDER_PICKING_UP') {
             if (step1) step1.className = 'track-step done';
             if (step2) step2.className = 'track-step done';
             if (step3) step3.className = 'track-step active';
-          } else if (order.status === 'DELIVERED' || order.status === 'COMPLETED') {
+          } else if (st === 'DELIVERED' || st === 'COMPLETED') {
             if (step1) step1.className = 'track-step done';
             if (step2) step2.className = 'track-step done';
             if (step3) step3.className = 'track-step done';
@@ -276,7 +312,7 @@
           }
 
           const box = document.getElementById('receiptConfirmContainer');
-          if (box && (order.status === 'EN_ROUTE' || order.status === 'DELIVERED')) {
+          if (box && (st === 'EN_ROUTE' || st === 'ON_THE_WAY' || st === 'DELIVERED')) {
             box.style.display = 'block';
           }
         } else {
