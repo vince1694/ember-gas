@@ -1230,6 +1230,9 @@
                 <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer;" title="View Receipt & Details">
                   <i class="fa-solid fa-receipt"></i>
                 </button>
+                <button onclick="deleteVendorOrder('${o.id}')" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#DC2626; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer;" title="Delete Record">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
               </div>`;
           } else {
             actionBtns = `
@@ -1237,6 +1240,9 @@
                 <span style="color:#DC2626; font-weight:700; font-size:0.78rem;">Declined</span>
                 <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer;" title="View Details">
                   <i class="fa-solid fa-eye"></i>
+                </button>
+                <button onclick="deleteVendorOrder('${o.id}')" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#DC2626; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer;" title="Delete Record">
+                  <i class="fa-solid fa-trash"></i>
                 </button>
               </div>`;
           }
@@ -1301,16 +1307,22 @@
             `;
           } else if (statusMeta.code === 'COMPLETED') {
             mobileActionBtns = `
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:4px 0;">
-                <span style="color:#059669; font-size:0.84rem; font-weight:800;"><i class="fa-solid fa-check-double"></i> Service Completed</span>
-                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 14px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-receipt"></i> Details</button>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:4px 0; gap:8px;">
+                <span style="color:#059669; font-size:0.84rem; font-weight:800;"><i class="fa-solid fa-check-double"></i> Completed</span>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 12px; border-radius:8px; font-size:0.76rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-receipt"></i> Details</button>
+                  <button onclick="deleteVendorOrder('${o.id}')" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#DC2626; padding:6px 10px; border-radius:8px; font-size:0.76rem; font-weight:800; cursor:pointer;" title="Delete Record"><i class="fa-solid fa-trash"></i></button>
+                </div>
               </div>
             `;
           } else {
             mobileActionBtns = `
-              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:4px 0;">
-                <span style="color:#DC2626; font-size:0.84rem; font-weight:700;">Declined Request</span>
-                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 14px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-eye"></i> Details</button>
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:4px 0; gap:8px;">
+                <span style="color:#DC2626; font-size:0.84rem; font-weight:700;">Declined</span>
+                <div style="display:flex; gap:6px;">
+                  <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-eye"></i> Details</button>
+                  <button onclick="deleteVendorOrder('${o.id}')" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#DC2626; padding:6px 10px; border-radius:8px; font-size:0.76rem; font-weight:800; cursor:pointer;" title="Delete Record"><i class="fa-solid fa-trash"></i></button>
+                </div>
               </div>
             `;
           }
@@ -1424,6 +1436,7 @@
           `;
         } else {
           footer.innerHTML = `
+            <button onclick="deleteVendorOrder('${o.id}'); closeVendorOrderDetail();" style="flex:1; padding:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:10px; font-weight:800; color:#DC2626; cursor:pointer;"><i class="fa-solid fa-trash"></i> Delete Record</button>
             <button onclick="closeVendorOrderDetail()" style="flex:1; padding:12px; background:#F3F4F6; border:1px solid #D1D5DB; border-radius:10px; font-weight:800; color:#374151; cursor:pointer;">Close Window</button>
           `;
         }
@@ -1439,6 +1452,17 @@
     }
     window.openVendorOrderDetail = openVendorOrderDetail;
     window.closeVendorOrderDetail = closeVendorOrderDetail;
+
+    function deleteVendorOrder(orderId) {
+      if (!confirm(`Are you sure you want to remove Order #${orderId} from your records?`)) return;
+      const cleanId = String(orderId || '').replace(/^#+/, '');
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const filtered = allOrders.filter(o => String(o.id).replace(/^#+/, '') !== cleanId && o.id !== cleanId && o.id !== '#' + cleanId);
+      localStorage.setItem('emberGasOrders', JSON.stringify(filtered));
+      if (window.NotificationManager) NotificationManager.show(`🗑️ Order #${orderId} removed from records`, 'info');
+      renderVendorOrders();
+    }
+    window.deleteVendorOrder = deleteVendorOrder;
 
     function setVendorOrderFilter(filterType) {
       window.currentVendorFilter = filterType;

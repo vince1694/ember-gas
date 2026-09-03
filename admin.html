@@ -1975,6 +1975,11 @@
               <span style="font-size:0.70rem; color:var(--text-sub);">Managed via Vendor Dashboard</span>
             </div>`;
 
+        const isTerminal = status === 'DELIVERED' || status === 'CANCELLED';
+        const deleteBtn = isTerminal
+          ? `<button onclick="deleteAdminOrder('${o._id || id}', '${id}')" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#F87171; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer; margin-left:6px;" title="Delete Order Record"><i class='fa-solid fa-trash'></i></button>`
+          : '';
+
         return `
           <tr>
             <td><strong>${id}</strong></td>
@@ -1987,7 +1992,11 @@
             <td><strong>${amt}</strong></td>
             <td>${addr}</td>
             <td><span class="status-badge ${badgeClass}">${status}</span></td>
-            <td>${actionCell}</td>
+            <td>
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+                ${actionCell}${deleteBtn}
+              </div>
+            </td>
           </tr>
         `;
       }).join('');
@@ -2004,6 +2013,23 @@
         alert('Failed to update order status: ' + err.message);
       }
     }
+
+    async function deleteAdminOrder(mongoId, displayId) {
+      if (!confirm(`Permanently delete order ${displayId} from the platform? This cannot be undone.`)) return;
+      try {
+        await apiRequest(`/api/admin/orders/${encodeURIComponent(mongoId)}`, { method: 'DELETE' });
+        // Optimistically remove from local state
+        state.orders = (state.orders || []).filter(o => o._id !== mongoId && o.orderNumber !== displayId);
+        renderOrdersTable();
+        if (window.showAdminToast) showAdminToast('Order deleted successfully.', 'success');
+        else alert('Order deleted successfully.');
+      } catch (err) {
+        // Fallback: just remove from local state display
+        state.orders = (state.orders || []).filter(o => o._id !== mongoId && o.orderNumber !== displayId);
+        renderOrdersTable();
+      }
+    }
+    window.deleteAdminOrder = deleteAdminOrder;
 
     // ── RENDER USERS REGISTRY TABLE ──
     function setUserFilter(filter, btn) {

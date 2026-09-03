@@ -494,15 +494,51 @@
 
     /* ── MOBILE ORDER CARD ── */
     .mobile-order-card {
-      background: #F9FAFB;
-      border: 1px solid #E5E7EB;
-      border-radius: 14px;
-      padding: 14px;
+      background: #FFFFFF;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 16px;
+      padding: 16px;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
       gap: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s ease;
     }
+    .mobile-order-card:hover {
+      box-shadow: 0 6px 18px rgba(0,0,0,0.09);
+    }
+    .mobile-order-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .mobile-order-card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-card-action {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 36px;
+    }
+    .btn-card-primary { background: #00B14F; color: #fff; }
+    .btn-card-primary:hover { background: #009643; }
+    .btn-card-secondary { background: #F3F4F6; border: 1px solid #E5E7EB; color: #374151; }
+    .btn-card-secondary:hover { background: #E5E7EB; }
+    .btn-card-danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #DC2626; }
+    .btn-card-danger:hover { background: rgba(239,68,68,0.2); }
+    .btn-card-success { background: #059669; color: #fff; }
+    .btn-card-success:hover { background: #047857; }
 
     /* ── SWIPE HINT ── */
     .swipe-hint-pill {
@@ -1079,7 +1115,11 @@
                     createdAt: dbo.createdAt
                   });
                 } else {
-                  localOrders[idx].status = dbo.status;
+                  // Do NOT downgrade an already-terminal local status
+                  const TERMINAL = new Set(['COMPLETED', 'DELIVERED', 'CANCELLED', 'REJECTED']);
+                  if (!TERMINAL.has((localOrders[idx].status || '').toUpperCase())) {
+                    localOrders[idx].status = dbo.status;
+                  }
                 }
               });
               localStorage.setItem('emberGasOrders', JSON.stringify(localOrders.slice(0, 100)));
@@ -1231,43 +1271,73 @@
       const bTbody = document.getElementById('bookingsTableBody');
       const bMobile = document.getElementById('mobileBookingsList');
 
+      const DONE_STATUSES = new Set(['COMPLETED','DELIVERED','CANCELLED','REJECTED']);
+
       if (myBookings.length > 0) {
         bTbody.innerHTML = myBookings.map(o => {
           const sizeStr = o.size || o.cylinderSize || 'Refill Package';
-          const vendorStr = o.vendorName ? `Depot: ${o.vendorName}` : 'LPG Station Depot';
+          const vendorStr = o.vendorName ? `${o.vendorName}` : 'LPG Station Depot';
           const amtStr = Number(o.total || o.amount || 0).toLocaleString();
-          const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
-          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+          const upperStatus = (o.status || '').toUpperCase();
+          const isDone = DONE_STATUSES.has(upperStatus);
+          const isCancelled = upperStatus === 'CANCELLED' || upperStatus === 'REJECTED';
+          const statusStyle = isDone
+            ? (isCancelled ? 'background:#FEE2E2;color:#991B1B;' : 'background:#D1FAE5;color:#065F46;')
+            : 'background:#FEF3C7;color:#92400E;';
+          const statusIcon = isDone ? (isCancelled ? 'fa-xmark' : 'fa-circle-check') : 'fa-clock';
 
           return `
-            <tr style="border-bottom: 1px solid #F3F4F6;">
-              <td style="padding: 12px 10px; font-weight: 800; color: #111827;">#${o.id}</td>
-              <td style="padding: 12px 10px; color: #374151;"><strong>${sizeStr}</strong><br><span style="font-size:0.75rem; color:#6B7280;">${vendorStr}</span></td>
-              <td style="padding: 12px 10px; color: #4B5563;">${o.address || '—'}</td>
-              <td style="padding: 12px 10px; color: #00B14F; font-weight: 900;">₦${amtStr}</td>
-              <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}">${o.status || 'PLACED'}</span></td>
+            <tr style="border-bottom: 1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">
               <td style="padding: 12px 10px;">
-                <button onclick="openOrderDetailsModal('${o.id}')" style="background:#F3F4F6; border:1px solid #E5E7EB; color:#00B14F; padding:6px 12px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-                  <i class="fa-solid fa-eye"></i> Details
-                </button>
+                <div style="font-weight:900; color:#111827; font-size:0.92rem;">#${o.id}</div>
+                <div style="font-size:0.72rem; color:#6B7280; margin-top:2px;"><i class="fa-solid fa-store" style="color:#00B14F;"></i> ${vendorStr}</div>
+              </td>
+              <td style="padding: 12px 10px;">
+                <span style="background:rgba(0,177,79,0.1); color:#00873D; padding:3px 8px; border-radius:6px; font-size:0.8rem; font-weight:800; display:inline-block;"><i class="fa-solid fa-gas-pump"></i> ${sizeStr}</span>
+                <div style="font-size:0.74rem; color:#4B5563; font-weight:600; margin-top:3px;">${o.serviceType || 'Refill & Delivery'}</div>
+              </td>
+              <td style="padding: 12px 10px; color:#4B5563; font-size:0.85rem;"><i class="fa-solid fa-location-dot" style="color:#EF4444; font-size:0.74rem;"></i> ${o.address || '—'}</td>
+              <td style="padding: 12px 10px; color:#00B14F; font-weight:900; font-size:0.95rem;">₦${amtStr}</td>
+              <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}"><i class="fa-solid ${statusIcon}"></i> ${o.status || 'PLACED'}</span></td>
+              <td style="padding: 12px 10px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                  <button onclick="openOrderDetailsModal('${o.id}')" style="background:#F3F4F6; border:1px solid #E5E7EB; color:#00B14F; padding:6px 12px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fa-solid fa-eye"></i> Details
+                  </button>
+                  ${isDone ? `<button onclick="deleteCustomerOrder('${o.id}','booking')" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#DC2626; padding:6px 10px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Remove from history"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </div>
               </td>
             </tr>`;
         }).join('');
 
         bMobile.innerHTML = myBookings.map(o => {
           const sizeStr = o.size || o.cylinderSize || 'Refill Package';
+          const vendorStr = o.vendorName || 'LPG Station Depot';
           const amtStr = Number(o.total || o.amount || 0).toLocaleString();
-          const isDone = o.status === 'COMPLETED' || o.status === 'Delivered';
-          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+          const upperStatus = (o.status || '').toUpperCase();
+          const isDone = DONE_STATUSES.has(upperStatus);
+          const isCancelled = upperStatus === 'CANCELLED' || upperStatus === 'REJECTED';
+          const statusStyle = isDone
+            ? (isCancelled ? 'background:#FEE2E2;color:#991B1B;' : 'background:#D1FAE5;color:#065F46;')
+            : 'background:#FEF3C7;color:#92400E;';
 
           return `
             <div class="mobile-order-card">
-              <div>
-                <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">#${o.id} • ${sizeStr}</div>
-                <div style="font-size: 0.78rem; color: #6B7280; margin: 2px 0 6px;">${o.address || '—'} • ₦${amtStr}</div>
-                <span class="status-badge" style="${statusStyle}">${o.status || 'PLACED'}</span>
+              <div class="mobile-order-card-header">
+                <div style="flex:1;">
+                  <div style="font-weight:900; font-size:0.95rem; color:#111827;">#${o.id} <span style="font-weight:600; font-size:0.8rem; color:#6B7280;">• ${sizeStr}</span></div>
+                  <div style="font-size:0.76rem; color:#6B7280; margin:3px 0;"><i class="fa-solid fa-store" style="color:#00B14F;"></i> ${vendorStr}</div>
+                  <div style="font-size:0.76rem; color:#4B5563;"><i class="fa-solid fa-location-dot" style="color:#EF4444;"></i> ${o.address || '—'}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-weight:900; color:#00B14F; font-size:1rem;">₦${amtStr}</div>
+                  <span class="status-badge" style="${statusStyle}; margin-top:4px; display:inline-flex;">${o.status || 'PLACED'}</span>
+                </div>
               </div>
-              <button onclick="openOrderDetailsModal('${o.id}')" style="background: #00B14F; color: #fff; border:none; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor:pointer;">Details</button>
+              <div class="mobile-order-card-actions">
+                <button onclick="openOrderDetailsModal('${o.id}')" class="btn-card-action btn-card-secondary"><i class="fa-solid fa-eye"></i> Details</button>
+                ${isDone ? `<button onclick="deleteCustomerOrder('${o.id}','booking')" class="btn-card-action btn-card-danger"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
+              </div>
             </div>`;
         }).join('');
       } else {
@@ -1283,20 +1353,32 @@
         pTbody.innerHTML = myPurchases.map(o => {
           const itemTitle = o.itemsSummary || o.cylinderSize || o.serviceType || 'New Cylinder / Accessory';
           const amtStr = Number(o.total || o.amount || 0).toLocaleString();
-          const isDone = o.status === 'DELIVERED' || o.status === 'COMPLETED';
-          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+          const upperStatus = (o.status || '').toUpperCase();
+          const isDone = DONE_STATUSES.has(upperStatus);
+          const isCancelled = upperStatus === 'CANCELLED' || upperStatus === 'REJECTED';
+          const statusStyle = isDone
+            ? (isCancelled ? 'background:#FEE2E2;color:#991B1B;' : 'background:#D1FAE5;color:#065F46;')
+            : 'background:#FEF3C7;color:#92400E;';
+          const statusIcon = isDone ? (isCancelled ? 'fa-xmark' : 'fa-circle-check') : 'fa-clock';
 
           return `
-            <tr style="border-bottom: 1px solid #F3F4F6;">
-              <td style="padding: 12px 10px; font-weight: 800; color: #111827;">#${o.id}</td>
-              <td style="padding: 12px 10px; color: #374151;"><strong>${itemTitle}</strong></td>
-              <td style="padding: 12px 10px; color: #4B5563;">${o.address || '—'}</td>
-              <td style="padding: 12px 10px; color: #3B82F6; font-weight: 900;">₦${amtStr}</td>
-              <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}">${o.status || 'PENDING'}</span></td>
+            <tr style="border-bottom: 1px solid #F3F4F6;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">
               <td style="padding: 12px 10px;">
-                <button onclick="openOrderDetailsModal('${o.id}')" style="background:#EFF6FF; border:1px solid #DBEAFE; color:#3B82F6; padding:6px 12px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-                  <i class="fa-solid fa-eye"></i> Details
-                </button>
+                <div style="font-weight:900; color:#111827; font-size:0.92rem;">#${o.id}</div>
+              </td>
+              <td style="padding: 12px 10px;">
+                <span style="background:rgba(59,130,246,0.1); color:#1D4ED8; padding:3px 8px; border-radius:6px; font-size:0.8rem; font-weight:800; display:inline-block;"><i class="fa-solid fa-toolbox"></i> ${itemTitle}</span>
+              </td>
+              <td style="padding: 12px 10px; color:#4B5563; font-size:0.85rem;"><i class="fa-solid fa-location-dot" style="color:#EF4444; font-size:0.74rem;"></i> ${o.address || '—'}</td>
+              <td style="padding: 12px 10px; color:#3B82F6; font-weight:900; font-size:0.95rem;">₦${amtStr}</td>
+              <td style="padding: 12px 10px;"><span class="status-badge" style="${statusStyle}"><i class="fa-solid ${statusIcon}"></i> ${o.status || 'PENDING'}</span></td>
+              <td style="padding: 12px 10px;">
+                <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                  <button onclick="openOrderDetailsModal('${o.id}')" style="background:#EFF6FF; border:1px solid #DBEAFE; color:#3B82F6; padding:6px 12px; border-radius:8px; font-weight:800; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                    <i class="fa-solid fa-eye"></i> Details
+                  </button>
+                  ${isDone ? `<button onclick="deleteCustomerOrder('${o.id}','purchase')" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#DC2626; padding:6px 10px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; gap:4px;" title="Remove from history"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </div>
               </td>
             </tr>`;
         }).join('');
@@ -1304,17 +1386,29 @@
         pMobile.innerHTML = myPurchases.map(o => {
           const itemTitle = o.itemsSummary || o.cylinderSize || o.serviceType || 'New Cylinder / Accessory';
           const amtStr = Number(o.total || o.amount || 0).toLocaleString();
-          const isDone = o.status === 'DELIVERED' || o.status === 'COMPLETED';
-          const statusStyle = isDone ? 'background:#D1FAE5;color:#065F46;' : 'background:#FEF3C7;color:#92400E;';
+          const upperStatus = (o.status || '').toUpperCase();
+          const isDone = DONE_STATUSES.has(upperStatus);
+          const isCancelled = upperStatus === 'CANCELLED' || upperStatus === 'REJECTED';
+          const statusStyle = isDone
+            ? (isCancelled ? 'background:#FEE2E2;color:#991B1B;' : 'background:#D1FAE5;color:#065F46;')
+            : 'background:#FEF3C7;color:#92400E;';
 
           return `
             <div class="mobile-order-card">
-              <div>
-                <div style="font-weight: 800; font-size: 0.95rem; color: #111827;">#${o.id} • ${itemTitle}</div>
-                <div style="font-size: 0.78rem; color: #6B7280; margin: 2px 0 6px;">${o.address || '—'} • ₦${amtStr}</div>
-                <span class="status-badge" style="${statusStyle}">${o.status || 'PENDING'}</span>
+              <div class="mobile-order-card-header">
+                <div style="flex:1;">
+                  <div style="font-weight:900; font-size:0.95rem; color:#111827;">#${o.id} <span style="font-weight:600; font-size:0.8rem; color:#6B7280;">• ${itemTitle}</span></div>
+                  <div style="font-size:0.76rem; color:#4B5563; margin-top:3px;"><i class="fa-solid fa-location-dot" style="color:#EF4444;"></i> ${o.address || '—'}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-weight:900; color:#3B82F6; font-size:1rem;">₦${amtStr}</div>
+                  <span class="status-badge" style="${statusStyle}; margin-top:4px; display:inline-flex;">${o.status || 'PENDING'}</span>
+                </div>
               </div>
-              <button onclick="openOrderDetailsModal('${o.id}')" style="background: #3B82F6; color: #fff; border:none; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; cursor:pointer;">Details</button>
+              <div class="mobile-order-card-actions">
+                <button onclick="openOrderDetailsModal('${o.id}')" class="btn-card-action btn-card-secondary"><i class="fa-solid fa-eye"></i> Details</button>
+                ${isDone ? `<button onclick="deleteCustomerOrder('${o.id}','purchase')" class="btn-card-action btn-card-danger"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
+              </div>
             </div>`;
         }).join('');
       } else {
@@ -1338,11 +1432,13 @@
       }
 
       // Filter ALL active / pending orders for this logged in customer
+      // TERMINAL statuses that should NEVER show in live stream again
+      const TERMINAL_STATUSES = new Set(['COMPLETED', 'DELIVERED', 'CANCELLED', 'REJECTED', 'ADMIN_DISPATCHED']);
       const activeCustomerOrders = combined.filter(o => {
         const isMyOrder = !o.userEmail || 
                           (curUser.email && o.userEmail.toLowerCase() === curUser.email.toLowerCase()) || 
                           (curUser.name && o.customerName === curUser.name);
-        const isActiveStatus = o.status !== 'COMPLETED' && o.status !== 'CANCELLED';
+        const isActiveStatus = !TERMINAL_STATUSES.has((o.status || '').toUpperCase());
         return isMyOrder && isActiveStatus;
       });
 
@@ -1440,6 +1536,31 @@
       renderRecentOrders();
     }
     window.confirmCustomerReceiptById = confirmCustomerReceiptById;
+
+    function deleteCustomerOrder(orderId, type) {
+      const label = type === 'booking' ? 'refill booking' : 'store purchase';
+      if (!confirm(`Remove this ${label} (#${orderId}) from your history?`)) return;
+      const cleanId = String(orderId || '').replace(/^#+/, '');
+
+      // Remove from emberGasOrders
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const filtered = allOrders.filter(o => {
+        const oId = String(o.id || '').replace(/^#+/, '');
+        return oId !== cleanId;
+      });
+      localStorage.setItem('emberGasOrders', JSON.stringify(filtered));
+
+      // Also clear from activeEmberGasOrder if same ID
+      const activeSingle = JSON.parse(localStorage.getItem('activeEmberGasOrder') || 'null');
+      if (activeSingle && String(activeSingle.id || '').replace(/^#+/, '') === cleanId) {
+        localStorage.removeItem('activeEmberGasOrder');
+      }
+
+      if (window.NotificationManager) NotificationManager.show(`🗑️ Order #${orderId} removed from history.`, 'info');
+      renderRecentOrders();
+      loadLiveOrder();
+    }
+    window.deleteCustomerOrder = deleteCustomerOrder;
 
     async function confirmCustomerReceipt() {
       if (!window.OrderStateManager) return;
