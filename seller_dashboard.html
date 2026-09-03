@@ -240,7 +240,7 @@
       box-shadow: 0 4px 12px rgba(0, 177, 79, 0.12);
     }
 
-    /* ── RESPONSIVE ── */
+    /* ── RESPONSIVE MOBILE SWEEP ── */
     @media (max-width: 900px) {
       main { padding: 0 12px; margin: 14px auto; }
 
@@ -254,14 +254,71 @@
         gap: 10px !important;
       }
 
-      .metric-card { padding: 13px 12px !important; gap: 10px !important; }
+      .metric-card { padding: 12px 10px !important; gap: 10px !important; }
 
       .stock-grid-mobile { grid-template-columns: 1fr !important; gap: 12px !important; }
 
       .vendor-desktop-table { display: none !important; }
 
-      .vendor-welcome { padding: 18px 16px; }
-      .vendor-welcome h2 { font-size: 1.2rem; }
+      .vendor-welcome { padding: 18px 14px; }
+      .vendor-welcome h2 { font-size: 1.15rem; }
+
+      .vendor-filter-tabs-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 4px;
+      }
+      .vendor-filter-tabs-wrapper::-webkit-scrollbar { display: none; }
+      .vendor-filter-tabs-wrapper button {
+        flex-shrink: 0;
+        padding: 7px 13px !important;
+        font-size: 0.76rem !important;
+      }
+
+      #liveOrderQueue {
+        padding: 16px 12px !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .master-header {
+        padding: 10px 14px !important;
+      }
+      .brand-logo {
+        font-size: 1rem !important;
+      }
+      .vendor-welcome {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+      }
+      .metric-card {
+        padding: 10px 8px !important;
+      }
+      .metric-val {
+        font-size: 1.1rem !important;
+      }
+      .metric-label {
+        font-size: 0.7rem !important;
+      }
+      .quick-links-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+      }
+      .quick-link-card {
+        padding: 10px 8px !important;
+      }
+      .btn-sm {
+        padding: 8px 10px !important;
+        font-size: 0.74rem !important;
+      }
     }
 
     @media (min-width: 901px) {
@@ -404,7 +461,7 @@
         </div>
         
         <!-- Filter Tabs -->
-        <div style="display: flex; gap: 6px; background: #F3F4F6; padding: 4px; border-radius: 14px;">
+        <div class="vendor-filter-tabs-wrapper" style="display: flex; gap: 6px; background: #F3F4F6; padding: 4px; border-radius: 14px;">
           <button id="vTabAll" onclick="setVendorOrderFilter('all')" style="border:none; padding:8px 16px; border-radius:10px; font-size:0.8rem; font-weight:800; cursor:pointer; background:#00B14F; color:#fff; transition:all 0.2s ease;">
             <i class="fa-solid fa-list"></i> All Requests (<span id="vTabAllCount">0</span>)
           </button>

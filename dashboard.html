@@ -558,11 +558,29 @@
       .table-desktop-view { display: none !important; }
 
       .quick-links-grid {
-        grid-template-columns: 1fr !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
       }
 
       .sidebar-profile-card {
         display: none !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .master-header { padding: 10px 14px !important; }
+      .brand-logo { font-size: 1rem !important; }
+      .welcome-hero { padding: 16px 14px !important; }
+      .welcome-hero h2 { font-size: 1.15rem !important; }
+      .cylinder-selector {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+      }
+      .cylinder-card {
+        padding: 10px 8px !important;
+      }
+      .quick-link-card {
+        padding: 12px 10px !important;
       }
     }
 
