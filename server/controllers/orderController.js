@@ -124,17 +124,20 @@ const getMyOrders = expressAsyncHandler(async (req, res) => {
 // @access  Public / Private
 const updateOrderStatus = expressAsyncHandler(async (req, res) => {
     const { status } = req.body;
-    const orderIdParam = req.params.id;
+    const orderIdParam = req.params.id || '';
+    const cleanId = orderIdParam.replace(/^#+/, '');
 
     let order = await Order.findById(orderIdParam).catch(() => null);
     if (!order) {
-        order = await Order.findOne({ orderNumber: '#' + orderIdParam }) || await Order.findOne({ orderNumber: orderIdParam });
+        order = await Order.findOne({ orderNumber: '#' + cleanId }) ||
+                await Order.findOne({ orderNumber: cleanId }) ||
+                await Order.findOne({ orderNumber: orderIdParam });
     }
 
     if (order) {
         order.status = status || order.status;
         const updated = await order.save();
-        res.json({ message: 'Order status updated', status: updated.status, id: orderIdParam });
+        res.json({ message: 'Order status updated', status: updated.status, id: orderIdParam, orderNumber: order.orderNumber });
     } else {
         res.status(404);
         throw new Error('Order not found');

@@ -910,6 +910,11 @@
         // 3. Match against vendor business name if available
         if (currentVendorBiz && oVendorName && (oVendorName.includes(currentVendorBiz) || currentVendorBiz.includes(oVendorName))) return true;
 
+        // 4. Also match if the refill order was placed to general depot or has no specific vendor locked yet
+        if (!oVendorEmail || oVendorEmail === 'depot@embergas.ng' || oVendorName === 'station depot' || oVendorName.includes('depot hub') || oVendorName.includes('express depot')) {
+          return true;
+        }
+
         return false;
       });
 
@@ -1176,6 +1181,12 @@
       if (orderIdx === -1) return;
 
       allOrders[orderIdx].status = 'ACCEPTED';
+      if (vendorUser) {
+        allOrders[orderIdx].vendorName = vendorUser.name || allOrders[orderIdx].vendorName;
+        allOrders[orderIdx].vendorEmail = vendorUser.email || allOrders[orderIdx].vendorEmail;
+        allOrders[orderIdx].sellerName = vendorUser.name || allOrders[orderIdx].sellerName;
+        allOrders[orderIdx].sellerEmail = vendorUser.email || allOrders[orderIdx].sellerEmail;
+      }
       localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
       OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
       updateOrderStatusInBackend(orderId, 'SELLER_PREPARING');
