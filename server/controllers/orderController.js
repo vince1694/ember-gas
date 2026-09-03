@@ -21,6 +21,7 @@ const addOrderItems = expressAsyncHandler(async (req, res) => {
         customerPhone,
         phone,
         vendorName,
+        sellerName,
         vendorEmail,
         sellerEmail,
         orderType,
@@ -40,8 +41,8 @@ const addOrderItems = expressAsyncHandler(async (req, res) => {
 
     const finalOrderType = isStoreAccessory ? 'STORE_ACCESSORY' : 'REFILL';
     const finalAssignedTo = isStoreAccessory ? 'admin' : (assignedTo || 'vendor');
-    const finalSellerName = vendorName || req.body.sellerName || (isStoreAccessory ? 'EmberGas Admin Store' : 'Station Depot');
-    const finalSellerEmail = (vendorEmail || sellerEmail || (isStoreAccessory ? 'admin@embergas.ng' : '')).toLowerCase().trim();
+    const finalSellerName = vendorName || sellerName || (isStoreAccessory ? 'EmberGas Admin Store' : 'Station Depot');
+    const finalSellerEmail = (sellerEmail || vendorEmail || (isStoreAccessory ? 'admin@embergas.ng' : '')).toLowerCase().trim();
 
     const newOrder = new Order({
         orderNumber: '#' + finalOrderId,
@@ -123,7 +124,7 @@ const getMyOrders = expressAsyncHandler(async (req, res) => {
 // @route   PUT /api/orders/:id/status
 // @access  Public / Private
 const updateOrderStatus = expressAsyncHandler(async (req, res) => {
-    const { status } = req.body;
+    const { status, vendorName, sellerName, vendorEmail, sellerEmail } = req.body;
     const orderIdParam = req.params.id || '';
     const cleanId = orderIdParam.replace(/^#+/, '');
 
@@ -135,7 +136,10 @@ const updateOrderStatus = expressAsyncHandler(async (req, res) => {
     }
 
     if (order) {
-        order.status = status || order.status;
+        if (status) order.status = status;
+        // When vendor accepts, lock the order to that vendor station in MongoDB
+        if (vendorName || sellerName) order.sellerName = vendorName || sellerName || order.sellerName;
+        if (sellerEmail || vendorEmail) order.sellerEmail = (sellerEmail || vendorEmail || order.sellerEmail).toLowerCase().trim();
         const updated = await order.save();
         res.json({ message: 'Order status updated', status: updated.status, id: orderIdParam, orderNumber: order.orderNumber });
     } else {

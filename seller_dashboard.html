@@ -846,7 +846,7 @@
       }
     }
 
-    function updateOrderStatusInBackend(orderId, status) {
+    function updateOrderStatusInBackend(orderId, status, extraBody) {
       if (!orderId) return;
       const hosts = Array.from(new Set([
         '',
@@ -855,12 +855,14 @@
         'http://localhost:5000'
       ]));
 
+      const payload = Object.assign({ status }, extraBody || {});
+
       for (const host of hosts) {
         try {
           fetch(host + `/api/orders/${encodeURIComponent(orderId)}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status })
+            body: JSON.stringify(payload)
           }).catch(() => {});
           break;
         } catch (e) {}
@@ -1189,7 +1191,11 @@
       }
       localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
       OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
-      updateOrderStatusInBackend(orderId, 'SELLER_PREPARING');
+      // Pass vendor identity so MongoDB permanently locks this refill to this station
+      updateOrderStatusInBackend(orderId, 'ACCEPTED', {
+        vendorName: vendorUser ? vendorUser.name : undefined,
+        sellerEmail: vendorUser ? vendorUser.email : undefined
+      });
 
       if (window.NotificationManager) NotificationManager.show(`Order #${orderId} Accepted! Cylinder being filled...`, 'success');
 

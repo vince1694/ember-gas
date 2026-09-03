@@ -28,7 +28,16 @@ const orderSchema = mongoose.Schema(
         paymentStatus: { type: String, enum: ['Pending', 'Paid', 'Failed'], default: 'Paid' },
         status: {
             type: String,
-            enum: ['ORDER_CONFIRMED', 'SELLER_PREPARING', 'READY_FOR_PICKUP', 'RIDER_PICKING_UP', 'ON_THE_WAY', 'DELIVERED', 'CANCELLED'],
+            enum: [
+                // Refill Booking Lifecycle (Vendor-managed)
+                'PLACED', 'ORDER_CONFIRMED', 'ACCEPTED', 'SELLER_PREPARING',
+                'EN_ROUTE', 'ON_THE_WAY', 'READY_FOR_PICKUP', 'RIDER_PICKING_UP',
+                'DELIVERED', 'COMPLETED',
+                // Store Order Lifecycle (Admin-managed)
+                'PENDING_ADMIN', 'ADMIN_PREPARING', 'ADMIN_DISPATCHED',
+                // Shared terminal
+                'CANCELLED', 'REJECTED'
+            ],
             default: 'ORDER_CONFIRMED'
         },
         estimatedDeliveryMinutes: { type: Number, default: 35 },
