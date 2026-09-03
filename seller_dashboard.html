@@ -811,21 +811,30 @@
               dbOrders.forEach(dbo => {
                 const id = dbo.orderNumber ? dbo.orderNumber.replace('#', '') : dbo._id;
                 const idx = localOrders.findIndex(lo => lo.id === id || lo.id === dbo.orderNumber);
+                const orderData = {
+                  id,
+                  customerName: dbo.customerName || 'Valued Customer',
+                  customerPhone: dbo.customerPhone || '—',
+                  userEmail: dbo.customerEmail || dbo.userEmail || '',
+                  vendorName: dbo.sellerName || dbo.vendorName || '',
+                  vendorEmail: (dbo.sellerEmail || dbo.vendorEmail || '').toLowerCase().trim(),
+                  sellerName: dbo.sellerName || dbo.vendorName || '',
+                  sellerEmail: (dbo.sellerEmail || dbo.vendorEmail || '').toLowerCase().trim(),
+                  cylinderSize: dbo.cylinderSize || '12.5kg',
+                  address: dbo.deliveryAddress || dbo.address || '—',
+                  amount: dbo.totalAmount || dbo.total || dbo.amount || 0,
+                  total: dbo.totalAmount || dbo.total || dbo.amount || 0,
+                  orderType: dbo.orderType || (dbo.serviceType === 'new_cylinder' ? 'STORE_ACCESSORY' : 'REFILL'),
+                  serviceType: dbo.serviceType || 'refill',
+                  assignedTo: dbo.assignedTo || 'vendor',
+                  status: dbo.status,
+                  createdAt: dbo.createdAt
+                };
+
                 if (idx === -1) {
-                  localOrders.unshift({
-                    id,
-                    customerName: dbo.customerName,
-                    userEmail: dbo.userEmail || '',
-                    vendorName: dbo.sellerName,
-                    cylinderSize: dbo.cylinderSize,
-                    address: dbo.deliveryAddress,
-                    amount: dbo.totalAmount,
-                    total: dbo.totalAmount,
-                    status: dbo.status,
-                    createdAt: dbo.createdAt
-                  });
+                  localOrders.unshift(orderData);
                 } else {
-                  localOrders[idx].status = dbo.status;
+                  localOrders[idx] = { ...localOrders[idx], ...orderData };
                 }
               });
               localStorage.setItem('emberGasOrders', JSON.stringify(localOrders.slice(0, 100)));
@@ -868,25 +877,38 @@
 
       const currentVendorName = vendorUser ? (vendorUser.name || '').toLowerCase().trim() : '';
       const currentVendorEmail = vendorUser ? (vendorUser.email || '').toLowerCase().trim() : '';
+      const currentVendorBiz = vendorUser ? (vendorUser.businessName || '').toLowerCase().trim() : '';
 
-      // ── VENDOR BOOKING REQUEST ISOLATION ──
-      // Show ONLY booking requests (refill type) assigned to THIS vendor
+      // ── VENDOR REFILL BOOKING REQUEST ISOLATION ──
+      // Show ONLY Gas Refill booking requests assigned to THIS vendor.
+      // Store accessories and new cylinder purchases belong to EmberGas Admin!
       const myVendorOrders = allOrders.filter(o => {
-        // Exclude new cylinder purchases — those go to admin, not vendor
-        if (o.type === 'new_cylinder' || o.serviceType === 'Purchase New Cylinder + Gas') return false;
+        // Exclude store accessories and new cylinder purchases — those go to EmberGas Admin
+        if (o.orderType === 'STORE_ACCESSORY' || o.type === 'new_cylinder' || 
+            o.serviceType === 'Purchase New Cylinder + Gas' || o.serviceType === 'new_cylinder' || 
+            o.assignedTo === 'admin') {
+          return false;
+        }
 
-        // Must have a vendor assignment to show up
-        if (!o.vendorName && !o.vendorEmail) return false;
+        const oVendorEmail = (o.vendorEmail || o.sellerEmail || '').toLowerCase().trim();
+        const oVendorName  = (o.vendorName  || o.sellerName  || '').toLowerCase().trim();
 
-        const oVendorEmail = (o.vendorEmail || '').toLowerCase().trim();
-        const oVendorName  = (o.vendorName  || '').toLowerCase().trim();
-
-        // Prefer exact email match
+        // 1. Exact email match (highest confidence)
         if (oVendorEmail && currentVendorEmail && oVendorEmail === currentVendorEmail) return true;
 
-        // Fallback: name fuzzy match
-        if (oVendorName && currentVendorName &&
-            (oVendorName.includes(currentVendorName) || currentVendorName.includes(oVendorName))) return true;
+        // 2. Exact or fuzzy vendor name match
+        if (oVendorName && currentVendorName) {
+          if (oVendorName === currentVendorName) return true;
+          if (oVendorName.includes(currentVendorName) || currentVendorName.includes(oVendorName)) return true;
+
+          // Normalized name match (strips noise words like Hub, Station, Depot, LPG, Refill)
+          const cleanO = oVendorName.replace(/\b(lpg|station|depot|hub|filling|refill)\b/gi, '').trim();
+          const cleanV = currentVendorName.replace(/\b(lpg|station|depot|hub|filling|refill)\b/gi, '').trim();
+          if (cleanO && cleanV && (cleanO.includes(cleanV) || cleanV.includes(cleanO))) return true;
+        }
+
+        // 3. Match against vendor business name if available
+        if (currentVendorBiz && oVendorName && (oVendorName.includes(currentVendorBiz) || currentVendorBiz.includes(oVendorName))) return true;
 
         return false;
       });

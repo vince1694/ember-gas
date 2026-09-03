@@ -1541,13 +1541,14 @@
       // Create Order via OrderStateManager & emberGasOrders array
       let newOrder;
       if (window.OrderStateManager) {
-        newOrder = OrderStateManager.createOrder(selectedSize, sType, addr, selectedTotal);
-        newOrder.vendorName = selectedVendor;
-        newOrder.vendorEmail = selectedVendorEmail;
+        newOrder = OrderStateManager.createOrder(selectedSize, sType, addr, selectedTotal, selectedVendor, selectedVendorEmail);
         newOrder.customerName = curUser.name || 'Valued Customer';
         newOrder.userEmail = curUser.email || '';
+        newOrder.customerPhone = curUser.phone || '';
         newOrder.size = selectedSize;
         newOrder.total = selectedTotal;
+        newOrder.orderType = 'REFILL';
+        newOrder.assignedTo = 'vendor';
         newOrder.type = 'BOOKING_REQUEST'; // Mark as booking request (refill)
         OrderStateManager.saveActiveOrder(newOrder);
       } else {
@@ -1557,12 +1558,16 @@
           size: selectedSize,
           vendorName: selectedVendor,
           vendorEmail: selectedVendorEmail,
+          sellerName: selectedVendor,
+          sellerEmail: selectedVendorEmail,
           total: selectedTotal, 
           amount: selectedTotal,
           address: addr, 
           status: 'PLACED',
           customerName: curUser.name || 'Valued Customer',
           userEmail: curUser.email || '',
+          orderType: 'REFILL',
+          assignedTo: 'vendor',
           type: 'BOOKING_REQUEST'
         };
         localStorage.setItem('activeEmberGasOrder', JSON.stringify(newOrder));
@@ -1617,6 +1622,30 @@
           `
         })
       }).catch(err => console.warn('Brevo notify note:', err));
+
+      // Also notify vendor station directly if vendor has email
+      if (selectedVendorEmail) {
+        safeFetchApi('/api/auth/notify-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: selectedVendorEmail,
+            toName: selectedVendor,
+            subject: `🔔 New Gas Refill Booking #${newOrder.id} for Your Station — EmberGas`,
+            title: `New Refill Request Received`,
+            bodyHtml: `
+              <p>Hello <strong>${selectedVendor}</strong>,</p>
+              <p>A customer has just booked a gas refill for your station!</p>
+              <p><strong>Order ID:</strong> #${newOrder.id}</p>
+              <p><strong>Customer:</strong> ${curUser.name} (${curUser.phone || '—'})</p>
+              <p><strong>Cylinder Size:</strong> ${selectedSize} kg Refill</p>
+              <p><strong>Delivery Address:</strong> ${addr}</p>
+              <p><strong>Total Amount:</strong> ₦${selectedTotal.toLocaleString()}</p>
+              <p>Please log in to your <strong>Vendor Dashboard</strong> now to accept and dispatch this refill!</p>
+            `
+          })
+        }).catch(() => {});
+      }
 
       return false;
     }

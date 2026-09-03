@@ -360,14 +360,20 @@
             orderId: orderId,
             cylinderSize: orderData.cylinderSize,
             serviceType: 'new_cylinder',
+            orderType: 'STORE_ACCESSORY',
+            assignedTo: 'admin',
+            itemsSummary: orderData.cylinderSize + ' New Cylinder + Gas',
             customerName: name,
             userEmail: curUser ? curUser.email : '',
             customerPhone: phone,
             address: address,
             total: orderData.total,
             amount: orderData.total,
-            vendorName: 'EmberGas Admin Depot',
-            status: 'ORDER_CONFIRMED'
+            vendorName: 'EmberGas Admin Store',
+            vendorEmail: 'admin@embergas.ng',
+            sellerName: 'EmberGas Admin Store',
+            sellerEmail: 'admin@embergas.ng',
+            status: 'PENDING_ADMIN'
           })
         }).catch(() => {});
       }

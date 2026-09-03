@@ -537,9 +537,12 @@ class OrderStateManager {
         localStorage.setItem('activeEmberGasOrder', JSON.stringify(orderObj));
     }
 
-    static createOrder(cylinderSize, serviceType, address, amount) {
+    static createOrder(cylinderSize, serviceType, address, amount, vendorName, vendorEmail) {
         const user = JSON.parse(localStorage.getItem('currentUser')) || {};
         const calculatedAmount = amount || (parseFloat(cylinderSize) * 1100);
+        const resolvedVendorName = vendorName || 'EmberGas Station Depot';
+        const resolvedVendorEmail = (vendorEmail || '').toLowerCase().trim();
+
         const newOrder = {
             id: 'EG-' + Math.floor(1000 + Math.random() * 9000),
             customerName: user.name || 'Valued Customer',
@@ -549,11 +552,15 @@ class OrderStateManager {
             cylinderSize: cylinderSize + (String(cylinderSize).includes('kg') ? '' : ' kg'),
             size: parseFloat(cylinderSize) || 12.5,
             serviceType: serviceType || 'Cylinder Refill Only',
+            orderType: 'REFILL',
+            assignedTo: 'vendor',
             amount: calculatedAmount,
             total: calculatedAmount,
             status: 'PLACED',
-            vendorName: '',   // Set by caller after vendor selection
-            vendorEmail: '',  // Set by caller after vendor selection
+            vendorName: resolvedVendorName,
+            vendorEmail: resolvedVendorEmail,
+            sellerName: resolvedVendorName,
+            sellerEmail: resolvedVendorEmail,
             riderName: null,
             etaMins: 25,
             type: 'BOOKING_REQUEST',
@@ -571,13 +578,18 @@ class OrderStateManager {
                     size: newOrder.size,
                     cylinderSize: newOrder.cylinderSize,
                     serviceType: newOrder.serviceType,
+                    orderType: 'REFILL',
+                    assignedTo: 'vendor',
                     address: newOrder.address,
                     total: newOrder.total,
                     amount: newOrder.amount,
                     customerName: newOrder.customerName,
+                    customerPhone: newOrder.customerPhone,
                     userEmail: newOrder.userEmail,
-                    vendorName: newOrder.vendorName || 'EmberGas Express Depot',
-                    vendorEmail: newOrder.vendorEmail || '',
+                    vendorName: resolvedVendorName,
+                    sellerName: resolvedVendorName,
+                    vendorEmail: resolvedVendorEmail,
+                    sellerEmail: resolvedVendorEmail,
                     status: 'ORDER_CONFIRMED'
                 })
             }).catch(() => {});

@@ -18,8 +18,14 @@ const addOrderItems = expressAsyncHandler(async (req, res) => {
         amount,
         customerName,
         userEmail,
+        customerPhone,
+        phone,
         vendorName,
         vendorEmail,
+        sellerEmail,
+        orderType,
+        assignedTo,
+        itemsSummary,
         status
     } = req.body;
 
@@ -27,30 +33,57 @@ const addOrderItems = expressAsyncHandler(async (req, res) => {
     const finalSize = size || cylinderSize || '12.5';
     const finalTotal = Number(total || amount || 0);
 
+    const isStoreAccessory = orderType === 'STORE_ACCESSORY' ||
+        serviceType === 'new_cylinder' ||
+        serviceType === 'accessories' ||
+        assignedTo === 'admin';
+
+    const finalOrderType = isStoreAccessory ? 'STORE_ACCESSORY' : 'REFILL';
+    const finalAssignedTo = isStoreAccessory ? 'admin' : (assignedTo || 'vendor');
+    const finalSellerName = vendorName || req.body.sellerName || (isStoreAccessory ? 'EmberGas Admin Store' : 'Station Depot');
+    const finalSellerEmail = (vendorEmail || sellerEmail || (isStoreAccessory ? 'admin@embergas.ng' : '')).toLowerCase().trim();
+
     const newOrder = new Order({
         orderNumber: '#' + finalOrderId,
         customer: req.user ? req.user._id : null,
         customerName: customerName || (req.user ? req.user.name : 'Valued Customer'),
-        customerPhone: req.user ? req.user.phone : '—',
-        sellerName: vendorName || 'Station Depot',
+        customerPhone: customerPhone || phone || (req.user ? req.user.phone : '—'),
+        customerEmail: (userEmail || (req.user ? req.user.email : '')).toLowerCase().trim(),
+        sellerName: finalSellerName,
+        sellerEmail: finalSellerEmail,
+        orderType: finalOrderType,
+        serviceType: serviceType || (isStoreAccessory ? 'new_cylinder' : 'refill'),
+        assignedTo: finalAssignedTo,
+        itemsSummary: itemsSummary || '',
         cylinderSize: String(finalSize).includes('kg') ? String(finalSize) : finalSize + 'kg',
         totalAmount: finalTotal,
         deliveryAddress: address || '—',
-        status: status || 'ORDER_CONFIRMED'
+        status: status || (isStoreAccessory ? 'PENDING_ADMIN' : 'ORDER_CONFIRMED')
     });
 
     const createdOrder = await newOrder.save();
     res.status(201).json({
         id: finalOrderId,
+        orderNumber: newOrder.orderNumber,
         size: finalSize,
-        cylinderSize: String(finalSize).includes('kg') ? String(finalSize) : finalSize + 'kg',
-        serviceType: serviceType || 'refill',
+        cylinderSize: newOrder.cylinderSize,
+        serviceType: newOrder.serviceType,
+        orderType: newOrder.orderType,
+        assignedTo: newOrder.assignedTo,
+        itemsSummary: newOrder.itemsSummary,
         total: finalTotal,
         amount: finalTotal,
+        totalAmount: finalTotal,
         address: address || '—',
+        deliveryAddress: newOrder.deliveryAddress,
         customerName: newOrder.customerName,
-        userEmail: userEmail || (req.user ? req.user.email : ''),
+        customerPhone: newOrder.customerPhone,
+        customerEmail: newOrder.customerEmail,
+        userEmail: newOrder.customerEmail,
         vendorName: newOrder.sellerName,
+        sellerName: newOrder.sellerName,
+        vendorEmail: newOrder.sellerEmail,
+        sellerEmail: newOrder.sellerEmail,
         status: newOrder.status,
         _id: createdOrder._id,
         createdAt: createdOrder.createdAt
@@ -61,8 +94,20 @@ const addOrderItems = expressAsyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Public / Private
 const getOrders = expressAsyncHandler(async (req, res) => {
-    const orders = await Order.find({}).sort({ createdAt: -1 }).limit(100);
-    res.json(orders);
+    const orders = await Order.find({}).sort({ createdAt: -1 }).limit(150);
+    const enriched = orders.map(o => {
+        const obj = o.toObject();
+        return {
+            ...obj,
+            id: obj.orderNumber ? obj.orderNumber.replace('#', '') : obj._id,
+            vendorName: obj.sellerName,
+            vendorEmail: obj.sellerEmail,
+            userEmail: obj.customerEmail || obj.userEmail || '',
+            amount: obj.totalAmount,
+            total: obj.totalAmount
+        };
+    });
+    res.json(enriched);
 });
 
 // @desc    Get customer orders

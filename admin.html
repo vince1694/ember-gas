@@ -1051,11 +1051,24 @@
         <div class="glass-card">
           <div style="margin-bottom: 20px;">
             <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 900; color: #FFFFFF; display: flex; align-items: center; gap: 10px;">
-              <i class="fa-solid fa-truck-fast" style="color: #3B82F6;"></i> Live Order Dispatch Stream
+              <i class="fa-solid fa-truck-fast" style="color: #3B82F6;"></i> Live Order Dispatch & Fulfillment
             </h2>
             <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">
-              Real-time feed of all customer cooking gas refill and cylinder orders stored permanently in MongoDB Atlas.
+              <strong>Store Accessories & Equipment</strong> are fulfilled exclusively by EmberGas Admin. <strong>Gas Refill Requests</strong> are handled directly by the selected vendor stations.
             </p>
+          </div>
+
+          <!-- Order Category Switcher -->
+          <div style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+            <button id="catBtnStore" class="filter-tab active" onclick="setOrderCategory('STORE', this)" style="padding: 9px 18px; font-weight: 800; font-size: 0.84rem; border-radius: 10px; background: #00B14F; color: #fff;">
+              <i class="fa-solid fa-store"></i> Store Accessories & Hardware (Admin Handled)
+            </button>
+            <button id="catBtnRefill" class="filter-tab" onclick="setOrderCategory('REFILL', this)" style="padding: 9px 18px; font-weight: 800; font-size: 0.84rem; border-radius: 10px; background: rgba(255,255,255,0.06); color: var(--text-muted);">
+              <i class="fa-solid fa-gas-pump"></i> Gas Refill Requests (Station Handled)
+            </button>
+            <button id="catBtnAll" class="filter-tab" onclick="setOrderCategory('ALL', this)" style="padding: 9px 18px; font-weight: 800; font-size: 0.84rem; border-radius: 10px; background: rgba(255,255,255,0.06); color: var(--text-muted);">
+              <i class="fa-solid fa-list"></i> All Platform Orders
+            </button>
           </div>
 
           <div class="controls-row">
@@ -1064,7 +1077,7 @@
               <input type="text" id="orderSearchInput" placeholder="Search by order ID, customer, address..." oninput="filterOrdersTable()">
             </div>
             <div class="filter-tabs">
-              <button class="filter-tab active" onclick="setOrderFilter('ALL', this)">All Orders</button>
+              <button class="filter-tab active" onclick="setOrderFilter('ALL', this)">All Statuses</button>
               <button class="filter-tab" onclick="setOrderFilter('CONFIRMED', this)">Confirmed</button>
               <button class="filter-tab" onclick="setOrderFilter('PREPARING', this)">Preparing</button>
               <button class="filter-tab" onclick="setOrderFilter('ON_THE_WAY', this)">In Transit</button>
@@ -1765,9 +1778,27 @@
     }
 
     // ── RENDER LIVE ORDERS TABLE ──
+    state.orderCategory = 'STORE';
+
+    function setOrderCategory(cat, btn) {
+      state.orderCategory = cat;
+      ['catBtnStore', 'catBtnRefill', 'catBtnAll'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) {
+          b.style.background = 'rgba(255,255,255,0.06)';
+          b.style.color = 'var(--text-muted)';
+        }
+      });
+      if (btn) {
+        btn.style.background = '#00B14F';
+        btn.style.color = '#FFFFFF';
+      }
+      renderOrdersTable();
+    }
+
     function setOrderFilter(filter, btn) {
       state.orderFilter = filter;
-      document.querySelectorAll('#tab-orders .filter-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#tab-orders .filter-tabs .filter-tab').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       renderOrdersTable();
     }
@@ -1783,6 +1814,23 @@
       const q = (document.getElementById('orderSearchInput')?.value || '').toLowerCase().trim();
       let list = state.orders || [];
 
+      // Filter by Order Category: STORE vs REFILL vs ALL
+      if (state.orderCategory === 'STORE') {
+        list = list.filter(o => 
+          o.orderType === 'STORE_ACCESSORY' || 
+          o.assignedTo === 'admin' || 
+          o.serviceType === 'new_cylinder' || 
+          o.serviceType === 'accessories'
+        );
+      } else if (state.orderCategory === 'REFILL') {
+        list = list.filter(o => 
+          o.orderType !== 'STORE_ACCESSORY' && 
+          o.assignedTo !== 'admin' &&
+          o.serviceType !== 'new_cylinder' &&
+          o.serviceType !== 'accessories'
+        );
+      }
+
       if (state.orderFilter !== 'ALL') {
         list = list.filter(o => (o.status || 'CONFIRMED').toUpperCase() === state.orderFilter);
       }
@@ -1792,12 +1840,18 @@
           (o.orderNumber || '').toLowerCase().includes(q) ||
           (o.customerName || '').toLowerCase().includes(q) ||
           (o.deliveryAddress || '').toLowerCase().includes(q) ||
-          (o.sellerName || '').toLowerCase().includes(q)
+          (o.sellerName || '').toLowerCase().includes(q) ||
+          (o.sellerEmail || '').toLowerCase().includes(q)
         );
       }
 
       if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px;">No platform orders match the current filter.</td></tr>`;
+        const emptyMsg = state.orderCategory === 'STORE'
+          ? 'No store accessories or cylinder equipment orders match this filter.'
+          : state.orderCategory === 'REFILL'
+            ? 'No station gas refill requests match this filter.'
+            : 'No platform orders match the current filter.';
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:30px;">${emptyMsg}</td></tr>`;
         return;
       }
 
@@ -1805,15 +1859,34 @@
         const id = o.orderNumber || o._id || '—';
         const cust = o.customerName || 'Valued Customer';
         const phone = o.customerPhone || '—';
-        const st = o.sellerName || 'Depot Hub';
-        const sz = o.cylinderSize || '12.5kg';
+        const st = o.sellerName || (o.orderType === 'STORE_ACCESSORY' ? 'EmberGas Admin Store' : 'Station Depot');
+        const stEmail = o.sellerEmail || o.vendorEmail || '';
+        const sz = o.cylinderSize || (o.itemsSummary ? o.itemsSummary : '12.5kg');
         const amt = '₦' + Number(o.totalAmount || 0).toLocaleString();
         const addr = o.deliveryAddress || 'Lagos, Nigeria';
         const status = (o.status || 'CONFIRMED').toUpperCase();
+        const isStoreItem = o.orderType === 'STORE_ACCESSORY' || o.assignedTo === 'admin' || o.serviceType === 'new_cylinder' || o.serviceType === 'accessories';
 
         let badgeClass = 'in-transit';
         if (status === 'DELIVERED') badgeClass = 'verified';
         if (status === 'CANCELLED') badgeClass = 'rejected';
+
+        const stationCell = isStoreItem
+          ? `<span style="color:#00B14F; font-weight:800; font-size:0.84rem;"><i class="fa-solid fa-store"></i> EmberGas Admin Store</span><br><span style="font-size:0.72rem;color:var(--text-sub);">Platform Fulfillment</span>`
+          : `<span style="color:#F59E0B; font-weight:800; font-size:0.84rem;"><i class="fa-solid fa-gas-pump"></i> ${st}</span><br><span style="font-size:0.72rem;color:var(--text-sub);">${stEmail || 'Vendor Station'}</span>`;
+
+        const actionCell = isStoreItem
+          ? `<select onchange="updateOrderStatus('${o._id || id}', this.value)" style="padding:6px 10px;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border-color-light);color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;">
+              <option value="ORDER_CONFIRMED" ${status==='ORDER_CONFIRMED'?'selected':''}>Confirmed</option>
+              <option value="SELLER_PREPARING" ${status==='SELLER_PREPARING'?'selected':''}>Preparing</option>
+              <option value="ON_THE_WAY" ${status==='ON_THE_WAY'?'selected':''}>In Transit</option>
+              <option value="DELIVERED" ${status==='DELIVERED'?'selected':''}>Delivered</option>
+              <option value="CANCELLED" ${status==='CANCELLED'?'selected':''}>Cancelled</option>
+            </select>`
+          : `<div style="line-height:1.3;">
+              <span style="color:#10B981; font-weight:800; font-size:0.76rem;"><i class="fa-solid fa-circle-check"></i> Station Handled</span><br>
+              <span style="font-size:0.70rem; color:var(--text-sub);">Vendor Dashboard</span>
+            </div>`;
 
         return `
           <tr>
@@ -1822,20 +1895,12 @@
               <div style="font-weight:700;">${cust}</div>
               <div style="font-size:0.75rem;color:var(--text-sub);">${phone}</div>
             </td>
-            <td>${st}</td>
+            <td>${stationCell}</td>
             <td><span class="status-badge" style="background:rgba(255,255,255,0.06);">${sz}</span></td>
             <td><strong>${amt}</strong></td>
             <td>${addr}</td>
             <td><span class="status-badge ${badgeClass}">${status}</span></td>
-            <td>
-              <select onchange="updateOrderStatus('${o._id || id}', this.value)" style="padding:6px 10px;border-radius:8px;background:var(--bg-surface);border:1px solid var(--border-color-light);color:#fff;font-size:0.78rem;font-weight:700;cursor:pointer;">
-                <option value="ORDER_CONFIRMED" ${status==='ORDER_CONFIRMED'?'selected':''}>Confirmed</option>
-                <option value="SELLER_PREPARING" ${status==='SELLER_PREPARING'?'selected':''}>Preparing</option>
-                <option value="ON_THE_WAY" ${status==='ON_THE_WAY'?'selected':''}>In Transit</option>
-                <option value="DELIVERED" ${status==='DELIVERED'?'selected':''}>Delivered</option>
-                <option value="CANCELLED" ${status==='CANCELLED'?'selected':''}>Cancelled</option>
-              </select>
-            </td>
+            <td>${actionCell}</td>
           </tr>
         `;
       }).join('');

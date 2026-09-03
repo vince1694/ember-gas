@@ -350,8 +350,74 @@
       AuthGuard.requireAuth((user) => {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
         const itemList = cart.map(i => `• ${i.name} (₦${i.price.toLocaleString()})`).join('\n');
-        const waMsg = encodeURIComponent(`Hello EmberGas Store, I am ${user.name} (${user.phone}). I want to order:\n${itemList}\nTotal: ₦${total.toLocaleString()}`);
+        const orderId = 'EG-STORE-' + Math.floor(1000 + Math.random() * 9000);
+
+        // Save to MongoDB Atlas for Admin Store Fulfillment
+        const hosts = Array.from(new Set([
+          '',
+          `http://${window.location.hostname || '127.0.0.1'}:5000`,
+          'http://127.0.0.1:5000',
+          'http://localhost:5000'
+        ]));
+
+        for (const host of hosts) {
+          try {
+            fetch(host + '/api/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: orderId,
+                cylinderSize: 'Store Accessories',
+                serviceType: 'accessories',
+                orderType: 'STORE_ACCESSORY',
+                assignedTo: 'admin',
+                itemsSummary: cart.map(i => i.name).join(', '),
+                customerName: user.name || 'Valued Customer',
+                userEmail: user.email || '',
+                customerPhone: user.phone || '—',
+                address: user.address || 'Delivery upon dispatch',
+                total: total,
+                amount: total,
+                vendorName: 'EmberGas Admin Store',
+                vendorEmail: 'admin@embergas.ng',
+                sellerName: 'EmberGas Admin Store',
+                sellerEmail: 'admin@embergas.ng',
+                status: 'PENDING_ADMIN'
+              })
+            }).catch(() => {});
+            break;
+          } catch(e) {}
+        }
+
+        // Save to admin orders queue locally
+        const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
+        adminOrders.unshift({
+          id: orderId,
+          orderNumber: '#' + orderId,
+          itemsSummary: cart.map(i => i.name).join(', '),
+          cylinderSize: 'Accessories & Safety Store',
+          serviceType: 'accessories',
+          orderType: 'STORE_ACCESSORY',
+          assignedTo: 'admin',
+          customerName: user.name || 'Valued Customer',
+          userEmail: user.email || '',
+          phone: user.phone || '—',
+          address: user.address || 'Store Delivery',
+          total: total,
+          amount: total,
+          status: 'PENDING_ADMIN',
+          createdAt: new Date().toISOString()
+        });
+        localStorage.setItem('adminCylinderOrders', JSON.stringify(adminOrders));
+
+        if (window.NotificationManager) {
+          NotificationManager.show(`Order #${orderId} submitted to EmberGas Admin! Redirecting to WhatsApp dispatch...`, 'success');
+        }
+
+        const waMsg = encodeURIComponent(`Hello EmberGas Admin Store, I am ${user.name} (${user.phone}). I placed Order #${orderId}:\n${itemList}\nTotal: ₦${total.toLocaleString()}`);
         window.open(`https://wa.me/2348031234567?text=${waMsg}`, '_blank');
+        cart = [];
+        updateCartDisplay();
       });
     }
 
