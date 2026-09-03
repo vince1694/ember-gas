@@ -2,6 +2,7 @@ import expressAsyncHandler from 'express-async-handler';
 import User from '../models/User.js';
 import KybRequest from '../models/KybRequest.js';
 import jwt from 'jsonwebtoken';
+import connectDB from '../config/db.js';
 import { sendOtpEmail, sendNotificationEmail } from '../utils/emailUtils.js';
 
 // Generate JWT Token
@@ -146,12 +147,17 @@ const sendOtp = expressAsyncHandler(async (req, res) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Persist OTP to DB if user already exists (update flow)
-    await User.findOneAndUpdate(
-        { email: cleanEmail },
-        { otpCode, otpExpiresAt: expiresAt },
-        { upsert: false }
-    );
+    // Persist OTP to DB if user already exists (guarded to prevent 10000ms buffering timeout)
+    try {
+        await connectDB();
+        await User.findOneAndUpdate(
+            { email: cleanEmail },
+            { otpCode, otpExpiresAt: expiresAt },
+            { upsert: false }
+        );
+    } catch (dbErr) {
+        console.warn('[OTP DB Update Warning]:', dbErr.message);
+    }
 
     let emailDelivered = false;
     try {
@@ -201,9 +207,20 @@ const getUsersByRole = expressAsyncHandler(async (req, res) => {
 // @access  Public
 // ─────────────────────────────────────────────────────────────────
 const notifyEmail = expressAsyncHandler(async (req, res) => {
-    const { toEmail, toName, subject, title, bodyHtml } = req.body;
+    const { toEmail, toName, subject, title, bodyHtml, actionUrl, actionLabel } = req.body;
     if (!toEmail || !subject || !title || !bodyHtml) { res.status(400); throw new Error('toEmail, subject, title, and bodyHtml are required'); }
-    const sent = await sendNotificationEmail(toEmail, toName, subject, title, bodyHtml);
+
+    // Resolve dynamic client origin from request headers if not provided
+    const originHeader = req.get('origin');
+    const refererHeader = req.get('referer');
+    let dynamicOrigin = actionUrl || null;
+    if (!dynamicOrigin && originHeader && !originHeader.includes('localhost') && !originHeader.includes('127.0.0.1')) {
+        dynamicOrigin = originHeader;
+    } else if (!dynamicOrigin && refererHeader && !refererHeader.includes('localhost') && !refererHeader.includes('127.0.0.1')) {
+        try { dynamicOrigin = new URL(refererHeader).origin; } catch (e) {}
+    }
+
+    const sent = await sendNotificationEmail(toEmail, toName, subject, title, bodyHtml, dynamicOrigin, actionLabel);
     res.json({ success: !!sent, message: sent ? 'Email sent via Brevo.' : 'Failed to send email.' });
 });
 
@@ -358,10 +375,15 @@ const submitKybRequest = expressAsyncHandler(async (req, res) => {
     await kyb.save();
 
     // Update user profile status
-    await User.findOneAndUpdate(
-        { email: cleanEmail },
-        { verificationStatus: 'pending' }
-    );
+    try {
+        await connectDB();
+        await User.findOneAndUpdate(
+            { email: cleanEmail },
+            { verificationStatus: 'pending' }
+        );
+    } catch (dbErr) {
+        console.warn('[KYB User Update Warning]:', dbErr.message);
+    }
 
     res.json({
         success: true,
