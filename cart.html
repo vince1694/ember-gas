@@ -351,6 +351,27 @@
         assignedTo: 'admin'
       };
 
+      // Save to MongoDB Atlas via backend API
+      if (window.safeFetchApi) {
+        safeFetchApi('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: orderId,
+            cylinderSize: orderData.cylinderSize,
+            serviceType: 'new_cylinder',
+            customerName: name,
+            userEmail: curUser ? curUser.email : '',
+            customerPhone: phone,
+            address: address,
+            total: orderData.total,
+            amount: orderData.total,
+            vendorName: 'EmberGas Admin Depot',
+            status: 'ORDER_CONFIRMED'
+          })
+        }).catch(() => {});
+      }
+
       // Save to admin orders queue
       const adminOrders = JSON.parse(localStorage.getItem('adminCylinderOrders') || '[]');
       adminOrders.unshift(orderData);

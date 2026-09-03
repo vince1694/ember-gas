@@ -1,5 +1,6 @@
 import expressAsyncHandler from 'express-async-handler';
 import User from '../models/User.js';
+import KybRequest from '../models/KybRequest.js';
 import jwt from 'jsonwebtoken';
 import { sendOtpEmail, sendNotificationEmail } from '../utils/emailUtils.js';
 
@@ -308,8 +309,112 @@ const deleteAccount = expressAsyncHandler(async (req, res) => {
     res.json({ message: 'Account deleted.', success: true, deleted: !!deleted });
 });
 
+// ─────────────────────────────────────────────────────────────────
+// @desc    Submit KYB Verification Request permanently to MongoDB Atlas
+// @route   POST /api/auth/kyb-request
+// @access  Public
+// ─────────────────────────────────────────────────────────────────
+const submitKybRequest = expressAsyncHandler(async (req, res) => {
+    const { name, email, phone, stationName, address, licenseNumber, documents } = req.body;
+    if (!email) {
+        res.status(400);
+        throw new Error('Email is required for KYB verification');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Check if request already exists
+    let kyb = await KybRequest.findOne({ email: cleanEmail });
+    if (kyb && kyb.status === 'VERIFIED') {
+        return res.json({
+            success: true,
+            status: 'VERIFIED',
+            isVerified: true,
+            message: 'Your station license is already VERIFIED!'
+        });
+    }
+
+    if (!kyb) {
+        kyb = new KybRequest({
+            email: cleanEmail,
+            stationName: stationName || name || 'Gas Station Depot',
+            ownerName: name || 'Station Operator',
+            phone: phone || '',
+            address: address || 'Lagos, Nigeria',
+            licenseNumber: licenseNumber || ('DPR/NMDPRA/' + Math.floor(100000 + Math.random() * 900000)),
+            status: 'PENDING',
+            documents: documents || {}
+        });
+    } else {
+        kyb.stationName = stationName || kyb.stationName || name;
+        kyb.ownerName = name || kyb.ownerName;
+        kyb.phone = phone || kyb.phone;
+        kyb.address = address || kyb.address;
+        kyb.status = 'PENDING';
+        kyb.requestedAt = new Date();
+        if (documents) kyb.documents = documents;
+    }
+
+    await kyb.save();
+
+    // Update user profile status
+    await User.findOneAndUpdate(
+        { email: cleanEmail },
+        { verificationStatus: 'pending' }
+    );
+
+    res.json({
+        success: true,
+        status: 'PENDING',
+        isVerified: false,
+        message: 'KYB verification request submitted permanently to EmberGas Admin.',
+        kyb
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────
+// @desc    Get current KYB verification status permanently from MongoDB Atlas
+// @route   GET /api/auth/kyb-status/:email
+// @access  Public
+// ─────────────────────────────────────────────────────────────────
+const getKybStatus = expressAsyncHandler(async (req, res) => {
+    const email = req.params.email;
+    if (!email) {
+        res.status(400);
+        throw new Error('Email param is required');
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: cleanEmail });
+    const kyb = await KybRequest.findOne({ email: cleanEmail });
+
+    const isVerified = (user && (user.isVerified || user.verificationStatus === 'verified')) ||
+                       (kyb && kyb.status === 'VERIFIED');
+
+    let status = 'UNVERIFIED';
+    if (isVerified) {
+        status = 'VERIFIED';
+    } else if (kyb && kyb.status === 'PENDING') {
+        status = 'PENDING';
+    } else if (kyb && kyb.status === 'REJECTED') {
+        status = 'REJECTED';
+    } else if (user && user.verificationStatus === 'pending') {
+        status = 'PENDING';
+    }
+
+    res.json({
+        email: cleanEmail,
+        status,
+        isVerified: !!isVerified,
+        stationName: kyb?.stationName || user?.businessName || user?.name,
+        rejectionReason: kyb?.rejectionReason || ''
+    });
+});
+
 export {
     registerUser, authUser, getUserProfile, updateUserProfile,
     sendOtp, verifyOtp, deleteAccount, getUsersByRole,
     notifyEmail, forgotPassword, resetPassword,
+    submitKybRequest, getKybStatus,
 };
+

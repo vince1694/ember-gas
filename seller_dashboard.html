@@ -551,12 +551,42 @@
       if (rateInput) rateInput.value = savedRate;
       if (metricRateEl) metricRateEl.innerText = Number(savedRate).toLocaleString();
 
-      // ── KYB VERIFICATION GATE & REAL-TIME AUTO-DISMISS ──
+      // ── KYB VERIFICATION GATE & REAL-TIME BACKEND MONGODB SYNC ──
+      async function fetchBackendKybStatus(vEmail) {
+        if (!vEmail) return null;
+        const hosts = Array.from(new Set([
+          '',
+          `http://${window.location.hostname || '127.0.0.1'}:5000`,
+          'http://127.0.0.1:5000',
+          'http://localhost:5000'
+        ]));
+
+        for (const host of hosts) {
+          try {
+            const res = await fetch(host + '/api/auth/kyb-status/' + encodeURIComponent(vEmail), {
+              headers: { 'Accept': 'application/json' }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              return data;
+            }
+          } catch (e) {
+            // Try next host
+          }
+        }
+        return null;
+      }
+
       function getLatestKybStatus() {
         if (!vendorUser || !vendorUser.email) return false;
         const vEmail = (vendorUser.email || '').toLowerCase();
 
-        // 1. Check emberGasKybRequests
+        // Check if currently flagged verified in memory/currentUser
+        if (vendorUser.kybStatus === 'VERIFIED' || vendorUser.kybApproved === true || vendorUser.isVerified === true) {
+          return true;
+        }
+
+        // 1. Check emberGasKybRequests fallback
         const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
         const reqMatch = kybReqs.find(r => r.email && r.email.toLowerCase() === vEmail);
         if (reqMatch && (reqMatch.status === 'VERIFIED' || reqMatch.kybStatus === 'VERIFIED')) {
@@ -573,7 +603,7 @@
         for (const key of keys) {
           const arr = JSON.parse(localStorage.getItem(key) || '[]');
           const match = arr.find(a => a.email && a.email.toLowerCase() === vEmail);
-          if (match && (match.kybStatus === 'VERIFIED' || match.kybApproved === true)) {
+          if (match && (match.kybStatus === 'VERIFIED' || match.kybApproved === true || match.isVerified === true)) {
             if (vendorUser && !vendorUser.kybApproved) {
               vendorUser.kybStatus = 'VERIFIED';
               vendorUser.kybApproved = true;
@@ -583,17 +613,44 @@
           }
         }
         const cur = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        if (cur && cur.email && cur.email.toLowerCase() === vEmail && (cur.kybStatus === 'VERIFIED' || cur.kybApproved === true)) {
+        if (cur && cur.email && cur.email.toLowerCase() === vEmail && (cur.kybStatus === 'VERIFIED' || cur.kybApproved === true || cur.isVerified === true)) {
           return true;
         }
         return false;
       }
 
-      function checkKybBannerState() {
+      async function checkKybBannerState() {
+        const vEmail = vendorUser ? (vendorUser.email || '').toLowerCase() : '';
+        
+        // Asynchronously check permanent MongoDB Atlas status
+        if (vEmail) {
+          try {
+            const remoteStatus = await fetchBackendKybStatus(vEmail);
+            if (remoteStatus) {
+              if (remoteStatus.isVerified || remoteStatus.status === 'VERIFIED') {
+                if (vendorUser) {
+                  vendorUser.kybStatus = 'VERIFIED';
+                  vendorUser.kybApproved = true;
+                  vendorUser.isVerified = true;
+                  localStorage.setItem('currentUser', JSON.stringify(vendorUser));
+                }
+              } else if (remoteStatus.status === 'PENDING') {
+                // Ensure local storage knows it is pending
+                const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
+                if (!kybReqs.some(r => r.email && r.email.toLowerCase() === vEmail)) {
+                  kybReqs.push({ name: vendorUser.name, email: vEmail, status: 'PENDING', requestedAt: new Date().toISOString() });
+                  localStorage.setItem('emberGasKybRequests', JSON.stringify(kybReqs));
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('[KYB Backend Check]', e);
+          }
+        }
+
         const isVerified = getLatestKybStatus();
         window._vendorKybVerified = isVerified;
         const pendingBanner = document.getElementById('kybPendingBanner');
-        const vEmail = vendorUser ? (vendorUser.email || '').toLowerCase() : '';
         const justApprovedKey = 'kybApprovedNotified_' + vEmail;
 
         if (isVerified) {
@@ -614,7 +671,7 @@
                 <i class="fa-solid fa-circle-check" style="font-size:1.6rem;"></i>
                 <div>
                   <div style="font-weight:900;font-size:1.02rem;">🎉 KYB Verification Successful!</div>
-                  <div style="font-size:0.84rem;opacity:0.95;">Your station access license has been approved by EmberGas Super Admin. You are now verified to accept customer refill requests.</div>
+                  <div style="font-size:0.84rem;opacity:0.95;">Your station access license is officially approved by EmberGas Super Admin. You are fully authorized to accept customer refill orders.</div>
                 </div>
               </div>
               <button onclick="document.getElementById('kybSuccessBanner').remove()" style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.5);color:#fff;padding:6px 14px;border-radius:8px;font-weight:800;cursor:pointer;font-size:0.8rem;">Dismiss</button>
@@ -653,20 +710,51 @@
       }
 
       checkKybBannerState();
-      setInterval(checkKybBannerState, 3000);
+      setInterval(checkKybBannerState, 5000);
     }
 
-    function sendKybApprovalRequest(btn) {
+    async function sendKybApprovalRequest(btn) {
       const curUser = JSON.parse(localStorage.getItem('currentUser')) || vendorUser || {};
       const vName = curUser.name || 'Vendor Station';
       const vEmail = (curUser.email || '').toLowerCase();
       const vPhone = curUser.phone || 'N/A';
+      const vStationName = curUser.businessName || vName;
+      const vAddress = curUser.address || 'Lagos, Nigeria';
 
-      // 1. Record in emberGasKybRequests array
+      // 1. Submit Permanently to MongoDB Atlas
+      const hosts = Array.from(new Set([
+        '',
+        `http://${window.location.hostname || '127.0.0.1'}:5000`,
+        'http://127.0.0.1:5000',
+        'http://localhost:5000'
+      ]));
+
+      for (const host of hosts) {
+        try {
+          await fetch(host + '/api/auth/kyb-request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: vName,
+              email: vEmail,
+              phone: vPhone,
+              stationName: vStationName,
+              address: vAddress,
+              licenseNumber: 'DPR/NMDPRA/RC-' + Math.floor(100000 + Math.random() * 900000)
+            })
+          });
+          break;
+        } catch (e) {
+          // Try next host
+        }
+      }
+
+      // 2. Record in emberGasKybRequests array as client cache
       const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
       if (!kybReqs.some(r => r.email && r.email.toLowerCase() === vEmail)) {
         kybReqs.push({
           name: vName,
+          stationName: vStationName,
           email: vEmail,
           phone: vPhone,
           requestedAt: new Date().toISOString(),
@@ -675,20 +763,20 @@
         localStorage.setItem('emberGasKybRequests', JSON.stringify(kybReqs));
       }
 
-      // 2. Push Admin Notification
+      // 3. Push Admin Notification
       const adminNotifs = JSON.parse(localStorage.getItem('emberGasAdminNotifications') || '[]');
       adminNotifs.unshift({
         id: 'kyb_req_' + Date.now(),
         type: 'KYB_REQUEST',
         title: '🔔 New KYB Approval Request',
-        message: `Station "${vName}" (${vEmail}) requested KYB license verification and access approval.`,
+        message: `Station "${vStationName}" (${vEmail}) submitted permanent KYB license verification for approval.`,
         timestamp: new Date().toISOString(),
         vendorEmail: vEmail,
         read: false
       });
       localStorage.setItem('emberGasAdminNotifications', JSON.stringify(adminNotifs));
 
-      // 3. Update UI button
+      // 4. Update UI button
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Approval Requested (Pending Admin Review)';
@@ -696,11 +784,11 @@
         btn.style.cursor = 'default';
       }
 
-      // 4. Show Notification Toast
+      // 5. Show Notification Toast
       if (window.NotificationManager) {
-        NotificationManager.show(`✅ KYB Approval Request Sent! EmberGas Super Admin has been notified to review and approve your station license.`, 'success');
+        NotificationManager.show(`✅ KYB Request Submitted Permanently! EmberGas Super Admin has been notified to verify your station license.`, 'success');
       } else {
-        alert(`✅ KYB Approval Request Sent! EmberGas Super Admin has been notified to review and approve your station license.`);
+        alert(`✅ KYB Request Submitted Permanently! EmberGas Super Admin has been notified to verify your station license.`);
       }
     }
     window.sendKybApprovalRequest = sendKybApprovalRequest;

@@ -10,7 +10,9 @@ import {
     getUsersByRole,
     notifyEmail,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    submitKybRequest,
+    getKybStatus
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -25,6 +27,8 @@ router.get('/users-by-role/:role', getUsersByRole);
 router.post('/notify-email', notifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+router.post('/kyb-request', submitKybRequest);
+router.get('/kyb-status/:email', getKybStatus);
 router.route('/profile')
     .get(protect, getUserProfile)
     .put(protect, updateUserProfile);

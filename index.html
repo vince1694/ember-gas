@@ -438,6 +438,34 @@
       if (!grid) return;
 
       let vendors = [];
+
+      // Fetch from MongoDB Atlas backend API first
+      const hosts = Array.from(new Set([
+        '',
+        `http://${window.location.hostname || '127.0.0.1'}:5000`,
+        'http://127.0.0.1:5000',
+        'http://localhost:5000'
+      ]));
+
+      for (const host of hosts) {
+        try {
+          const res = await fetch(host + '/api/auth/users-by-role/vendor');
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              data.forEach(v => {
+                if (!vendors.some(x => x.email && v.email && x.email.toLowerCase() === v.email.toLowerCase())) {
+                  vendors.push(v);
+                }
+              });
+              break;
+            }
+          }
+        } catch (e) {
+          // Try next host
+        }
+      }
+
       const accounts   = JSON.parse(localStorage.getItem('emberGasAccounts') || '[]');
       const users      = JSON.parse(localStorage.getItem('users') || '[]');
       const gasVendors = JSON.parse(localStorage.getItem('gasVendors') || '[]');
@@ -453,7 +481,7 @@
       });
 
       // Filter KYB Verified vendors first
-      const verifiedVendors = vendors.filter(v => v.kybStatus === 'VERIFIED' || v.kybApproved === true);
+      const verifiedVendors = vendors.filter(v => v.isVerified === true || v.verificationStatus === 'verified' || v.kybStatus === 'VERIFIED' || v.kybApproved === true);
       const displayVendors = verifiedVendors.length > 0 ? verifiedVendors : vendors;
 
       if (displayVendors.length === 0) {
@@ -472,7 +500,7 @@
         const vAddress = v.address || 'Lagos, Nigeria';
         const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
         const rate = localStorage.getItem(rateKey) || localStorage.getItem('emberPriceCeiling') || '1100';
-        const isVerified = v.kybStatus === 'VERIFIED' || v.kybApproved === true;
+        const isVerified = v.isVerified === true || v.verificationStatus === 'verified' || v.kybStatus === 'VERIFIED' || v.kybApproved === true;
         const statusBadge = isVerified
           ? '<span style="background: rgba(16,185,129,0.18); color: #10B981; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;"><i class="fa-solid fa-shield-check"></i> KYB VERIFIED & ACTIVE</span>'
           : '<span style="background: rgba(245,158,11,0.18); color: #F59E0B; padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 800;"><i class="fa-solid fa-clock"></i> PENDING VERIFICATION</span>';

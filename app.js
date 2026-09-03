@@ -561,6 +561,28 @@ class OrderStateManager {
         };
         this.saveActiveOrder(newOrder);
 
+        // ── Sync to MongoDB Atlas via backend API ──
+        if (window.safeFetchApi) {
+            safeFetchApi('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: newOrder.id,
+                    size: newOrder.size,
+                    cylinderSize: newOrder.cylinderSize,
+                    serviceType: newOrder.serviceType,
+                    address: newOrder.address,
+                    total: newOrder.total,
+                    amount: newOrder.amount,
+                    customerName: newOrder.customerName,
+                    userEmail: newOrder.userEmail,
+                    vendorName: newOrder.vendorName || 'EmberGas Express Depot',
+                    vendorEmail: newOrder.vendorEmail || '',
+                    status: 'ORDER_CONFIRMED'
+                })
+            }).catch(() => {});
+        }
+
         // ── Sync to global shared orders list (used by vendor dashboard) ──
         const ordersList = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
         // Remove stale entry with same id if any, then prepend
@@ -573,8 +595,18 @@ class OrderStateManager {
 
     static updateOrderStatus(newStatus) {
         const order = this.getActiveOrder();
+        if (!order) return null;
         order.status = newStatus;
         this.saveActiveOrder(order);
+
+        // ── Sync to MongoDB Atlas via backend API ──
+        if (window.safeFetchApi && order.id) {
+            safeFetchApi(`/api/orders/${encodeURIComponent(order.id)}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            }).catch(() => {});
+        }
 
         // ── Sync status back to shared orders list ──
         const ordersList = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');

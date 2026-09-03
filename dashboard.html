@@ -1061,7 +1061,7 @@
 
         const kybReqs = JSON.parse(localStorage.getItem('emberGasKybRequests') || '[]');
         const verifiedVendors = vendors.filter(v =>
-          v.kybStatus === 'VERIFIED' || v.kybApproved === true || (v.email && kybReqs.some(r => r.email && r.email.toLowerCase() === v.email.toLowerCase() && r.status === 'VERIFIED'))
+          v.isVerified === true || v.kybStatus === 'VERIFIED' || v.kybApproved === true || (v.email && kybReqs.some(r => r.email && r.email.toLowerCase() === v.email.toLowerCase() && r.status === 'VERIFIED'))
         );
 
         const listToRender = verifiedVendors.length > 0 ? verifiedVendors : vendors;
@@ -1076,7 +1076,7 @@
                 : `${vName} LPG Depot Hub`;
               const rateKey = vEmail ? `vendorLpgRate_${vEmail}` : 'vendorLpgRate_default';
               const rate = localStorage.getItem(rateKey) || localStorage.getItem('emberPriceCeiling') || '1100';
-              const isVerified = v.kybStatus === 'VERIFIED' || v.kybApproved === true;
+              const isVerified = v.isVerified === true || v.kybStatus === 'VERIFIED' || v.kybApproved === true;
               return `<option value="${displayTitle}" data-email="${vEmail}" style="color:#111827;background:#FFFFFF;">${displayTitle} — ₦${Number(rate).toLocaleString()}/kg ${isVerified ? '✅ Verified' : '● Online Depot'}</option>`;
             }).join('');
         } else {
