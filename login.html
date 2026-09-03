@@ -918,34 +918,17 @@
       }
 
       setTimeout(() => {
-        if (canonicalRole === 'vendor' || canonicalRole === 'seller') {
-          window.location.href = 'seller_dashboard.html';
-        } else {
-          window.location.href = 'dashboard.html';
-        }
-      }, 500);
-      return false;
-      // ────────────────────────────────────────────────────────────
-
-      const activeUserObj = {
-        name: userAccount.name,
-        email: userAccount.email,
-        phone: userAccount.phone,
-        role: canonicalRole,
-        loginTime: new Date().toISOString()
-      };
-      localStorage.setItem('currentUser', JSON.stringify(activeUserObj));
-
-      setTimeout(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const redirectUrl = urlParams.get('redirect');
         const serviceParam = urlParams.get('service');
         const sizeParam = urlParams.get('size');
 
         let target = 'dashboard.html';
-        if (canonicalRole === 'vendor' || canonicalRole === 'seller' || canonicalRole === 'refiller') target = 'seller_dashboard.html';
-        else if (canonicalRole === 'admin') target = 'admin.html';
-        else if (redirectUrl) {
+        if (canonicalRole === 'admin') {
+          target = 'admin.html';
+        } else if (canonicalRole === 'vendor' || canonicalRole === 'seller' || canonicalRole === 'refiller') {
+          target = 'seller_dashboard.html';
+        } else if (redirectUrl) {
           target = redirectUrl;
         } else if (serviceParam || sizeParam) {
           target = `dashboard.html?service=${serviceParam || ''}&size=${sizeParam || ''}`;
