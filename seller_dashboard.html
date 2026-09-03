@@ -392,20 +392,27 @@
     </div>
 
     <!-- Gas Refill Requests Stream -->
-    <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px;" id="liveOrderQueue">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
-        <h3 style="margin: 0; font-size: 1.15rem;"><i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Customer Gas Refill Requests</h3>
+    <div style="background: var(--surface-dark); border: 1px solid var(--glass-border); border-radius: 18px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);" id="liveOrderQueue">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 20px;">
+        <div>
+          <h3 style="margin: 0; font-size: 1.22rem; font-weight: 900; color: #111827; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-list-check" style="color: var(--primary-color);"></i> Customer Gas Refill Requests
+          </h3>
+          <p style="margin: 4px 0 0; font-size: 0.82rem; color: #6B7280;">
+            Real-time queue for gas refills booked directly to your station. Accept, dispatch, and manage completed services.
+          </p>
+        </div>
         
         <!-- Filter Tabs -->
-        <div style="display: flex; gap: 6px; background: #F3F4F6; padding: 4px; border-radius: 12px;">
-          <button id="vTabAll" onclick="setVendorOrderFilter('all')" style="border:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; background:#00B14F; color:#fff;">
-            All Requests (<span id="vTabAllCount">0</span>)
+        <div style="display: flex; gap: 6px; background: #F3F4F6; padding: 4px; border-radius: 14px;">
+          <button id="vTabAll" onclick="setVendorOrderFilter('all')" style="border:none; padding:8px 16px; border-radius:10px; font-size:0.8rem; font-weight:800; cursor:pointer; background:#00B14F; color:#fff; transition:all 0.2s ease;">
+            <i class="fa-solid fa-list"></i> All Requests (<span id="vTabAllCount">0</span>)
           </button>
-          <button id="vTabActive" onclick="setVendorOrderFilter('active')" style="border:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; background:transparent; color:#4B5563;">
-            Active (<span id="vTabActiveCount">0</span>)
+          <button id="vTabActive" onclick="setVendorOrderFilter('active')" style="border:none; padding:8px 16px; border-radius:10px; font-size:0.8rem; font-weight:800; cursor:pointer; background:transparent; color:#4B5563; transition:all 0.2s ease;">
+            <i class="fa-solid fa-clock"></i> Active (<span id="vTabActiveCount">0</span>)
           </button>
-          <button id="vTabCompleted" onclick="setVendorOrderFilter('completed')" style="border:none; padding:6px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer; background:transparent; color:#4B5563;">
-            Completed Services (<span id="vTabCompletedCount">0</span>)
+          <button id="vTabCompleted" onclick="setVendorOrderFilter('completed')" style="border:none; padding:8px 16px; border-radius:10px; font-size:0.8rem; font-weight:800; cursor:pointer; background:transparent; color:#4B5563; transition:all 0.2s ease;">
+            <i class="fa-solid fa-circle-check"></i> Completed Services (<span id="vTabCompletedCount">0</span>)
           </button>
         </div>
       </div>
@@ -414,18 +421,18 @@
       <div class="vendor-desktop-table" style="overflow-x: auto;">
         <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
           <thead>
-            <tr style="color: var(--text-secondary); border-bottom: 1px solid var(--glass-border);">
-              <th style="padding: 10px;">Order ID</th>
-              <th style="padding: 10px;">Customer</th>
-              <th style="padding: 10px;">Cylinder Size</th>
-              <th style="padding: 10px;">Delivery Address</th>
-              <th style="padding: 10px;">Amount</th>
-              <th style="padding: 10px;">Dispatch Status</th>
-              <th style="padding: 10px;">Action</th>
+            <tr style="color: var(--text-secondary); border-bottom: 1.5px solid #E5E7EB; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px;">
+              <th style="padding: 12px 10px;">Order ID & Time</th>
+              <th style="padding: 12px 10px;">Customer Info</th>
+              <th style="padding: 12px 10px;">Cylinder & Service</th>
+              <th style="padding: 12px 10px;">Delivery Destination</th>
+              <th style="padding: 12px 10px;">Amount & Payment</th>
+              <th style="padding: 12px 10px;">Dispatch Status</th>
+              <th style="padding: 12px 10px; text-align: right;">Action / Manage</th>
             </tr>
           </thead>
           <tbody id="vendorOrdersTableBody">
-            <tr><td colspan="7" style="padding: 24px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-list-check"></i> No customer orders yet. They will appear here when placed.</td></tr>
+            <tr><td colspan="7" style="padding: 30px; text-align: center; color: var(--text-secondary);"><i class="fa-solid fa-list-check"></i> Loading customer refill requests...</td></tr>
           </tbody>
         </table>
       </div>
@@ -433,11 +440,80 @@
       <!-- Mobile Touch Cards for Vendor Orders -->
       <div class="vendor-mobile-orders-list" id="vendorMobileOrders">
         <div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 0.88rem;">
-          <i class="fa-solid fa-list-check"></i> No orders yet.
+          <i class="fa-solid fa-list-check"></i> Loading requests...
         </div>
       </div>
     </div>
   </main>
+
+  <!-- Refill Request Full Detail Modal -->
+  <div id="vendorOrderDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); z-index:100000; align-items:center; justify-content:center; padding:15px; box-sizing:border-box;">
+    <div style="background:#FFFFFF; border-radius:22px; max-width:520px; width:100%; padding:24px; color:#111827; box-shadow:0 20px 40px rgba(0,0,0,0.25); max-height:90vh; overflow-y:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #E5E7EB; padding-bottom:14px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:42px; height:42px; border-radius:12px; background:rgba(0,177,79,0.12); color:#00B14F; display:flex; align-items:center; justify-content:center; font-size:1.25rem;">
+            <i class="fa-solid fa-gas-pump"></i>
+          </div>
+          <div>
+            <h3 style="margin:0; font-size:1.15rem; font-weight:900; color:#111827;" id="vodTitle">Refill Request #EG-0000</h3>
+            <div id="vodBadge" style="margin-top:2px;">—</div>
+          </div>
+        </div>
+        <button onclick="closeVendorOrderDetail()" style="background:#F3F4F6; border:none; width:34px; height:34px; border-radius:50%; color:#6B7280; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Customer Info Card -->
+      <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px; padding:14px; margin-bottom:12px;">
+        <div style="font-size:0.72rem; font-weight:800; color:#6B7280; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px;"><i class="fa-solid fa-user"></i> Customer Contact</div>
+        <div style="font-weight:900; font-size:1rem; color:#111827;" id="vodCustomerName">Customer Name</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:6px; flex-wrap:wrap;">
+          <a id="vodCustomerPhoneLink" href="tel:" style="color:#00B14F; font-weight:800; font-size:0.84rem; text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:rgba(0,177,79,0.1); padding:4px 10px; border-radius:8px;">
+            <i class="fa-solid fa-phone"></i> <span id="vodCustomerPhone">0800 000 0000</span>
+          </a>
+          <span style="font-size:0.8rem; color:#6B7280;" id="vodCustomerEmail">—</span>
+        </div>
+      </div>
+
+      <!-- Delivery Address Card -->
+      <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px; padding:14px; margin-bottom:12px;">
+        <div style="font-size:0.72rem; font-weight:800; color:#6B7280; text-transform:uppercase; margin-bottom:6px; letter-spacing:0.5px;"><i class="fa-solid fa-location-dot"></i> Delivery Address</div>
+        <div style="font-size:0.92rem; font-weight:700; color:#1F2937; line-height:1.4;" id="vodAddress">Address details</div>
+      </div>
+
+      <!-- Cylinder & Service Grid -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px; padding:12px;">
+          <div style="font-size:0.72rem; font-weight:800; color:#6B7280; text-transform:uppercase;">Cylinder Package</div>
+          <div style="font-size:1.02rem; font-weight:900; color:#00B14F; margin-top:3px;" id="vodCylinderSize">12.5 kg Refill</div>
+        </div>
+        <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px; padding:12px;">
+          <div style="font-size:0.72rem; font-weight:800; color:#6B7280; text-transform:uppercase;">Service Mode</div>
+          <div style="font-size:0.92rem; font-weight:800; color:#111827; margin-top:3px;" id="vodServiceType">Refill & Delivery</div>
+        </div>
+      </div>
+
+      <!-- Financial & Booking Time -->
+      <div style="background:#F9FAFB; border:1px solid #E5E7EB; border-radius:14px; padding:14px; margin-bottom:18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:0.82rem; color:#4B5563; font-weight:600;">Total Refill Price:</span>
+          <span style="font-size:1.2rem; font-weight:900; color:#00B14F;" id="vodAmount">₦0</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:0.82rem; color:#4B5563; font-weight:600;">Payment Status:</span>
+          <span style="font-size:0.78rem; font-weight:800; color:#10B981; background:rgba(16,185,129,0.12); padding:3px 8px; border-radius:6px;" id="vodPaymentStatus">✅ Paid</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.82rem; color:#4B5563; font-weight:600;">Request Booked:</span>
+          <span style="font-size:0.8rem; color:#6B7280; font-weight:700;" id="vodCreatedAt">—</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons Footer -->
+      <div id="vodActionFooter" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <!-- Dynamic based on order status -->
+      </div>
+    </div>
+  </div>
 
   <!-- Delivery Option Dispatch Modal -->
   <div id="dispatchModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; padding:15px;">
@@ -920,14 +996,104 @@
         return false;
       });
 
+      // ── HELPER UTILITIES FOR REQUEST DETAILS & LIFECYCLE ──
+      function isCompletedStatus(status) {
+        const s = (status || '').toUpperCase().trim();
+        return s === 'COMPLETED' || s === 'DELIVERED';
+      }
+
+      function isCancelledStatus(status) {
+        const s = (status || '').toUpperCase().trim();
+        return s === 'CANCELLED' || s === 'REJECTED';
+      }
+
+      function isActiveStatus(status) {
+        return !isCompletedStatus(status) && !isCancelledStatus(status);
+      }
+
+      function cleanCylinderSize(sz) {
+        if (!sz) return '12.5 kg Refill';
+        let str = String(sz).trim();
+        if (!str.toLowerCase().includes('kg')) str += ' kg';
+        if (!str.toLowerCase().includes('refill')) str += ' Refill';
+        return str;
+      }
+
+      function formatOrderDate(dateStr) {
+        if (!dateStr) return 'Recent';
+        try {
+          const d = new Date(dateStr);
+          if (isNaN(d.getTime())) return 'Recent';
+          const now = new Date();
+          const diffMs = now - d;
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 1) return 'Just now';
+          if (diffMins < 60) return `${diffMins}m ago`;
+          const diffHours = Math.floor(diffMins / 60);
+          if (diffHours < 24) return `${diffHours}h ago`;
+          return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+          return 'Recent';
+        }
+      }
+
+      function getOrderStatusMeta(rawStatus) {
+        const s = (rawStatus || 'ORDER_CONFIRMED').toUpperCase().trim();
+        if (s === 'PLACED' || s === 'ORDER_CONFIRMED') {
+          return {
+            code: 'NEW',
+            label: 'NEW REQUEST',
+            badge: '<span style="background:rgba(245,158,11,0.15);color:#D97706;border:1px solid rgba(245,158,11,0.35);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-bell"></i> NEW REQUEST</span>',
+            color: '#F59E0B'
+          };
+        }
+        if (s === 'ACCEPTED' || s === 'SELLER_PREPARING') {
+          return {
+            code: 'PREPARING',
+            label: 'CYLINDER FILLING',
+            badge: '<span style="background:rgba(59,130,246,0.15);color:#2563EB;border:1px solid rgba(59,130,246,0.35);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-fire-flame-curved"></i> FILLING CYLINDER</span>',
+            color: '#3B82F6'
+          };
+        }
+        if (s === 'EN_ROUTE' || s === 'ON_THE_WAY' || s === 'RIDER_PICKING_UP' || s === 'READY_FOR_PICKUP') {
+          return {
+            code: 'IN_TRANSIT',
+            label: 'OUT FOR DELIVERY',
+            badge: '<span style="background:rgba(139,92,246,0.15);color:#7C3AED;border:1px solid rgba(139,92,246,0.35);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-truck-fast"></i> IN TRANSIT</span>',
+            color: '#8B5CF6'
+          };
+        }
+        if (s === 'DELIVERED' || s === 'COMPLETED') {
+          return {
+            code: 'COMPLETED',
+            label: 'SERVICE COMPLETED',
+            badge: '<span style="background:rgba(16,185,129,0.15);color:#059669;border:1px solid rgba(16,185,129,0.35);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-circle-check"></i> SERVICE COMPLETED</span>',
+            color: '#10B981'
+          };
+        }
+        return {
+          code: 'CANCELLED',
+          label: s,
+          badge: `<span style="background:rgba(239,68,68,0.12);color:#DC2626;border:1px solid rgba(239,68,68,0.3);padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;gap:5px;"><i class="fa-solid fa-xmark"></i> ${s}</span>`,
+          color: '#EF4444'
+        };
+      }
+
+      window.getOrderStatusMeta = getOrderStatusMeta;
+      window.cleanCylinderSize = cleanCylinderSize;
+      window.formatOrderDate = formatOrderDate;
+
+      // ── ACCURATE TAB COUNTS & SPLIT ──
       let currentVendorFilter = window.currentVendorFilter || 'all';
 
-      const completedOrders = myVendorOrders.filter(o => o.status === 'COMPLETED');
-      const activeOrders = myVendorOrders.filter(o => o.status !== 'COMPLETED' && o.status !== 'REJECTED' && o.status !== 'CANCELLED');
+      const completedOrders = myVendorOrders.filter(o => isCompletedStatus(o.status));
+      const activeOrders = myVendorOrders.filter(o => isActiveStatus(o.status));
       
       const totalRevenue = completedOrders.reduce((sum, o) => sum + (Number(o.total || o.amount) || 0), 0);
-      document.getElementById('metricRevenue').innerText = totalRevenue.toLocaleString();
-      document.getElementById('metricOrders').innerText = activeOrders.length + ' Active';
+      const metricRevEl = document.getElementById('metricRevenue');
+      if (metricRevEl) metricRevEl.innerText = totalRevenue.toLocaleString();
+      const metricOrdersEl = document.getElementById('metricOrders');
+      if (metricOrdersEl) metricOrdersEl.innerText = activeOrders.length + ' Active';
       const metricCompletedEl = document.getElementById('metricCompleted');
       if (metricCompletedEl) metricCompletedEl.innerText = completedOrders.length + ' Done';
 
@@ -945,14 +1111,16 @@
           if (currentVendorFilter === t) {
             btn.style.background = '#00B14F';
             btn.style.color = '#FFFFFF';
+            btn.style.boxShadow = '0 2px 10px rgba(0,177,79,0.3)';
           } else {
             btn.style.background = 'transparent';
             btn.style.color = '#4B5563';
+            btn.style.boxShadow = 'none';
           }
         }
       });
 
-      // Filter displayed list
+      // Filter displayed list according to user-selected tab
       let displayOrders = myVendorOrders;
       if (currentVendorFilter === 'active') displayOrders = activeOrders;
       if (currentVendorFilter === 'completed') displayOrders = completedOrders;
@@ -962,66 +1130,258 @@
 
       if (displayOrders.length > 0) {
         tbody.innerHTML = displayOrders.map((o) => {
-          const statusBadge = o.status === 'PLACED'
-            ? '<span style="background:rgba(245,158,11,0.15);color:#F59E0B;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">PLACED</span>'
-            : o.status === 'ACCEPTED'
-              ? '<span style="background:rgba(16,185,129,0.15);color:#10B981;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">ACCEPTED</span>'
-              : o.status === 'EN_ROUTE'
-                ? '<span style="background:rgba(59,130,246,0.15);color:#3B82F6;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">EN ROUTE</span>'
-                : `<span style="background:rgba(107,114,128,0.15);color:#9CA3AF;padding:3px 8px;border-radius:20px;font-size:0.76rem;font-weight:800;">${o.status}</span>`;
+          const statusMeta = getOrderStatusMeta(o.status);
 
-          const actionBtns = (o.status === 'PLACED')
-            ? `<button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
-               <button class="btn-sm btn-reject" style="margin-left:4px;" onclick="rejectOrder('${o.id}')">✕ Decline</button>`
-            : (o.status === 'ACCEPTED')
-              ? `<button class="btn-sm btn-approve" style="background:#F59E0B;" onclick="openDispatchModal('${o.id}')">🚚 Dispatch Delivery</button>`
-              : (o.status === 'EN_ROUTE')
-                ? `<button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>`
-                : `<span style="color:#6B7280;font-size:0.8rem;">${o.status}</span>`;
+          let actionBtns = '';
+          if (statusMeta.code === 'NEW') {
+            actionBtns = `
+              <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
+                <button class="btn-sm btn-approve" onclick="acceptOrder('${o.id}')" title="Accept Customer Refill">
+                  <i class="fa-solid fa-check"></i> Accept
+                </button>
+                <button class="btn-sm btn-reject" onclick="rejectOrder('${o.id}')" title="Decline Request">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 10px; border-radius:8px; font-size:0.76rem; font-weight:800; cursor:pointer;" title="View Full Details">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>`;
+          } else if (statusMeta.code === 'PREPARING') {
+            actionBtns = `
+              <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                <button class="btn-sm btn-approve" style="background:#F59E0B; color:#111827;" onclick="openDispatchModal('${o.id}')" title="Select Delivery Method">
+                  <i class="fa-solid fa-truck-fast"></i> Dispatch
+                </button>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 10px; border-radius:8px; font-size:0.76rem; font-weight:800; cursor:pointer;" title="View Full Details">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>`;
+          } else if (statusMeta.code === 'IN_TRANSIT') {
+            actionBtns = `
+              <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                <button class="btn-sm btn-approve" style="background:#10B981;" onclick="markVendorDelivered('${o.id}')" title="Mark Refill Delivered">
+                  <i class="fa-solid fa-circle-check"></i> Complete
+                </button>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 10px; border-radius:8px; font-size:0.76rem; font-weight:800; cursor:pointer;" title="View Full Details">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>`;
+          } else if (statusMeta.code === 'COMPLETED') {
+            actionBtns = `
+              <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                <span style="color:#059669; font-weight:800; font-size:0.78rem;"><i class="fa-solid fa-check-double"></i> Delivered</span>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer;" title="View Receipt & Details">
+                  <i class="fa-solid fa-receipt"></i>
+                </button>
+              </div>`;
+          } else {
+            actionBtns = `
+              <div style="display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                <span style="color:#DC2626; font-weight:700; font-size:0.78rem;">Declined</span>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:5px 9px; border-radius:8px; font-size:0.74rem; font-weight:800; cursor:pointer;" title="View Details">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </div>`;
+          }
 
-          return `<tr id="row-${o.id}" style="border-bottom: 1px solid #F3F4F6;">
-            <td style="padding: 12px 10px; font-weight:800; color:#111827;">#${o.id}</td>
-            <td style="padding: 12px 10px; font-weight:700;">${o.customerName || o.userEmail || 'Customer'}</td>
-            <td style="padding: 12px 10px;">${o.size || o.cylinderSize || '—'} ${o.serviceType || 'Refill'}</td>
-            <td style="padding: 12px 10px;">${o.address || '—'}</td>
-            <td style="padding: 12px 10px; color:#00B14F; font-weight:900;">₦${Number(o.total || o.amount || 0).toLocaleString()}</td>
-            <td style="padding: 12px 10px;">${statusBadge}</td>
-            <td style="padding: 12px 10px;">${actionBtns}</td>
+          const customerPhoneHtml = o.customerPhone && o.customerPhone !== '—'
+            ? `<a href="tel:${o.customerPhone}" style="color:#00B14F; font-weight:800; font-size:0.78rem; text-decoration:none; display:inline-flex; align-items:center; gap:4px; margin-top:2px;"><i class="fa-solid fa-phone" style="font-size:0.7rem;"></i> ${o.customerPhone}</a>`
+            : `<span style="font-size:0.74rem; color:#9CA3AF;">Phone: —</span>`;
+
+          return `<tr id="row-${o.id}" style="border-bottom: 1px solid #F3F4F6; transition: background 0.15s;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 12px 10px; font-weight:800; color:#111827;">
+              <div style="font-family:'Outfit',sans-serif; font-size:0.92rem; font-weight:900;">#${o.id}</div>
+              <div style="font-size:0.72rem; color:#6B7280; font-weight:600; margin-top:2px;">
+                <i class="fa-regular fa-clock"></i> ${formatOrderDate(o.createdAt)}
+              </div>
+            </td>
+            <td style="padding: 12px 10px;">
+              <div style="font-weight:800; color:#111827; font-size:0.88rem;">${o.customerName || o.userEmail || 'Valued Customer'}</div>
+              <div>${customerPhoneHtml}</div>
+            </td>
+            <td style="padding: 12px 10px;">
+              <span style="background:rgba(0,177,79,0.1); color:#00873D; padding:3px 8px; border-radius:6px; font-size:0.78rem; font-weight:800; display:inline-block;">
+                <i class="fa-solid fa-gas-pump"></i> ${cleanCylinderSize(o.size || o.cylinderSize)}
+              </span>
+              <div style="font-size:0.74rem; color:#4B5563; font-weight:600; margin-top:3px;">${o.serviceType || 'Refill & Doorstep Delivery'}</div>
+            </td>
+            <td style="padding: 12px 10px;">
+              <div style="font-size:0.84rem; color:#1F2937; font-weight:600; max-width:210px; line-height:1.35;">
+                <i class="fa-solid fa-location-dot" style="color:#EF4444; font-size:0.76rem;"></i> ${o.address || 'Lagos, Nigeria'}
+              </div>
+            </td>
+            <td style="padding: 12px 10px;">
+              <div style="color:#00B14F; font-weight:900; font-size:0.95rem;">₦${Number(o.total || o.amount || 0).toLocaleString()}</div>
+              <div style="font-size:0.72rem; color:#059669; font-weight:700; margin-top:2px;">
+                <i class="fa-solid fa-circle-check"></i> Paid • ${o.paymentMethod || 'Card'}
+              </div>
+            </td>
+            <td style="padding: 12px 10px;">${statusMeta.badge}</td>
+            <td style="padding: 12px 10px; text-align:right;">${actionBtns}</td>
           </tr>`;
         }).join('');
 
-        mobileList.innerHTML = myVendorOrders.map((o) => {
-          const statusColor = o.status === 'PLACED' ? '#F59E0B' : o.status === 'ACCEPTED' ? '#10B981' : '#9CA3AF';
-          return `<div class="vendor-order-card-mobile" id="m-row-${o.id}">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span style="font-weight: 800; color:#111827;">#${o.id}</span>
-              <span style="color: ${statusColor}; font-weight: 800; font-size:0.8rem;">${o.status}</span>
+        // ── MOBILE TOUCH CARDS (Accurately filtered by selected tab) ──
+        mobileList.innerHTML = displayOrders.map((o) => {
+          const statusMeta = getOrderStatusMeta(o.status);
+
+          let mobileActionBtns = '';
+          if (statusMeta.code === 'NEW') {
+            mobileActionBtns = `
+              <button class="btn-sm btn-approve" style="flex:2; padding:10px;" onclick="acceptOrder('${o.id}')"><i class="fa-solid fa-check"></i> Accept Request</button>
+              <button class="btn-sm btn-reject" style="flex:1; padding:10px;" onclick="rejectOrder('${o.id}')"><i class="fa-solid fa-xmark"></i> Decline</button>
+              <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:9px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-eye"></i> Details</button>
+            `;
+          } else if (statusMeta.code === 'PREPARING') {
+            mobileActionBtns = `
+              <button class="btn-sm btn-approve" style="flex:2; background:#F59E0B; color:#111827; padding:10px;" onclick="openDispatchModal('${o.id}')"><i class="fa-solid fa-truck-fast"></i> Dispatch Delivery</button>
+              <button onclick="openVendorOrderDetail('${o.id}')" style="flex:1; background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:9px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-eye"></i> Details</button>
+            `;
+          } else if (statusMeta.code === 'IN_TRANSIT') {
+            mobileActionBtns = `
+              <button class="btn-sm btn-approve" style="flex:2; background:#10B981; padding:10px;" onclick="markVendorDelivered('${o.id}')"><i class="fa-solid fa-circle-check"></i> Mark Completed</button>
+              <button onclick="openVendorOrderDetail('${o.id}')" style="flex:1; background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:9px 12px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-eye"></i> Details</button>
+            `;
+          } else if (statusMeta.code === 'COMPLETED') {
+            mobileActionBtns = `
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:4px 0;">
+                <span style="color:#059669; font-size:0.84rem; font-weight:800;"><i class="fa-solid fa-check-double"></i> Service Completed</span>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 14px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-receipt"></i> Details</button>
+              </div>
+            `;
+          } else {
+            mobileActionBtns = `
+              <div style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:4px 0;">
+                <span style="color:#DC2626; font-size:0.84rem; font-weight:700;">Declined Request</span>
+                <button onclick="openVendorOrderDetail('${o.id}')" style="background:#F3F4F6; border:1px solid #D1D5DB; color:#374151; padding:6px 14px; border-radius:8px; font-size:0.78rem; font-weight:800; cursor:pointer;"><i class="fa-solid fa-eye"></i> Details</button>
+              </div>
+            `;
+          }
+
+          return `<div class="vendor-order-card-mobile" id="m-row-${o.id}" style="background:#FFFFFF; border:1px solid #E5E7EB; border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight: 900; color:#111827; font-size:1rem;">#${o.id}</span>
+                <span style="font-size:0.74rem; color:#6B7280; font-weight:600;"><i class="fa-regular fa-clock"></i> ${formatOrderDate(o.createdAt)}</span>
+              </div>
+              <div>${statusMeta.badge}</div>
             </div>
-            <div style="font-weight:700; font-size:0.9rem;">${o.customerName || o.userEmail || 'Customer'} • ${o.size || o.cylinderSize || '—'}</div>
-            <div style="font-size: 0.78rem; color: #6B7280; margin: 4px 0; font-weight:600;">₦${Number(o.total || o.amount || 0).toLocaleString()} • ${o.address || '—'}</div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top:10px;">
-              ${o.status === 'PLACED'
-                ? `<button class="btn-sm btn-approve" style="flex: 1;" onclick="acceptOrder('${o.id}')">✓ Accept Refill Request</button>
-                   <button class="btn-sm btn-reject" style="flex: 1;" onclick="rejectOrder('${o.id}')">✕ Decline</button>`
-                : o.status === 'ACCEPTED'
-                  ? `<button class="btn-sm btn-approve" style="flex:1;background:#F59E0B;" onclick="openDispatchModal('${o.id}')">🚚 Dispatch Delivery</button>`
-                  : o.status === 'EN_ROUTE'
-                    ? `<button class="btn-sm btn-approve" style="flex:1;background:#10B981;" onclick="markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>`
-                    : `<span style="color:#9CA3AF;font-size:0.8rem;padding:6px 0;">${o.status}</span>`
-              }
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+              <div>
+                <div style="font-weight:800; font-size:0.94rem; color:#111827;">${o.customerName || o.userEmail || 'Valued Customer'}</div>
+                ${o.customerPhone && o.customerPhone !== '—'
+                  ? `<div style="margin-top:3px;"><a href="tel:${o.customerPhone}" style="color:#00B14F; font-weight:800; font-size:0.82rem; text-decoration:none;"><i class="fa-solid fa-phone"></i> ${o.customerPhone}</a></div>`
+                  : ''}
+              </div>
+              <div style="text-align:right;">
+                <div style="color:#00B14F; font-weight:900; font-size:1rem;">₦${Number(o.total || o.amount || 0).toLocaleString()}</div>
+                <div style="font-size:0.72rem; color:#059669; font-weight:700;"><i class="fa-solid fa-circle-check"></i> Paid</div>
+              </div>
+            </div>
+
+            <div style="background:#F9FAFB; border-radius:12px; padding:10px 12px; margin-bottom:12px; font-size:0.82rem; color:#374151;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                <span style="background:rgba(0,177,79,0.12); color:#00873D; padding:2px 8px; border-radius:6px; font-weight:800; font-size:0.75rem;"><i class="fa-solid fa-gas-pump"></i> ${cleanCylinderSize(o.size || o.cylinderSize)}</span>
+                <span style="font-size:0.75rem; color:#6B7280; font-weight:600;">• ${o.serviceType || 'Refill & Delivery'}</span>
+              </div>
+              <div style="line-height:1.4; font-size:0.82rem; color:#4B5563;">
+                <i class="fa-solid fa-location-dot" style="color:#EF4444; font-size:0.78rem;"></i> ${o.address || 'Lagos, Nigeria'}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items:center;">
+              ${mobileActionBtns}
             </div>
           </div>`;
         }).join('');
       } else {
         const emptyMsg = currentVendorFilter === 'active'
-          ? 'No active refill requests right now.'
+          ? 'No active refill requests right now. When customers book refills for your station, they will appear here for you to accept and dispatch.'
           : currentVendorFilter === 'completed'
-            ? 'No completed refill services yet.'
-            : 'No gas refill requests for your station yet.';
-        tbody.innerHTML = `<tr><td colspan="7" style="padding: 24px; text-align: center; color: #9CA3AF;"><i class="fa-solid fa-gas-pump"></i> ${emptyMsg}</td></tr>`;
-        mobileList.innerHTML = `<div style="padding: 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem;"><i class="fa-solid fa-gas-pump"></i> ${emptyMsg}</div>`;
+            ? 'No completed refill services yet. Once you fulfill and deliver customer refill requests, your completed service history and earnings will appear here.'
+            : 'No gas refill requests for your station yet. Incoming customer bookings will appear here in real time.';
+        tbody.innerHTML = `<tr><td colspan="7" style="padding: 34px; text-align: center; color: #9CA3AF; line-height:1.6;"><i class="fa-solid fa-gas-pump" style="font-size:1.6rem; margin-bottom:8px; display:block; color:#D1D5DB;"></i> ${emptyMsg}</td></tr>`;
+        mobileList.innerHTML = `<div style="padding: 30px 20px; text-align: center; color: #9CA3AF; font-size: 0.88rem; line-height:1.6;"><i class="fa-solid fa-gas-pump" style="font-size:1.6rem; margin-bottom:8px; display:block; color:#D1D5DB;"></i> ${emptyMsg}</div>`;
       }
     }
+
+    // ── VENDOR ORDER DETAIL MODAL CONTROLS ──
+    function openVendorOrderDetail(orderId) {
+      const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
+      const o = allOrders.find(item => item.id === orderId || item.id === String(orderId).replace('#', ''));
+      if (!o) return;
+
+      const statusMeta = getOrderStatusMeta(o.status);
+
+      const titleEl = document.getElementById('vodTitle');
+      if (titleEl) titleEl.innerText = `Refill Request #${o.id}`;
+
+      const badgeEl = document.getElementById('vodBadge');
+      if (badgeEl) badgeEl.innerHTML = statusMeta.badge;
+
+      const nameEl = document.getElementById('vodCustomerName');
+      if (nameEl) nameEl.innerText = o.customerName || 'Valued Customer';
+
+      const phoneEl = document.getElementById('vodCustomerPhone');
+      if (phoneEl) phoneEl.innerText = (o.customerPhone && o.customerPhone !== '—') ? o.customerPhone : 'Not provided';
+
+      const phoneLinkEl = document.getElementById('vodCustomerPhoneLink');
+      if (phoneLinkEl) phoneLinkEl.href = (o.customerPhone && o.customerPhone !== '—') ? `tel:${o.customerPhone}` : '#';
+
+      const emailEl = document.getElementById('vodCustomerEmail');
+      if (emailEl) emailEl.innerText = o.userEmail || o.customerEmail || '—';
+
+      const addrEl = document.getElementById('vodAddress');
+      if (addrEl) addrEl.innerText = o.address || 'Lagos, Nigeria';
+
+      const sizeEl = document.getElementById('vodCylinderSize');
+      if (sizeEl) sizeEl.innerText = cleanCylinderSize(o.size || o.cylinderSize);
+
+      const typeEl = document.getElementById('vodServiceType');
+      if (typeEl) typeEl.innerText = o.serviceType || 'Cylinder Refill & Doorstep Delivery';
+
+      const amtEl = document.getElementById('vodAmount');
+      if (amtEl) amtEl.innerText = '₦' + Number(o.total || o.amount || 0).toLocaleString();
+
+      const payEl = document.getElementById('vodPaymentStatus');
+      if (payEl) payEl.innerText = `✅ Paid • ${o.paymentMethod || 'Card'}`;
+
+      const createdEl = document.getElementById('vodCreatedAt');
+      if (createdEl) createdEl.innerText = formatOrderDate(o.createdAt);
+
+      const footer = document.getElementById('vodActionFooter');
+      if (footer) {
+        if (statusMeta.code === 'NEW') {
+          footer.innerHTML = `
+            <button class="btn-sm btn-approve" style="flex:2; padding:12px; font-size:0.9rem;" onclick="closeVendorOrderDetail(); acceptOrder('${o.id}')">✓ Accept Refill Request</button>
+            <button class="btn-sm btn-reject" style="flex:1; padding:12px; font-size:0.9rem;" onclick="closeVendorOrderDetail(); rejectOrder('${o.id}')">✕ Decline</button>
+          `;
+        } else if (statusMeta.code === 'PREPARING') {
+          footer.innerHTML = `
+            <button class="btn-sm btn-approve" style="flex:1; padding:12px; font-size:0.9rem; background:#F59E0B; color:#111827;" onclick="closeVendorOrderDetail(); openDispatchModal('${o.id}')">🚚 Dispatch Delivery</button>
+          `;
+        } else if (statusMeta.code === 'IN_TRANSIT') {
+          footer.innerHTML = `
+            <button class="btn-sm btn-approve" style="flex:1; padding:12px; font-size:0.9rem; background:#10B981;" onclick="closeVendorOrderDetail(); markVendorDelivered('${o.id}')">✅ Mark Service Completed</button>
+          `;
+        } else {
+          footer.innerHTML = `
+            <button onclick="closeVendorOrderDetail()" style="flex:1; padding:12px; background:#F3F4F6; border:1px solid #D1D5DB; border-radius:10px; font-weight:800; color:#374151; cursor:pointer;">Close Window</button>
+          `;
+        }
+      }
+
+      const modal = document.getElementById('vendorOrderDetailModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeVendorOrderDetail() {
+      const modal = document.getElementById('vendorOrderDetailModal');
+      if (modal) modal.style.display = 'none';
+    }
+    window.openVendorOrderDetail = openVendorOrderDetail;
+    window.closeVendorOrderDetail = closeVendorOrderDetail;
 
     function setVendorOrderFilter(filterType) {
       window.currentVendorFilter = filterType;
@@ -1179,7 +1539,8 @@
         return;
       }
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      const cleanId = String(orderId || '').replace(/^#+/, '');
+      const orderIdx = allOrders.findIndex(o => o.id === cleanId || o.id === '#' + cleanId || o.id === orderId);
       if (orderIdx === -1) return;
 
       allOrders[orderIdx].status = 'ACCEPTED';
@@ -1197,7 +1558,7 @@
         sellerEmail: vendorUser ? vendorUser.email : undefined
       });
 
-      if (window.NotificationManager) NotificationManager.show(`Order #${orderId} Accepted! Cylinder being filled...`, 'success');
+      if (window.NotificationManager) NotificationManager.show(`Order #${allOrders[orderIdx].id} Accepted! Cylinder being filled...`, 'success');
 
       // Send Brevo email to Customer
       const order = allOrders[orderIdx];
@@ -1222,7 +1583,8 @@
 
     function startVendorDelivery(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      const cleanId = String(orderId || '').replace(/^#+/, '');
+      const orderIdx = allOrders.findIndex(o => o.id === cleanId || o.id === '#' + cleanId || o.id === orderId);
       if (orderIdx === -1) return;
 
       allOrders[orderIdx].status = 'EN_ROUTE';
@@ -1230,7 +1592,7 @@
       OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
       updateOrderStatusInBackend(orderId, 'ON_THE_WAY');
 
-      if (window.NotificationManager) NotificationManager.show(`Order #${orderId} is En Route for delivery!`, 'success');
+      if (window.NotificationManager) NotificationManager.show(`Order #${allOrders[orderIdx].id} is En Route for delivery!`, 'success');
 
       // Send Brevo email to Customer
       const order = allOrders[orderIdx];
@@ -1286,7 +1648,8 @@
 
     function markVendorDelivered(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      const cleanId = String(orderId || '').replace(/^#+/, '');
+      const orderIdx = allOrders.findIndex(o => o.id === cleanId || o.id === '#' + cleanId || o.id === orderId);
       if (orderIdx === -1) return;
 
       allOrders[orderIdx].status = 'DELIVERED';
@@ -1294,7 +1657,7 @@
       OrderStateManager.saveActiveOrder(allOrders[orderIdx]);
       updateOrderStatusInBackend(orderId, 'DELIVERED');
 
-      if (window.NotificationManager) NotificationManager.show(`Order #${orderId} marked as DELIVERED!`, 'success');
+      if (window.NotificationManager) NotificationManager.show(`Order #${allOrders[orderIdx].id} marked as DELIVERED!`, 'success');
 
       const order = allOrders[orderIdx];
       safeFetchApi('/api/auth/notify-email', {
@@ -1318,7 +1681,8 @@
 
     function rejectOrder(orderId) {
       const allOrders = JSON.parse(localStorage.getItem('emberGasOrders') || '[]');
-      const orderIdx = allOrders.findIndex(o => o.id === orderId);
+      const cleanId = String(orderId || '').replace(/^#+/, '');
+      const orderIdx = allOrders.findIndex(o => o.id === cleanId || o.id === '#' + cleanId || o.id === orderId);
       if (orderIdx !== -1) {
         allOrders[orderIdx].status = 'CANCELLED';
         localStorage.setItem('emberGasOrders', JSON.stringify(allOrders));
